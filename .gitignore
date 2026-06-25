@@ -1,0 +1,9 @@
+.next
+node_modules
+.env.local
+.vercel
+.pnpm-store
+.runtime-home
+.edge-profile*
+pado-store-home*.png
+*.log
