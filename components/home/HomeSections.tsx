@@ -32,9 +32,13 @@ export function HomeSections() {
         <div className="shell">
           <div className="section-heading"><div><span className="eyebrow">WHY PADO STORY</span><h2>파도스토리를 선택하는 이유</h2></div></div>
           <div className="trust-grid">
-            {[['01','산지 직송','불필요한 유통 단계를 줄였습니다.'],['02','생산자 확인','누가 어디서 보낸 상품인지 기록합니다.'],['03','2중 선별','산지와 출고지에서 상태를 확인합니다.'],['04','신선 포장','상품 특성에 맞춘 냉장·산소 포장을 적용합니다.']].map(([no,title,copy]) => <div className="trust-card" key={no}><span>{no}</span><h3>{title}</h3><p>{copy}</p></div>)}
+            {[
+              ['산지 직송','산지에서 식탁까지 빠르게 배송','/images/story/eel-catch.webp'],
+              ['생산자 확인','누가 생산했는지 확인 가능','/images/story/oyster-producer.webp'],
+              ['2중 선별','품질 검사 후 출고','/images/products/wando-abalone.webp'],
+              ['신선 포장','산소포장 / 냉장배송','/images/products/tongyeong-octopus.webp']
+            ].map(([title,copy,image]) => <div className="trust-card" key={title}><div className="trust-card-image"><Image src={image} alt={title} fill sizes="(max-width: 700px) 50vw, 25vw" /></div><div><h3>{title}</h3><p>{copy}</p></div></div>)}
           </div>
-          <div className="numbers"><div><strong>3</strong><span>연결 산지</span></div><div><strong>6</strong><span>대표 상품</span></div><div><strong>2×</strong><span>선별 과정</span></div><div><strong>24h</strong><span>신속 출고 목표</span></div></div>
         </div>
       </section>
 
