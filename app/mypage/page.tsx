@@ -14,6 +14,8 @@ const statusLabels: Record<string, string> = {
   cancelled: "취소"
 };
 
+const statusSteps = ["paid", "preparing", "shipped", "delivered"];
+
 type MyOrderItem = {
   id: string;
   product_slug: string;
@@ -87,6 +89,7 @@ export default async function MyPage() {
             const shipment = order.shipments?.[0];
             const carrier = shipment?.carrier?.trim() || "미입력";
             const trackingNumber = shipment?.tracking_number?.trim() || "미입력";
+            const currentStep = statusSteps.indexOf(order.status);
             return (
               <article className="mypage-order-card" key={order.id}>
                 <div className="mypage-order-head">
@@ -95,6 +98,17 @@ export default async function MyPage() {
                     <h3>{order.order_no}</h3>
                   </div>
                   <strong>{statusLabels[order.status] ?? order.status}</strong>
+                </div>
+                <div className="mypage-status-steps" aria-label="주문 처리 단계">
+                  {statusSteps.map((step, index) => (
+                    <span
+                      key={step}
+                      className={currentStep >= index ? "active" : ""}
+                      aria-current={order.status === step ? "step" : undefined}
+                    >
+                      {statusLabels[step]}
+                    </span>
+                  ))}
                 </div>
                 <div className="table-wrap">
                   <table>
