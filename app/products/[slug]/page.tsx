@@ -21,9 +21,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     <div className="detail-page">
       <div className="shell breadcrumb">
         <Link href="/">홈</Link>
-        <span>›</span>
+        <span>/</span>
         <Link href="/products">전체 상품</Link>
-        <span>›</span>
+        <span>/</span>
         <b>{product.name}</b>
       </div>
 
@@ -62,7 +62,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div>
               <span>보관방법</span>
               <strong>수령 즉시 냉장 보관</strong>
-              <p>가능한 빠르게 섭취하고, 장기 보관 시 상품별 안내에 맞춰 냉동 보관해 주세요.</p>
+              <p>가능한 빠르게 섭취하고, 장기 보관 시 상품별 안내에 맞춰 냉동 보관해주세요.</p>
             </div>
           </div>
           <ProductPurchase product={product} />
@@ -90,7 +90,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div>
               <b>02</b>
               <strong>상태 선별</strong>
-              <span>크기와 선도를 확인합니다</span>
+              <span>크기와 신선도를 확인합니다.</span>
             </div>
             <div>
               <b>03</b>
