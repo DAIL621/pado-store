@@ -97,7 +97,11 @@ export function Hero() {
   );
 
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
     const timer = window.setInterval(() => {
+      if (document.hidden) return;
       setActive((current) => (current + 1) % slides.length);
     }, 5500);
 
@@ -118,9 +122,11 @@ export function Hero() {
   };
 
   return (
-    <section className="hero hero-v2" id="recommend">
+    <section className="hero hero-v2" id="recommend" aria-label="파도스토리 추천 상품 슬라이드">
       <div
         className="hero-carousel"
+        role="region"
+        aria-roledescription="carousel"
         onPointerDown={(event) => {
           touchStartX.current = event.clientX;
         }}
@@ -130,9 +136,9 @@ export function Hero() {
         }}
       >
         {slides.map((slide, index) => (
-          <article className={`hero-slide ${index === active ? "active" : ""}`} key={slide.slug} aria-hidden={index !== active}>
+          <article className={`hero-slide ${index === active ? "active" : ""}`} key={slide.slug} aria-hidden={index !== active} aria-label={`${index + 1} / ${slides.length}`}>
             <div className="hero-slide-image">
-              <Image src={slide.image} alt={slide.label} fill sizes="100vw" priority={index === 0} />
+              <Image src={slide.image} alt={slide.label} fill sizes="100vw" priority={index === 0} draggable={false} />
             </div>
             <div className="shell hero-slide-copy fade-up">
               <span className="eyebrow light">{slide.label}</span>
