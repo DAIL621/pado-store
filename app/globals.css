@@ -86,3 +86,7 @@
 
 @media(max-width:600px){.site-header{height:66px}.kakao-login-chip{min-width:76px;height:46px;min-height:46px;padding:0 11px;border-radius:14px}.cart-link-clean,.menu-button{width:46px;height:46px;min-width:46px;border-radius:14px}.login-profile-icon{width:19px;height:19px}.cart-svg-icon{width:22px;height:22px}.nav.open{z-index:90}.nav>.mobile-nav-link{min-height:32px}}
 @media(max-width:380px){.site-header{height:62px}.kakao-login-chip{min-width:68px;height:42px;min-height:42px;padding:0 9px}.cart-link-clean,.menu-button{width:42px;height:42px;min-width:42px}.login-profile-icon{width:18px;height:18px}.cart-svg-icon{width:21px;height:21px}}
+
+/* Product card conversion polish */
+.card-trust-row{display:flex;flex-wrap:wrap;gap:5px;order:3;margin-top:-2px}.card-trust-row span{display:inline-flex;align-items:center;border-radius:999px;background:#eef8f6;color:var(--teal);padding:4px 7px;font-size:10px;font-weight:900;line-height:1}.card-trust-row span:nth-child(2){background:#fff3ec;color:var(--coral)}.product-card .small-button{transition:background-color .18s ease,border-color .18s ease,color .18s ease,transform .18s ease}.product-card .small-button:active{transform:scale(.98)}
+@media(max-width:600px){.card-trust-row{gap:4px;margin-top:0}.card-trust-row span{padding:3px 5px;font-size:8.5px}.featured-grid .card-trust-row{display:none}.product-card .small-button{font-size:10px;font-weight:950}}

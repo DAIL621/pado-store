@@ -28,12 +28,16 @@ export function ProductCard({ product, compact = false }: { product: Product; co
         <Link href={`/products/${product.slug}`}><h3>{product.name}</h3></Link>
         <span className="origin">{product.origin}</span>
         {!compact && <p>{product.subtitle}</p>}
+        <div className="card-trust-row" aria-label="배송 안내">
+          <span>산지직송</span>
+          <span>냉장배송</span>
+        </div>
         <div className="price-stack">
           <div className="price-meta"><del>{formatPrice(compareAtPrice)}</del><em>{discountRate}%</em></div>
           <strong>{formatPrice(product.price)}~</strong>
         </div>
         <div className="product-bottom">
-          <Link href={`/products/${product.slug}`} className="small-button">상품 보기</Link>
+          <Link href={`/products/${product.slug}`} className="small-button">{isSoldOut ? "입고 알림" : "상품 보기"}</Link>
         </div>
       </div>
     </article>
