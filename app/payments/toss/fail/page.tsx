@@ -17,10 +17,15 @@ export default async function TossPaymentFailPage({
         </div>
       </section>
 
-      <section className="shell complete-box">
+      <section className="shell complete-box payment-result failed">
         <span>{params.code ?? "TOSS_PAYMENT_FAILED"}</span>
         <strong>{params.orderId ?? "주문번호 확인 필요"}</strong>
-        <p>카드 정보와 결제 수단을 확인한 뒤 다시 시도해주세요.</p>
+        <p>카드 정보, 한도, 간편결제 인증 상태를 확인한 뒤 다시 시도해주세요.</p>
+        <div className="result-checklist" aria-label="재결제 전 확인 사항">
+          <span>장바구니 유지</span>
+          <span>결제수단 확인</span>
+          <span>다시 결제 가능</span>
+        </div>
         <div className="complete-actions">
           <Link href="/cart" className="button outline">장바구니로 돌아가기</Link>
           <Link href="/checkout" className="button teal">다시 결제하기</Link>

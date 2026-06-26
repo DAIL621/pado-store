@@ -17,6 +17,7 @@ export function TossPaymentResult({ paymentKey, orderId, amount }: Props) {
   const [message, setMessage] = useState("결제 승인 중입니다...");
   const requested = useRef(false);
   const numericAmount = Number(amount ?? 0);
+  const isSuccess = status === "success";
 
   useEffect(() => {
     if (requested.current) return;
@@ -56,14 +57,21 @@ export function TossPaymentResult({ paymentKey, orderId, amount }: Props) {
   }, [amount, clearCart, numericAmount, orderId, paymentKey]);
 
   return (
-    <section className="shell complete-box">
-      <span>{status === "success" ? "PAYMENT COMPLETE" : "PAYMENT CHECK"}</span>
+    <section className={`shell complete-box payment-result ${status}`}>
+      <span>{isSuccess ? "PAYMENT COMPLETE" : "PAYMENT CHECK"}</span>
       <strong>{orderId ?? "주문번호 확인 필요"}</strong>
       <p>{message}</p>
       <p>결제 금액: {formatPrice(numericAmount)}</p>
+      <div className="result-checklist" aria-label="주문 처리 안내">
+        <span>{isSuccess ? "결제 완료" : "결제 확인 중"}</span>
+        <span>마이페이지 반영</span>
+        <span>상품 준비 후 출고</span>
+      </div>
       <div className="complete-actions">
-        <Link href="/products" className="button outline">상품 더 보기</Link>
-        <Link href="/mypage" className="button teal">주문내역 확인</Link>
+        <Link href="/products" className="button outline">계속 쇼핑하기</Link>
+        <Link href={isSuccess ? "/mypage" : "/checkout"} className="button teal">
+          {isSuccess ? "주문내역 확인" : "결제 다시 확인"}
+        </Link>
       </div>
     </section>
   );
