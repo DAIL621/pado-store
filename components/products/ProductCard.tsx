@@ -14,8 +14,8 @@ function getBadgeClass(label?: string) {
 export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
   const totalStock = product.options.reduce((sum, option) => sum + Number(option.stock ?? 0), 0);
   const isSoldOut = totalStock <= 0;
-  const compareAtPrice = product.price + (product.price >= 40000 ? 6000 : 5000);
-  const discountRate = Math.round((1 - product.price / compareAtPrice) * 100);
+  const compareAtPrice = product.normalPrice;
+  const discountRate = product.discountRate;
   const badgeLabel = product.badge === "BEST" ? "BEST" : product.badge;
 
   return (

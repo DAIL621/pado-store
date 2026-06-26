@@ -2,8 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductPurchase } from "@/components/products/ProductPurchase";
+import { ProductCard } from "@/components/products/ProductCard";
 import { formatPrice } from "@/data/products";
-import { getProductBySlug } from "@/lib/products";
+import { getProductBySlug, getProducts } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
+
+  const recommended = (await getProducts())
+    .filter((item) => item.slug !== product.slug)
+    .slice(0, 3);
 
   return (
     <div className="detail-page">
@@ -32,7 +37,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <p className="detail-subtitle">{product.subtitle}</p>
           <div className="detail-price-wrap">
             {product.badge && <span className="detail-badge">{product.badge}</span>}
-            <strong className="detail-price">{formatPrice(product.price)}~</strong>
+            <div className="detail-price-stack">
+              <del>{formatPrice(product.normalPrice)}</del>
+              <em>{product.discountRate}%</em>
+              <strong className="detail-price">{formatPrice(product.price)}~</strong>
+            </div>
           </div>
           <ul>
             {product.highlights.map((item) => (
@@ -42,18 +51,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="detail-info-grid">
             <div>
               <span>배송 안내</span>
-              <strong>평일 오후 1시 이전 주문 당일 출고</strong>
-              <p>아이스박스와 보냉재로 상품 특성에 맞춰 신선 포장합니다.</p>
+              <strong>{product.shippingInfo.title}</strong>
+              <p>{product.shippingInfo.body}</p>
             </div>
             <div>
               <span>원산지</span>
-              <strong>{product.origin}</strong>
-              <p>상품별 산지 기준으로 선별 후 출고합니다.</p>
+              <strong>{product.originInfo.title}</strong>
+              <p>{product.originInfo.body}</p>
             </div>
             <div>
               <span>보관방법</span>
               <strong>수령 즉시 냉장 보관</strong>
-              <p>가능한 빠르게 섭취하고, 장기 보관 시 손질 후 냉동 보관하세요.</p>
+              <p>가능한 빠르게 섭취하고, 장기 보관 시 상품별 안내에 맞춰 냉동 보관해 주세요.</p>
             </div>
           </div>
           <ProductPurchase product={product} />
@@ -62,33 +71,80 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
       <section className="detail-story">
         <div className="shell narrow">
-          <span className="eyebrow">FROM THE COAST</span>
-          <h2>{product.origin}에서 시작된 신선함</h2>
+          <span className="eyebrow">PRODUCT DETAIL</span>
+          <h2>{product.name} 상세 설명</h2>
           <p>{product.description}</p>
+          <div className="detail-image-strip">
+            {product.detailImages.map((image) => (
+              <div key={image}>
+                <Image src={image} alt={`${product.name} 상세 이미지`} fill sizes="(max-width: 700px) 100vw, 700px" />
+              </div>
+            ))}
+          </div>
           <div className="detail-process">
             <div>
               <b>01</b>
               <strong>산지 확인</strong>
-              <span>조업·양식 현장에서 입고</span>
+              <span>{product.originInfo.title}</span>
             </div>
             <div>
               <b>02</b>
               <strong>상태 선별</strong>
-              <span>크기와 신선도를 꼼꼼히 확인</span>
+              <span>크기와 선도를 확인합니다</span>
             </div>
             <div>
               <b>03</b>
               <strong>신선 포장</strong>
-              <span>상품에 맞는 방식으로 안전 포장</span>
+              <span>{product.shippingInfo.title}</span>
             </div>
             <div>
               <b>04</b>
               <strong>빠른 출고</strong>
-              <span>고객의 식탁으로 신속 배송</span>
+              <span>고객의 식탁까지 안전 배송</span>
             </div>
           </div>
         </div>
       </section>
+
+      <section className="section detail-policy-section">
+        <div className="shell">
+          <div className="detail-policy-grid">
+            <article>
+              <span>배송안내</span>
+              <h3>{product.shippingInfo.title}</h3>
+              <p>{product.shippingInfo.body}</p>
+            </article>
+            <article>
+              <span>교환/반품</span>
+              <h3>{product.exchangeInfo.title}</h3>
+              <p>{product.exchangeInfo.body}</p>
+            </article>
+            <article>
+              <span>생산자 소개</span>
+              <h3>{product.producerInfo.title}</h3>
+              <p>{product.producerInfo.body}</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="section recommended-section">
+        <div className="shell">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">RECOMMENDED</span>
+              <h2>함께 보면 좋은 상품</h2>
+            </div>
+            <Link href="/products" className="text-link">전체 상품 보기</Link>
+          </div>
+          <div className="product-grid">
+            {recommended.map((item) => (
+              <ProductCard key={item.slug} product={item} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       <div className="mobile-purchase-bar">
         <a href="#purchase-box" className="button teal full">옵션 선택하고 구매하기</a>
       </div>

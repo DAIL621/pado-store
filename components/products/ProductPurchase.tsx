@@ -52,9 +52,19 @@ export function ProductPurchase({ product }: { product: Product }) {
       </select>
       {isSoldOut && <p className="soldout-message">현재 선택한 옵션은 품절입니다. 재입고 후 구매할 수 있습니다.</p>}
       {message && <p className="soldout-message">{message}</p>}
-      <div className="quantity-row"><span>수량</span><div><button disabled={isSoldOut} onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button><b>{quantity}</b><button disabled={isSoldOut} onClick={() => setQuantity(Math.min(selectedStock, quantity + 1))}>+</button></div></div>
+      <div className="quantity-row">
+        <span>수량</span>
+        <div>
+          <button disabled={isSoldOut} onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
+          <b>{quantity}</b>
+          <button disabled={isSoldOut} onClick={() => setQuantity(Math.min(selectedStock, quantity + 1))}>+</button>
+        </div>
+      </div>
       <div className="total-row"><span>총 상품금액</span><strong>{formatPrice(total)}</strong></div>
-      <div className="purchase-actions"><button className="button outline" disabled={isSoldOut} onClick={add}>{added ? "담았습니다!" : "장바구니"}</button><button className="button teal" disabled={isSoldOut} onClick={() => { add(); router.push("/cart"); }}>바로 구매</button></div>
+      <div className="purchase-actions">
+        <button className="button outline" disabled={isSoldOut} onClick={add}>{added ? "담았습니다" : "장바구니"}</button>
+        <button className="button teal" disabled={isSoldOut} onClick={() => { add(); router.push("/cart"); }}>바로 구매</button>
+      </div>
       <small>신선식품 특성상 산지와 조업 상황에 따라 출고 일정이 조정될 수 있습니다.</small>
     </div>
   );
