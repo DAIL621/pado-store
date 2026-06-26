@@ -8,18 +8,7 @@ import { AuthHeaderMenu } from "@/components/auth/AuthHeaderMenu";
 import { useCart } from "@/components/cart/CartProvider";
 import { createClient } from "@/lib/supabase/client";
 
-type MenuIconName =
-  | "home"
-  | "bag"
-  | "season"
-  | "hot"
-  | "gift"
-  | "meal"
-  | "pin"
-  | "box"
-  | "truck"
-  | "headset"
-  | "settings";
+type MenuIconName = "bag" | "season" | "hot" | "gift" | "meal" | "pin" | "box" | "truck" | "headset" | "settings";
 
 type MobileMenuItem = {
   icon: MenuIconName;
@@ -38,7 +27,6 @@ function MenuIcon({ name }: { name: MenuIconName }) {
   };
 
   const paths: Record<MenuIconName, ReactNode> = {
-    home: <><path {...common} d="M4 11.5 12 5l8 6.5" /><path {...common} d="M6.5 10.5V19h11v-8.5" /><path {...common} d="M10 19v-5h4v5" /></>,
     bag: <><path {...common} d="M6.5 9h11l-.7 10H7.2L6.5 9Z" /><path {...common} d="M9 9a3 3 0 0 1 6 0" /></>,
     season: <><path {...common} d="M8 18c5.5-.5 9-4 9.5-10.5C11 8 7.5 11.5 8 18Z" /><path {...common} d="M8 18c2.5-3.3 4.9-5.4 8.5-7" /></>,
     hot: <path {...common} d="M12 21c3.3-1.1 5-3.1 5-6 0-2.6-1.5-4.3-3.4-6.2-.6 1.8-1.6 3-3 3.8.5-2.9-.7-5.2-2.5-7C7.8 8.8 6 11.2 6 15c0 3 2.1 5.1 6 6Z" />,
@@ -57,15 +45,14 @@ function MenuIcon({ name }: { name: MenuIconName }) {
 function ShoppingCartIcon() {
   return (
     <svg className="cart-svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 5h2.2l1.7 9.2a2 2 0 0 0 2 1.7h6.9a2 2 0 0 0 1.9-1.4L20 9H7.1" />
-      <path d="M9.5 20.2h.1" />
-      <path d="M17 20.2h.1" />
+      <circle cx="9" cy="20" r="1.4" />
+      <circle cx="17" cy="20" r="1.4" />
+      <path d="M3.8 4.8h2.1l2 10.2a2 2 0 0 0 2 1.6h6.7a2 2 0 0 0 1.9-1.4L20 8.2H7" />
     </svg>
   );
 }
 
 const shoppingMenu: MobileMenuItem[] = [
-  { icon: "home", label: "홈", description: "메인으로 돌아가기", href: "/" },
   { icon: "bag", label: "전체상품", description: "모든 수산물 보기", href: "/products" },
   { icon: "season", label: "제철상품", description: "이번 달 가장 맛있는 상품", href: "/#season" },
   { icon: "hot", label: "인기상품", description: "오늘의 추천 상품", href: "/#recommend" },
@@ -123,7 +110,6 @@ export function Header() {
             <span />
           </button>
           <nav className={open ? "nav open" : "nav"} onClick={() => setOpen(false)} aria-label="주요 메뉴">
-            <span className="mobile-menu-section-title">쇼핑</span>
             {shoppingMenu.map((item) => (
               <Link href={item.href} className="mobile-nav-link" key={item.label}>
                 <span className="mobile-nav-icon"><MenuIcon name={item.icon} /></span>
