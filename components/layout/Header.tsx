@@ -104,7 +104,7 @@ export function Header() {
           <Link href="/" className="brand logo-brand" aria-label="파도스토리 홈">
             <Image src="/images/brand/pado-story-horizontal.webp" alt="파도스토리" width={2760} height={597} priority className="brand-logo-image" />
           </Link>
-          <button className="menu-button" onClick={() => setOpen(!open)} aria-expanded={open} aria-label={open ? "메뉴 닫기" : "메뉴 열기"}>
+          <button type="button" className="menu-button" onClick={() => setOpen(!open)} aria-expanded={open} aria-label={open ? "메뉴 닫기" : "메뉴 열기"}>
             <span />
             <span />
             <span />
