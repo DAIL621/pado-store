@@ -7,7 +7,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
   const isSoldOut = totalStock <= 0;
   const compareAtPrice = product.price + (product.price >= 40000 ? 6000 : 5000);
   const discountRate = Math.round((1 - product.price / compareAtPrice) * 100);
-  const badgeLabel = product.badge === "BEST" ? "BEST" : product.badge;
+  const badgeLabel = product.badge === "BEST" ? "BEST 👍" : product.badge;
 
   return (
     <article className={`product-card ${compact ? "compact" : ""}`}>

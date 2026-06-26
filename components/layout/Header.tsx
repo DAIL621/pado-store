@@ -32,6 +32,7 @@ export function Header() {
           </nav>
           <div className="header-actions">
             <AuthHeaderMenu />
+            <Link href="/products" className="search-link" aria-label="상품 검색"><span className="search-icon" aria-hidden="true" /></Link>
             <Link href="/cart" className="cart-link" aria-label={`장바구니 ${count}개`}><span className="cart-icon" aria-hidden="true" /><span>장바구니</span><b>{count}</b></Link>
           </div>
         </div>
