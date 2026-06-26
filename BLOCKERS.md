@@ -5,7 +5,7 @@
 ### Vercel 자동 배포 완료 여부 확인 필요
 
 - GitHub push는 완료했지만 로컬에 Vercel CLI가 없어 배포 완료 화면은 직접 확인하지 못했다.
-- Vercel Dashboard에서 최신 커밋 `a33a889` 이후 배포 성공 여부 확인 필요.
+- Vercel Dashboard에서 최신 커밋 배포 성공 여부 확인 필요.
 
 ### Production 외부 콘솔 설정 필요
 
@@ -23,3 +23,7 @@
 - iPhone Safari
 - Android Chrome
 - 실제 배포 URL 기준 홈/상품목록/상품상세/장바구니/주문서/마이페이지 확인 필요.
+
+### 실제 결제 반복 검증 필요
+
+- Toss 테스트 키 기준 결제 연결은 구현되어 있으나, 실제 배포 URL에서 성공/실패 URL 왕복과 주문 상태 반영을 반복 확인해야 한다.

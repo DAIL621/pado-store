@@ -15,6 +15,7 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusSteps = ["paid", "preparing", "shipped", "delivered"];
+const CJ_TRACKING_URL = "https://www.cjlogistics.com/ko/tool/parcel/tracking";
 
 type MyOrderItem = {
   id: string;
@@ -90,6 +91,7 @@ export default async function MyPage() {
             const carrier = shipment?.carrier?.trim() || "미입력";
             const trackingNumber = shipment?.tracking_number?.trim() || "미입력";
             const currentStep = statusSteps.indexOf(order.status);
+            const canTrack = trackingNumber !== "미입력" && carrier.includes("CJ");
             return (
               <article className="mypage-order-card" key={order.id}>
                 <div className="mypage-order-head">
@@ -129,7 +131,17 @@ export default async function MyPage() {
                 <div className="mypage-shipment">
                   <div><span>배송상태</span><strong>{statusLabels[order.status] ?? order.status}</strong></div>
                   <div><span>택배사</span><strong>{carrier}</strong></div>
-                  <div><span>송장번호</span><strong>{trackingNumber}</strong></div>
+                  <div>
+                    <span>송장번호</span>
+                    <strong>
+                      {trackingNumber}
+                      {canTrack && (
+                        <Link href={CJ_TRACKING_URL} target="_blank" rel="noreferrer" className="tracking-link">
+                          배송조회
+                        </Link>
+                      )}
+                    </strong>
+                  </div>
                   <div><span>총 결제금액</span><strong>{formatPrice(order.total_amount)}</strong></div>
                 </div>
               </article>

@@ -15,6 +15,7 @@
 - 상품 목록 카테고리 필터 동작 연결
 - 로그인 페이지 고객 혜택 문구 개선
 - 모바일 헤더 메뉴 버튼 타입 명시
+- 마이페이지 CJ대한통운 배송조회 링크 조건부 제공
 
 ### 커밋
 
@@ -29,6 +30,7 @@
 - `4bfbed5 Enable product catalog filtering`
 - `3966ab5 Improve login page customer benefits`
 - `a33a889 Clarify mobile menu button type`
+- `Add mypage shipment tracking link` 예정
 
 ### 개발 판단
 
