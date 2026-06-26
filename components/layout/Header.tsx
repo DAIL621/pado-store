@@ -13,22 +13,51 @@ export function Header() {
   const { count } = useCart();
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   const memberPath = user ? "/mypage" : "/login?next=/mypage";
+
+  const shoppingMenu = [
+    { icon: "🏠", label: "홈", href: "/" },
+    { icon: "🛍", label: "전체상품", href: "/products" },
+    { icon: "🦪", label: "제철상품", href: "/#season" },
+    { icon: "🔥", label: "인기상품", href: "/#best" },
+    { icon: "🎁", label: "선물세트", href: "/products" },
+    { icon: "🍲", label: "밀키트", href: "/products" },
+    { icon: "📍", label: "산지 이야기", href: "/#producers" }
+  ];
+
+  const serviceMenu = [
+    { icon: "📦", label: "주문조회", href: memberPath },
+    { icon: "🚚", label: "배송조회", href: memberPath },
+    { icon: "🎧", label: "고객센터", href: "tel:01031287775" }
+  ];
 
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ?? null);
+    const setSessionUser = async (nextUser: User | null) => {
+      setUser(nextUser);
+      setIsAdmin(false);
+
+      if (nextUser) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", nextUser.id)
+          .maybeSingle();
+        setIsAdmin(profile?.role === "admin");
+      }
+
       setLoadingUser(false);
-    });
+    };
+
+    supabase.auth.getUser().then(({ data }) => setSessionUser(data.user ?? null));
 
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoadingUser(false);
+      setSessionUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
@@ -65,23 +94,43 @@ export function Header() {
                 </>
               ) : (
                 <>
-                  <strong>로그인하고 주문내역을 확인하세요</strong>
-                  <p>주문조회 · 배송조회 · 재구매를 더 쉽게 이용할 수 있어요</p>
+                  <strong>로그인하고 주문을 더 편하게 이용하세요</strong>
+                  <p>주문조회 · 배송조회 · 재구매 가능</p>
                   <KakaoLoginButton nextPath="/mypage" label="카카오로 3초 로그인" />
                 </>
               )}
             </div>
-            <Link href="/" className="mobile-nav-link">홈</Link>
-            <Link href="/products" className="mobile-nav-link">전체상품</Link>
-            <Link href="/#season" className="mobile-nav-link">제철상품</Link>
-            <Link href="/#best" className="mobile-nav-link">인기상품</Link>
-            <Link href="/products" className="mobile-nav-link">할인상품</Link>
-            <Link href="/products" className="mobile-nav-link">선물세트</Link>
-            <Link href="/cart" className="mobile-nav-link">장바구니</Link>
-            <Link href={memberPath} className="mobile-nav-link">주문조회</Link>
-            <Link href={memberPath} className="mobile-nav-link">배송조회</Link>
-            <a href="tel:01031287775" className="mobile-nav-link">고객센터</a>
-            <Link href="/admin" className="mobile-nav-link admin-nav-link">관리자</Link>
+            <span className="mobile-menu-section-title">상품 구매</span>
+            {shoppingMenu.map((item) => (
+              <Link href={item.href} className="mobile-nav-link" key={item.label}>
+                <span className="mobile-nav-icon" aria-hidden="true">{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+            <span className="mobile-menu-section-title">주문 · 고객지원</span>
+            {serviceMenu.map((item) => {
+              const content = (
+                <>
+                  <span className="mobile-nav-icon" aria-hidden="true">{item.icon}</span>
+                  <span>{item.label}</span>
+                </>
+              );
+
+              return item.href.startsWith("tel:") ? (
+                <a href={item.href} className="mobile-nav-link" key={item.label}>{content}</a>
+              ) : (
+                <Link href={item.href} className="mobile-nav-link" key={item.label}>{content}</Link>
+              );
+            })}
+            {isAdmin && (
+              <>
+                <span className="mobile-menu-section-title">관리</span>
+                <Link href="/admin" className="mobile-nav-link admin-nav-link">
+                  <span className="mobile-nav-icon" aria-hidden="true">⚙</span>
+                  <span>관리자</span>
+                </Link>
+              </>
+            )}
             <Link href="/products" className="desktop-nav-link">전체 상품</Link>
             <Link href="/#season" className="desktop-nav-link">제철 수산물</Link>
             <Link href="/#producers" className="desktop-nav-link">산지 이야기</Link>
