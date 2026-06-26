@@ -5,6 +5,8 @@ import Script from "next/script";
 import { useCart, type CartItem } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
 
+const FREE_SHIPPING_THRESHOLD = 50000;
+
 type TossPayment = {
   requestPayment: (paymentRequest: {
     method: "CARD";
@@ -45,8 +47,10 @@ export default function CheckoutPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const shipping = subtotal >= 50000 || subtotal === 0 ? 0 : 4000;
+  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0 ? 0 : 4000;
   const total = subtotal + shipping;
+  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+  const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -126,11 +130,12 @@ export default function CheckoutPage() {
       <form className="shell checkout-layout" onSubmit={submit}>
         <section className="checkout-form">
           <h2>받는 분 정보</h2>
-          <label>이름<input name="recipientName" required placeholder="홍길동" /></label>
-          <label>연락처<input name="recipientPhone" required placeholder="010-0000-0000" /></label>
-          <label>우편번호<input name="postcode" placeholder="00000" /></label>
-          <label>주소<input name="address" required placeholder="배송지 주소" /></label>
-          <label>상세주소<input name="addressDetail" placeholder="동/호수 등" /></label>
+          <p className="checkout-helper">오후 1시 이전 결제 완료 주문은 산지에서 당일 출고를 준비합니다.</p>
+          <label>이름<input name="recipientName" required placeholder="홍길동" autoComplete="name" /></label>
+          <label>연락처<input name="recipientPhone" required placeholder="010-0000-0000" autoComplete="tel" inputMode="tel" /></label>
+          <label>우편번호<input name="postcode" placeholder="00000" autoComplete="postal-code" inputMode="numeric" /></label>
+          <label>주소<input name="address" required placeholder="배송지 주소" autoComplete="street-address" /></label>
+          <label>상세주소<input name="addressDetail" placeholder="동/호수 등" autoComplete="address-line2" /></label>
           <label>배송 메모<textarea name="memo" rows={3} placeholder="부재 시 문 앞에 놓아주세요." /></label>
           {message && <p className="form-message">{message}</p>}
         </section>
@@ -144,7 +149,22 @@ export default function CheckoutPage() {
             </div>
           ))}
           <div><span>배송비</span><b>{shipping === 0 ? "무료" : formatPrice(shipping)}</b></div>
+          <div className="free-shipping-meter" aria-label="무료배송 진행률">
+            <div><span style={{ width: `${freeShippingProgress}%` }} /></div>
+            <p>
+              {items.length === 0
+                ? "5만원 이상 구매 시 무료배송"
+                : remainingForFreeShipping === 0
+                  ? "무료배송이 적용됩니다"
+                  : `${formatPrice(remainingForFreeShipping)} 더 담으면 무료배송`}
+            </p>
+          </div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(total)}</strong></div>
+          <div className="checkout-trust-list" aria-label="결제 전 확인 사항">
+            <span>안전결제</span>
+            <span>냉장배송</span>
+            <span>산지출고</span>
+          </div>
           <button className="button teal full" disabled={saving || !items.length}>{saving ? "처리 중..." : "Toss로 결제하기"}</button>
           <p>Toss Payments 테스트 결제창으로 이동합니다.</p>
         </aside>
