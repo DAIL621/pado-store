@@ -70,8 +70,8 @@ export function HomeSections() {
             {[
               ["산지 직송", "산지에서 식탁까지 빠르게", "/images/story/eel-catch.webp"],
               ["생산자 확인", "누가 보낸 상품인지 기록", "/images/story/oyster-producer.webp"],
-              ["2중 선별", "상태 확인 후 출고", "/images/products/wando-abalone.webp"],
-              ["신선 포장", "상품에 맞춘 냉장 포장", "/images/products/tongyeong-octopus.webp"]
+              ["2중 선별", "작업자가 하나씩 확인 후 출고", "/images/story/seafood-selection-check.png"],
+              ["신선 포장", "아이스팩과 냉장 포장으로 배송", "/images/story/cold-packaging.png"]
             ].map(([title, copy, image]) => (
               <Link href="/products" className="trust-card" key={title}>
                 <div className="trust-card-image"><Image src={image} alt={title} fill sizes="(max-width: 700px) 50vw, 25vw" loading="eager" /></div>
@@ -87,9 +87,12 @@ export function HomeSections() {
           <div className="section-heading fade-up">
             <div>
               <span className="eyebrow">PRODUCER STORY</span>
-              <h2>바다를 가장 잘 아는 사람들</h2>
-              <p>상품 뒤에 있는 산지와 생산자의 이야기를 전합니다.</p>
+              <h2>경남 통영에서 시작된 신선함</h2>
+              <p>새벽 조업과 산지 선별의 현장을 먼저 보여드립니다.</p>
             </div>
+          </div>
+          <div className="producer-wide-image fade-up">
+            <Image src="/images/story/eel-catch.webp" alt="통영 바다 조업 현장" fill sizes="(max-width: 700px) 100vw, 1180px" loading="eager" />
           </div>
           <div className="producer-grid fade-up">
             <article className="producer-card">

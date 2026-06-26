@@ -40,93 +40,20 @@ function MenuIcon({ name }: { name: MenuIconName }) {
   };
 
   const paths: Record<MenuIconName, ReactNode> = {
-    home: (
-      <>
-        <path {...common} d="M4 11.5 12 5l8 6.5" />
-        <path {...common} d="M6.5 10.5V19h11v-8.5" />
-        <path {...common} d="M10 19v-5h4v5" />
-      </>
-    ),
-    bag: (
-      <>
-        <path {...common} d="M6.5 9h11l-.7 10H7.2L6.5 9Z" />
-        <path {...common} d="M9 9a3 3 0 0 1 6 0" />
-      </>
-    ),
-    season: (
-      <>
-        <path {...common} d="M8 18c5.5-.5 9-4 9.5-10.5C11 8 7.5 11.5 8 18Z" />
-        <path {...common} d="M8 18c2.5-3.3 4.9-5.4 8.5-7" />
-      </>
-    ),
-    hot: (
-      <path
-        {...common}
-        d="M12 21c3.3-1.1 5-3.1 5-6 0-2.6-1.5-4.3-3.4-6.2-.6 1.8-1.6 3-3 3.8.5-2.9-.7-5.2-2.5-7C7.8 8.8 6 11.2 6 15c0 3 2.1 5.1 6 6Z"
-      />
-    ),
-    gift: (
-      <>
-        <path {...common} d="M4.5 10h15v10h-15V10Z" />
-        <path {...common} d="M4 10h16V7H4v3Z" />
-        <path {...common} d="M12 7v13" />
-        <path {...common} d="M8.5 7C6 5.5 7 3.5 9 4c1.5.4 3 3 3 3s1.5-2.6 3-3c2-.5 3 1.5.5 3" />
-      </>
-    ),
-    meal: (
-      <>
-        <path {...common} d="M5 12h14l-1.2 7H6.2L5 12Z" />
-        <path {...common} d="M8 12V8" />
-        <path {...common} d="M12 12V6" />
-        <path {...common} d="M16 12V8" />
-        <path {...common} d="M7 19h10" />
-      </>
-    ),
-    pin: (
-      <>
-        <path {...common} d="M12 21s6-5.2 6-10a6 6 0 0 0-12 0c0 4.8 6 10 6 10Z" />
-        <circle {...common} cx="12" cy="11" r="2.2" />
-      </>
-    ),
-    box: (
-      <>
-        <path {...common} d="M5 8.5 12 5l7 3.5v7L12 19l-7-3.5v-7Z" />
-        <path {...common} d="m5 8.5 7 3.5 7-3.5" />
-        <path {...common} d="M12 12v7" />
-      </>
-    ),
-    truck: (
-      <>
-        <path {...common} d="M4 7h10v9H4V7Z" />
-        <path {...common} d="M14 10h3l3 3v3h-6v-6Z" />
-        <circle {...common} cx="8" cy="18" r="1.5" />
-        <circle {...common} cx="17" cy="18" r="1.5" />
-      </>
-    ),
-    headset: (
-      <>
-        <path {...common} d="M5 13a7 7 0 0 1 14 0" />
-        <path {...common} d="M5 13v4h3v-5H5Z" />
-        <path {...common} d="M19 13v4h-3v-5h3Z" />
-        <path {...common} d="M16 19h-3" />
-      </>
-    ),
-    settings: (
-      <>
-        <circle {...common} cx="12" cy="12" r="3" />
-        <path
-          {...common}
-          d="M19 12a7.5 7.5 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 3a7 7 0 0 0-1.7 1l-2.4-1-2 3.5 2 1.5a7.5 7.5 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 3h5l.3-3a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5c.1-.3.1-.7.1-1Z"
-        />
-      </>
-    )
+    home: <><path {...common} d="M4 11.5 12 5l8 6.5" /><path {...common} d="M6.5 10.5V19h11v-8.5" /><path {...common} d="M10 19v-5h4v5" /></>,
+    bag: <><path {...common} d="M6.5 9h11l-.7 10H7.2L6.5 9Z" /><path {...common} d="M9 9a3 3 0 0 1 6 0" /></>,
+    season: <><path {...common} d="M8 18c5.5-.5 9-4 9.5-10.5C11 8 7.5 11.5 8 18Z" /><path {...common} d="M8 18c2.5-3.3 4.9-5.4 8.5-7" /></>,
+    hot: <path {...common} d="M12 21c3.3-1.1 5-3.1 5-6 0-2.6-1.5-4.3-3.4-6.2-.6 1.8-1.6 3-3 3.8.5-2.9-.7-5.2-2.5-7C7.8 8.8 6 11.2 6 15c0 3 2.1 5.1 6 6Z" />,
+    gift: <><path {...common} d="M4.5 10h15v10h-15V10Z" /><path {...common} d="M4 10h16V7H4v3Z" /><path {...common} d="M12 7v13" /><path {...common} d="M8.5 7C6 5.5 7 3.5 9 4c1.5.4 3 3 3 3s1.5-2.6 3-3c2-.5 3 1.5.5 3" /></>,
+    meal: <><path {...common} d="M5 12h14l-1.2 7H6.2L5 12Z" /><path {...common} d="M8 12V8" /><path {...common} d="M12 12V6" /><path {...common} d="M16 12V8" /><path {...common} d="M7 19h10" /></>,
+    pin: <><path {...common} d="M12 21s6-5.2 6-10a6 6 0 0 0-12 0c0 4.8 6 10 6 10Z" /><circle {...common} cx="12" cy="11" r="2.2" /></>,
+    box: <><path {...common} d="M5 8.5 12 5l7 3.5v7L12 19l-7-3.5v-7Z" /><path {...common} d="m5 8.5 7 3.5 7-3.5" /><path {...common} d="M12 12v7" /></>,
+    truck: <><path {...common} d="M4 7h10v9H4V7Z" /><path {...common} d="M14 10h3l3 3v3h-6v-6Z" /><circle {...common} cx="8" cy="18" r="1.5" /><circle {...common} cx="17" cy="18" r="1.5" /></>,
+    headset: <><path {...common} d="M5 13a7 7 0 0 1 14 0" /><path {...common} d="M5 13v4h3v-5H5Z" /><path {...common} d="M19 13v4h-3v-5h3Z" /><path {...common} d="M16 19h-3" /></>,
+    settings: <><circle {...common} cx="12" cy="12" r="3" /><path {...common} d="M19 12a7.5 7.5 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 3a7 7 0 0 0-1.7 1l-2.4-1-2 3.5 2 1.5a7.5 7.5 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 3h5l.3-3a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5c.1-.3.1-.7.1-1Z" /></>
   };
 
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      {paths[name]}
-    </svg>
-  );
+  return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 }
 
 export function Header() {
@@ -161,11 +88,7 @@ export function Header() {
       setIsAdmin(false);
 
       if (nextUser) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", nextUser.id)
-          .maybeSingle();
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", nextUser.id).maybeSingle();
         setIsAdmin(profile?.role === "admin");
       }
 
@@ -173,10 +96,7 @@ export function Header() {
     };
 
     supabase.auth.getUser().then(({ data }) => setSessionUser(data.user ?? null));
-
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSessionUser(session?.user ?? null);
     });
 
@@ -189,14 +109,7 @@ export function Header() {
       <header className="site-header">
         <div className="shell header-inner">
           <Link href="/" className="brand logo-brand" aria-label="파도스토리 홈">
-            <Image
-              src="/images/brand/pado-story-horizontal.webp"
-              alt="파도스토리"
-              width={2760}
-              height={597}
-              priority
-              className="brand-logo-image"
-            />
+            <Image src="/images/brand/pado-story-horizontal.webp" alt="파도스토리" width={2760} height={597} priority className="brand-logo-image" />
           </Link>
           <button className="menu-button" onClick={() => setOpen(!open)} aria-expanded={open} aria-label={open ? "메뉴 닫기" : "메뉴 열기"}>
             <span />
@@ -215,9 +128,7 @@ export function Header() {
                     <Link href="/mypage" onClick={() => setOpen(false)}>마이페이지</Link>
                     <Link href="/mypage" onClick={() => setOpen(false)}>주문내역</Link>
                   </div>
-                  <form action="/auth/logout" method="post">
-                    <button type="submit">로그아웃</button>
-                  </form>
+                  <form action="/auth/logout" method="post"><button type="submit">로그아웃</button></form>
                 </>
               ) : (
                 <>
@@ -268,8 +179,7 @@ export function Header() {
           </nav>
           <div className="header-actions">
             <AuthHeaderMenu />
-            <Link href="/products" className="search-link" aria-label="상품 검색"><span className="search-icon" aria-hidden="true" /></Link>
-            <Link href="/cart" className="cart-link" aria-label={`장바구니 ${count}개`}><span className="cart-icon" aria-hidden="true" /><span>장바구니</span><b>{count}</b></Link>
+            <Link href="/cart" className="cart-link cart-link-clean" aria-label={`장바구니 ${count}개`}><span className="cart-icon" aria-hidden="true" /><span>장바구니</span><b>{count}</b></Link>
           </div>
         </div>
       </header>
