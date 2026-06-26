@@ -29,16 +29,16 @@ export function AuthHeaderMenu() {
   }, []);
 
   if (loading) {
-    return <span className="auth-loading">로그인 확인중</span>;
+    return <span className="auth-loading">확인중</span>;
   }
 
   if (!user) {
-    return <KakaoLoginButton />;
+    return <KakaoLoginButton label="로그인" />;
   }
 
   return (
     <div className="auth-menu">
-      <span className="user-email">{user.email ?? "로그인 사용자"}</span>
+      <span className="user-email">{user.email ?? "파도스토리 고객"}</span>
       <Link href="/mypage" className="mini-link">마이페이지</Link>
       <form action="/auth/logout" method="post">
         <button type="submit" className="mini-link logout-button">로그아웃</button>

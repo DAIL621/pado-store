@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import type { ReactNode } from "react";
+import Link from "next/link";
+import { useEffect, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
-import { useCart } from "@/components/cart/CartProvider";
 import { AuthHeaderMenu } from "@/components/auth/AuthHeaderMenu";
-import { KakaoLoginButton } from "@/components/auth/KakaoLoginButton";
+import { useCart } from "@/components/cart/CartProvider";
 import { createClient } from "@/lib/supabase/client";
 
 type MenuIconName =
@@ -56,28 +54,38 @@ function MenuIcon({ name }: { name: MenuIconName }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 }
 
+function ShoppingCartIcon() {
+  return (
+    <svg className="cart-svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 5h2.2l1.7 9.2a2 2 0 0 0 2 1.7h6.9a2 2 0 0 0 1.9-1.4L20 9H7.1" />
+      <path d="M9.5 20.2h.1" />
+      <path d="M17 20.2h.1" />
+    </svg>
+  );
+}
+
+const shoppingMenu: MobileMenuItem[] = [
+  { icon: "home", label: "홈", description: "메인으로 돌아가기", href: "/" },
+  { icon: "bag", label: "전체상품", description: "모든 수산물 보기", href: "/products" },
+  { icon: "season", label: "제철상품", description: "이번 달 가장 맛있는 상품", href: "/#season" },
+  { icon: "hot", label: "인기상품", description: "오늘의 추천 상품", href: "/#recommend" },
+  { icon: "gift", label: "선물세트", description: "감사 선물 추천", href: "/products/pado-gift-set" },
+  { icon: "meal", label: "밀키트", description: "간편하게 즐기는 상품", href: "/products/abalone-porridge" },
+  { icon: "pin", label: "산지 이야기", description: "오늘 바다 이야기", href: "/#today-sea" }
+];
+
 export function Header() {
-  const { count } = useCart();
+  const { count, ready } = useCart();
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loadingUser, setLoadingUser] = useState(true);
   const memberPath = user ? "/mypage" : "/login?next=/mypage";
-
-  const shoppingMenu: MobileMenuItem[] = [
-    { icon: "home", label: "홈", description: "오늘의 산지 상품 보기", href: "/" },
-    { icon: "bag", label: "전체상품", description: "모든 수산물을 한눈에 보기", href: "/products" },
-    { icon: "season", label: "제철상품", description: "이번 달 가장 맛있는 수산물", href: "/#season" },
-    { icon: "hot", label: "인기상품", description: "고객이 가장 많이 구매한 상품", href: "/#best" },
-    { icon: "gift", label: "선물세트", description: "명절·감사 선물 추천", href: "/products" },
-    { icon: "meal", label: "밀키트", description: "간편하게 즐기는 수산 밀키트", href: "/products" },
-    { icon: "pin", label: "산지 이야기", description: "생산자와 산지 소개", href: "/#producers" }
-  ];
+  const hasCartItems = ready && count > 0;
 
   const serviceMenu: MobileMenuItem[] = [
-    { icon: "box", label: "주문조회", description: "주문내역과 재구매 확인", href: memberPath },
-    { icon: "truck", label: "배송조회", description: "배송상태와 송장 확인", href: memberPath },
-    { icon: "headset", label: "고객센터", description: "전화 상담과 문자 문의", href: "tel:01031287775" }
+    { icon: "box", label: "주문조회", description: "주문내역 확인", href: memberPath },
+    { icon: "truck", label: "배송조회", description: "배송상태 확인", href: memberPath },
+    { icon: "headset", label: "고객센터", description: "전화 상담 및 문자 문의", href: "tel:01031287775" }
   ];
 
   useEffect(() => {
@@ -91,8 +99,6 @@ export function Header() {
         const { data: profile } = await supabase.from("profiles").select("role").eq("id", nextUser.id).maybeSingle();
         setIsAdmin(profile?.role === "admin");
       }
-
-      setLoadingUser(false);
     };
 
     supabase.auth.getUser().then(({ data }) => setSessionUser(data.user ?? null));
@@ -117,27 +123,7 @@ export function Header() {
             <span />
           </button>
           <nav className={open ? "nav open" : "nav"} onClick={() => setOpen(false)} aria-label="주요 메뉴">
-            <div className="mobile-account-card" onClick={(event) => event.stopPropagation()}>
-              {loadingUser ? (
-                <span className="auth-loading">로그인 확인중</span>
-              ) : user ? (
-                <>
-                  <span>안녕하세요.</span>
-                  <strong>{user.email ?? "파도스토리 고객"}님</strong>
-                  <div className="mobile-account-actions">
-                    <Link href="/mypage" onClick={() => setOpen(false)}>마이페이지</Link>
-                    <Link href="/mypage" onClick={() => setOpen(false)}>주문내역</Link>
-                  </div>
-                  <form action="/auth/logout" method="post"><button type="submit">로그아웃</button></form>
-                </>
-              ) : (
-                <>
-                  <strong>로그인하면 주문조회·배송조회·재구매가 가능합니다.</strong>
-                  <KakaoLoginButton nextPath="/mypage" label="카카오로 3초 로그인" />
-                </>
-              )}
-            </div>
-            <span className="mobile-menu-section-title">상품 구매</span>
+            <span className="mobile-menu-section-title">쇼핑</span>
             {shoppingMenu.map((item) => (
               <Link href={item.href} className="mobile-nav-link" key={item.label}>
                 <span className="mobile-nav-icon"><MenuIcon name={item.icon} /></span>
@@ -163,23 +149,27 @@ export function Header() {
             })}
             {isAdmin && (
               <>
-                <span className="mobile-menu-section-title">관리</span>
+                <span className="mobile-menu-section-title admin-menu-title">관리</span>
                 <Link href="/admin" className="mobile-nav-link admin-nav-link">
                   <span className="mobile-nav-icon"><MenuIcon name="settings" /></span>
-                  <span className="mobile-nav-copy"><strong>관리자</strong><small>상품·주문·배송 관리</small></span>
+                  <span className="mobile-nav-copy"><strong>관리자</strong><small>상품 · 주문 · 배송 관리</small></span>
                   <span className="mobile-nav-chevron" aria-hidden="true">&gt;</span>
                 </Link>
               </>
             )}
             <Link href="/products" className="desktop-nav-link">전체 상품</Link>
             <Link href="/#season" className="desktop-nav-link">제철 수산물</Link>
-            <Link href="/#producers" className="desktop-nav-link">산지 이야기</Link>
+            <Link href="/#today-sea" className="desktop-nav-link">오늘의 산지</Link>
             <Link href="/#trust" className="desktop-nav-link">파도스토리 소개</Link>
-            <Link href="/admin" className="desktop-nav-link">관리자</Link>
+            {isAdmin && <Link href="/admin" className="desktop-nav-link">관리자</Link>}
           </nav>
           <div className="header-actions">
             <AuthHeaderMenu />
-            <Link href="/cart" className="cart-link cart-link-clean" aria-label={`장바구니 ${count}개`}><span className="cart-icon" aria-hidden="true" /><span>장바구니</span><b>{count}</b></Link>
+            <Link href="/cart" className="cart-link cart-link-clean" aria-label={hasCartItems ? `장바구니 ${count}개` : "장바구니"}>
+              <ShoppingCartIcon />
+              <span>장바구니</span>
+              {hasCartItems && <b>{count}</b>}
+            </Link>
           </div>
         </div>
       </header>

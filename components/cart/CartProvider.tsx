@@ -17,6 +17,7 @@ export type CartItem = {
 type CartContextValue = {
   items: CartItem[];
   count: number;
+  ready: boolean;
   addItem: (item: CartItem) => void;
   updateQuantity: (productSlug: string, optionId: string, quantity: number) => void;
   removeItem: (productSlug: string, optionId: string) => void;
@@ -44,6 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<CartContextValue>(() => ({
     items,
     count: items.reduce((sum, item) => sum + item.quantity, 0),
+    ready,
     addItem: (next) => setItems((current) => {
       const found = current.find((item) => item.productSlug === next.productSlug && item.optionId === next.optionId);
       const maxQuantity = Number.isFinite(Number(next.stock)) ? Number(next.stock) : Infinity;
@@ -58,7 +60,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     )),
     removeItem: (slug, optionId) => setItems((current) => current.filter((item) => !(item.productSlug === slug && item.optionId === optionId))),
     clearCart: () => setItems([])
-  }), [items]);
+  }), [items, ready]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

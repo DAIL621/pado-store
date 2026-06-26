@@ -65,9 +65,9 @@ function CampaignIcon({ name }: { name: CampaignIconName }) {
 
 const slidePlan = [
   { slug: "wando-live-abalone", label: "완도 활전복", title: "오늘 수확한 활전복", copy: "바다 향이 살아 있는 완도 활전복을 가장 신선한 시간에 만나보세요." },
-  { slug: "tongyeong-conch", label: "통영 참소라", title: "지금 가장 맛있는 제철 참소라", copy: "쫄깃한 식감과 진한 단맛, 제철 바다의 즐거움을 바로 보내드립니다." },
+  { slug: "tongyeong-conch", label: "통영 참소라", title: "지금 제철 참소라", copy: "쫄깃한 식감과 진한 단맛을 산지에서 바로 보내드립니다." },
   { slug: "tongyeong-sea-eel", label: "통영 바다장어", title: "손질 완료, 당일 출고", copy: "집에서는 굽기만 하면 되는 손질 바다장어로 저녁 식탁을 빠르게 준비하세요." },
-  { slug: "abalone-porridge", label: "전복 밀키트", title: "집에서도 간편하게", copy: "바쁜 날에도 깊고 고소한 전복의 맛을 간편하게 즐길 수 있습니다." },
+  { slug: "abalone-porridge", label: "전복 밀키트", title: "집에서 간편하게", copy: "바쁜 날에도 깊고 고소한 전복의 맛을 간편하게 즐길 수 있습니다." },
   { slug: "pado-gift-set", label: "명절 선물세트", title: "감사의 마음을 전하세요", copy: "받는 분의 식탁까지 신선하게 도착하는 파도스토리 선물세트입니다." }
 ];
 
