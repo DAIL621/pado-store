@@ -10,7 +10,7 @@ const seasons = [
   ["4월", "참소라 · 갑오징어 · 전어"],
   ["5월", "병어 · 갑오징어 · 민어"],
   ["6월", "참소라 · 장어 · 갈치"],
-  ["7월", "민어 · 전복 · 성게"],
+  ["7월", "민어 · 전복 · 꽃게"],
   ["8월", "전복 · 문어 · 민어"],
   ["9월", "꽃게 · 전어 · 갈치"],
   ["10월", "꽃게 · 대하 · 고등어"],
@@ -18,18 +18,75 @@ const seasons = [
   ["12월", "굴 · 대구 · 방어"]
 ];
 
+const liveStats = [
+  { label: "오늘 출고 완료", value: "34건", copy: "활전복 · 참소라 · 바다장어" },
+  { label: "오늘 구매 고객", value: "18명", copy: "가장 많이 담긴 상품은 완도 활전복" },
+  { label: "출고 기준", value: "13:00", copy: "평일 오후 1시 이전 주문 당일 출고" }
+];
+
+const timelineSteps = [
+  {
+    title: "새벽 조업",
+    copy: "새벽부터 신선한 수산물을 준비합니다.",
+    image: "/images/story/timeline-dawn-fishing.png"
+  },
+  {
+    title: "산지 선별",
+    copy: "좋은 상품만 골라 상태를 확인합니다.",
+    image: "/images/story/seafood-selection-check.png"
+  },
+  {
+    title: "신선 포장",
+    copy: "아이스팩과 냉장 포장으로 신선함을 지킵니다.",
+    image: "/images/story/cold-packaging.png"
+  },
+  {
+    title: "당일 출고",
+    copy: "오후 1시 이전 주문은 빠르게 출고됩니다.",
+    image: "/images/story/timeline-cold-dispatch.png"
+  }
+];
+
+const trustItems = [
+  ["산지 직송", "산지에서 식탁까지 빠르게 배송", "/images/story/eel-catch.webp"],
+  ["생산자 확인", "누가 보낸 상품인지 기록", "/images/story/oyster-producer.webp"],
+  ["2중 선별", "작업자가 상태 확인 후 출고", "/images/story/seafood-selection-check.png"],
+  ["신선 포장", "상품에 맞춘 냉장 · 산소포장", "/images/story/cold-packaging.png"]
+];
+
 export function HomeSections() {
   const month = new Date().getMonth() + 1;
 
   return (
     <>
+      <section className="section live-section" aria-label="실시간 출고 정보">
+        <div className="shell">
+          <div className="live-panel fade-up">
+            <div>
+              <span className="eyebrow">LIVE TODAY</span>
+              <h2>오늘도 산지에서 바로 출고 중</h2>
+              <p>실제 연동 전까지는 운영 안내용 데이터로 표시됩니다.</p>
+            </div>
+            <div className="live-grid">
+              {liveStats.map((item) => (
+                <article className="live-card" key={item.label}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                  <p>{item.copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="section product-section">
         <div className="shell">
           <div className="section-heading fade-up">
             <div>
               <span className="eyebrow">FROM THE COAST</span>
-              <h2>산지의 좋은 것만 고릅니다</h2>
-              <p>실제 판매 흐름에 맞춰 준비한 파도스토리 대표 수산물입니다.</p>
+              <h2>전체 상품 둘러보기</h2>
+              <p>전복, 참소라, 장어, 선물세트까지 파도스토리의 판매 상품을 한눈에 확인하세요.</p>
             </div>
             <Link href="/products" className="text-link">전체 상품 모두 보기</Link>
           </div>
@@ -58,6 +115,30 @@ export function HomeSections() {
         </div>
       </section>
 
+      <section className="section timeline-section" id="today-sea">
+        <div className="shell">
+          <div className="section-heading fade-up">
+            <div>
+              <span className="eyebrow">TODAY AT SEA</span>
+              <h2>오늘 바다에서는</h2>
+              <p>조업부터 포장까지, 상품이 식탁에 도착하기 전 과정을 짧게 보여드립니다.</p>
+            </div>
+          </div>
+          <div className="timeline-grid fade-up">
+            {timelineSteps.map((step, index) => (
+              <article className="timeline-card" key={step.title}>
+                <div className="timeline-image">
+                  <Image src={step.image} alt={step.title} fill sizes="(max-width: 700px) 50vw, 25vw" loading="eager" />
+                </div>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{step.title}</h3>
+                <p>{step.copy}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="section trust-section" id="trust">
         <div className="shell">
           <div className="section-heading fade-up">
@@ -67,12 +148,7 @@ export function HomeSections() {
             </div>
           </div>
           <div className="trust-grid fade-up">
-            {[
-              ["산지 직송", "산지에서 식탁까지 빠르게", "/images/story/eel-catch.webp"],
-              ["생산자 확인", "누가 보낸 상품인지 기록", "/images/story/oyster-producer.webp"],
-              ["2중 선별", "작업자가 하나씩 확인 후 출고", "/images/story/seafood-selection-check.png"],
-              ["신선 포장", "아이스팩과 냉장 포장으로 배송", "/images/story/cold-packaging.png"]
-            ].map(([title, copy, image]) => (
+            {trustItems.map(([title, copy, image]) => (
               <Link href="/products" className="trust-card" key={title}>
                 <div className="trust-card-image"><Image src={image} alt={title} fill sizes="(max-width: 700px) 50vw, 25vw" loading="eager" /></div>
                 <div><h3>{title}</h3><p>{copy}</p></div>
@@ -97,7 +173,7 @@ export function HomeSections() {
           <div className="producer-grid fade-up">
             <article className="producer-card">
               <div className="producer-image"><Image src="/images/story/eel-catch.webp" alt="통영 바다장어 조업 현장" fill sizes="50vw" /></div>
-              <div><span>경남 통영</span><h3>통영 바다장어 조업팀</h3><p>통영 앞바다 조업 · 바다장어와 아나고회 취급</p><blockquote>잡는 순간부터 선도는 시작됩니다.</blockquote></div>
+              <div><span>경남 통영</span><h3>통영 바다장어 조업장</h3><p>통영 앞바다 조업 · 바다장어와 아나고회 취급</p><blockquote>좋은 시간부터 신선도는 시작됩니다.</blockquote></div>
             </article>
             <article className="producer-card">
               <div className="producer-image"><Image src="/images/products/wando-abalone.webp" alt="완도 활전복" fill sizes="50vw" /></div>
