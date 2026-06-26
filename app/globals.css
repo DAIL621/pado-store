@@ -114,3 +114,7 @@
 /* Product catalog filter */
 .product-filter-row button{transition:background-color .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}.product-filter-row button:active{transform:scale(.96)}.product-filter-row button:focus-visible{outline:3px solid rgba(0,127,131,.16);outline-offset:2px}
 @media(max-width:600px){.product-filter-row strong{font-size:13px}.product-filter-row>div{gap:6px;scrollbar-width:none}.product-filter-row>div::-webkit-scrollbar{display:none}.product-filter-row button{flex:0 0 auto;min-height:36px;padding:8px 12px;font-weight:850}}
+
+/* Login conversion clarity */
+.login-benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 18px}.login-benefits span{display:grid;place-items:center;min-height:34px;border-radius:999px;background:#eef8f6;color:var(--teal);font-size:11px;font-weight:900}.login-benefits span:nth-child(2){background:#fff3ec;color:var(--coral)}
+@media(max-width:600px){.login-section{padding:42px 14px}.login-benefits{grid-template-columns:1fr;gap:7px}.login-benefits span{min-height:32px}}
