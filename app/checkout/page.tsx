@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Script from "next/script";
+import Link from "next/link";
 import { useCart, type CartItem } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
 
@@ -161,6 +162,13 @@ export default function CheckoutPage() {
         <section className="checkout-form">
           <h2>받는 분 정보</h2>
           <p className="checkout-helper">오후 1시 이전 결제 완료 주문은 산지에서 당일 출고를 준비합니다.</p>
+          {!items.length && (
+            <div className="checkout-empty-note" role="status">
+              <strong>장바구니가 비어 있습니다</strong>
+              <span>상품을 먼저 담으면 주문서와 결제를 이어서 진행할 수 있어요.</span>
+              <Link href="/products">상품 보러 가기</Link>
+            </div>
+          )}
           {message && <p className="form-message" role="status" aria-live="polite">{message}</p>}
           <label>이름<input name="recipientName" required placeholder="홍길동" autoComplete="name" /></label>
           <label>연락처<input name="recipientPhone" required placeholder="010-0000-0000" autoComplete="tel" inputMode="tel" pattern="[0-9\\-\\s]{10,}" /></label>
@@ -176,12 +184,19 @@ export default function CheckoutPage() {
 
         <aside className="order-summary">
           <h2>주문 상품</h2>
-          {items.map((item) => (
-            <div key={`${item.productSlug}-${item.optionId}`}>
-              <span>{item.name} × {item.quantity}</span>
-              <b>{formatPrice(item.unitPrice * item.quantity)}</b>
+          {items.length ? (
+            items.map((item) => (
+              <div key={`${item.productSlug}-${item.optionId}`}>
+                <span>{item.name} × {item.quantity}</span>
+                <b>{formatPrice(item.unitPrice * item.quantity)}</b>
+              </div>
+            ))
+          ) : (
+            <div className="checkout-empty-items">
+              <span>담긴 상품 없음</span>
+              <Link href="/products">상품 선택하기</Link>
             </div>
-          ))}
+          )}
           <div><span>배송비</span><b>{shipping === 0 ? "무료" : formatPrice(shipping)}</b></div>
           <div className="free-shipping-meter" aria-label="무료배송 진행률">
             <div><span style={{ width: `${freeShippingProgress}%` }} /></div>
@@ -199,7 +214,7 @@ export default function CheckoutPage() {
             <span>냉장배송</span>
             <span>산지출고</span>
           </div>
-          <button type="submit" className="button teal full" disabled={saving || !items.length}>{saving ? "처리 중..." : "Toss로 결제하기"}</button>
+          <button type="submit" className="button teal full" disabled={saving || !items.length}>{!items.length ? "상품을 먼저 담아주세요" : saving ? "처리 중..." : "Toss로 결제하기"}</button>
           <p>Toss Payments 테스트 결제창으로 이동합니다.</p>
         </aside>
       </form>

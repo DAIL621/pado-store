@@ -101,7 +101,14 @@ export default function CartPage() {
             </p>
           </div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(subtotal + shipping)}</strong></div>
-          <Link className={`button teal full ${!items.length ? "disabled" : ""}`} href={items.length ? "/checkout" : "/cart"}>주문서 작성하기</Link>
+          <Link
+            className={`button teal full ${!items.length ? "disabled" : ""}`}
+            href={items.length ? "/checkout" : "/cart"}
+            aria-disabled={!items.length}
+            tabIndex={items.length ? undefined : -1}
+          >
+            {items.length ? "주문서 작성하기" : "상품을 먼저 담아주세요"}
+          </Link>
           <p>평일 오후 1시 이전 주문은 당일 출고됩니다.</p>
         </aside>
       </div>
