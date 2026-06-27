@@ -18,6 +18,7 @@ export function TossPaymentResult({ paymentKey, orderId, amount }: Props) {
   const requested = useRef(false);
   const numericAmount = Number(amount ?? 0);
   const isSuccess = status === "success";
+  const isChecking = status === "checking";
 
   useEffect(() => {
     if (requested.current) return;
@@ -69,9 +70,13 @@ export function TossPaymentResult({ paymentKey, orderId, amount }: Props) {
       </div>
       <div className="complete-actions">
         <Link href="/products" className="button outline">계속 쇼핑하기</Link>
-        <Link href={isSuccess ? "/mypage" : "/checkout"} className="button teal">
-          {isSuccess ? "주문내역 확인" : "결제 다시 확인"}
-        </Link>
+        {isChecking ? (
+          <button type="button" className="button teal" disabled>결제 확인 중</button>
+        ) : (
+          <Link href={isSuccess ? "/mypage" : "/checkout"} className="button teal">
+            {isSuccess ? "주문내역 확인" : "주문서로 돌아가기"}
+          </Link>
+        )}
       </div>
     </section>
   );
