@@ -108,7 +108,7 @@ export async function POST(request: Request) {
   const { data: order } = supabase
     ? await supabase
         .from("orders")
-        .select("id, status, payments(status)")
+        .select("id, status, total_amount, payments(status)")
         .eq("order_no", orderId)
         .single()
     : { data: null };
@@ -117,6 +117,10 @@ export async function POST(request: Request) {
 
   if (!secretKey) {
     return NextResponse.json({ ok: false, message: "Toss Payments 시크릿 키가 없습니다." }, { status: 503 });
+  }
+
+  if (supabase && order && Number(order.total_amount) !== Number(amount)) {
+    return NextResponse.json({ ok: false, message: "주문 금액과 결제 금액이 일치하지 않습니다." }, { status: 400 });
   }
 
   if (supabase && order && !alreadyPaid) {
