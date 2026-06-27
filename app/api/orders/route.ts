@@ -88,7 +88,7 @@ export async function POST(request: Request) {
   const optionIds = [...new Set(items.map((item) => String(item.optionId)))];
   const { data: options, error: optionError } = await supabase
     .from("product_options")
-    .select("id, product_id, name, price_delta, stock, products(slug, name, base_price, is_active)")
+    .select("id, product_id, name, price_delta, stock, products(slug, name, base_price, image_url, is_active)")
     .in("id", optionIds);
 
   if (optionError) return NextResponse.json({ ok: false, message: optionError.message }, { status: 500 });
@@ -120,7 +120,13 @@ export async function POST(request: Request) {
     const product = Array.isArray(option?.products) ? option?.products[0] : option?.products;
     const unitPrice = Number(product?.base_price ?? 0) + Number(option?.price_delta ?? 0);
 
-    return { item, unitPrice };
+    return {
+      item,
+      unitPrice,
+      productName: String(product?.name ?? item.name),
+      optionName: String(option?.name ?? item.optionLabel),
+      imageUrl: String(product?.image_url ?? item.image)
+    };
   });
   const subtotal = pricedItems.reduce((sum, { item, unitPrice }) => sum + unitPrice * Number(item.quantity), 0);
   const shipping = subtotal >= 50000 ? 0 : 4000;
@@ -145,16 +151,16 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
 
-  const orderItems = pricedItems.map(({ item, unitPrice }) => ({
+  const orderItems = pricedItems.map(({ item, unitPrice, productName, optionName, imageUrl }) => ({
     order_id: order.id,
     product_id: optionMap.get(String(item.optionId))?.product_id ?? null,
     option_id: item.optionId,
     product_slug: item.productSlug,
-    product_name: item.name,
-    option_name: item.optionLabel,
+    product_name: productName,
+    option_name: optionName,
     unit_price: unitPrice,
     quantity: Number(item.quantity),
-    image_url: item.image
+    image_url: imageUrl
   }));
 
   const { error: itemError } = await supabase.from("order_items").insert(orderItems);
