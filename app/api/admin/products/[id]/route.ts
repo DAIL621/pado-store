@@ -1,38 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth/admin";
 import { readJsonBody } from "@/lib/api/request";
+import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/product-options";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
-
-type ProductOptionInput = {
-  name: string;
-  price_delta: number;
-  stock: number;
-};
-
-function parseOptions(input: unknown): ProductOptionInput[] {
-  if (Array.isArray(input)) {
-    return input
-      .map((option) => ({
-        name: String(option.name ?? "").trim(),
-        price_delta: Number(option.priceDelta ?? option.price_delta ?? 0),
-        stock: Number(option.stock ?? 0)
-      }))
-      .filter((option) => option.name);
-  }
-
-  return String(input ?? "")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [name, priceDelta = "0", stock = "0"] = line.split("|").map((part) => part.trim());
-      return {
-        name,
-        price_delta: Number(priceDelta),
-        stock: Number(stock)
-      };
-    });
-}
 
 async function requireAdmin() {
   if (!hasSupabaseAdminEnv()) {
@@ -117,8 +87,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
 
   if (body.options !== undefined) {
-    const options = parseOptions(body.options);
-    if (!options.length || options.some((option) => !option.name || !Number.isFinite(option.price_delta) || !Number.isFinite(option.stock) || option.stock < 0)) {
+    const options = parseProductOptions(body.options);
+    if (!options.length || hasInvalidProductOption(options)) {
       return NextResponse.json({ ok: false, message: "옵션 형식을 확인해주세요. 예: 1kg|0|30" }, { status: 400 });
     }
 
