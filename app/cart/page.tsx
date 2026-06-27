@@ -1,18 +1,31 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/components/cart/CartProvider";
+import { CartItem, useCart } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
 
 const FREE_SHIPPING_THRESHOLD = 50000;
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem } = useCart();
+  const { items, updateQuantity, removeItem, addItem } = useCart();
+  const [removedItem, setRemovedItem] = useState<CartItem | null>(null);
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const shipping = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0 ? 0 : 4000;
   const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+
+  const removeWithUndo = (item: CartItem) => {
+    setRemovedItem(item);
+    removeItem(item.productSlug, item.optionId);
+  };
+
+  const undoRemove = () => {
+    if (!removedItem) return;
+    addItem(removedItem);
+    setRemovedItem(null);
+  };
 
   return (
     <div className="page-wrap cart-page">
@@ -25,6 +38,18 @@ export default function CartPage() {
 
       <div className="shell cart-layout">
         <section className="cart-list">
+          {!!items.length && (
+            <div className="cart-login-guide">
+              <strong>로그인하면 주문조회와 배송조회가 더 쉬워집니다.</strong>
+              <Link href="/login?next=/checkout">카카오로 계속하기</Link>
+            </div>
+          )}
+          {removedItem && (
+            <div className="cart-undo-message" role="status">
+              <span>{removedItem.name}을 삭제했습니다.</span>
+              <button type="button" onClick={undoRemove}>삭제 취소</button>
+            </div>
+          )}
           {items.length === 0 ? (
             <div className="empty-cart">
               <span aria-hidden="true">CART</span>
@@ -33,25 +58,31 @@ export default function CartPage() {
               <Link href="/products" className="button teal">상품 보러 가기</Link>
             </div>
           ) : (
-            items.map((item) => (
-              <article className="cart-item" key={`${item.productSlug}-${item.optionId}`}>
-                <div className="cart-thumb"><Image src={item.image} alt={item.name} fill sizes="120px" /></div>
-                <div className="cart-item-copy">
-                  <span>{item.origin}</span>
-                  <Link href={`/products/${item.productSlug}`}><h3>{item.name}</h3></Link>
-                  <p>{item.optionLabel}</p>
-                  <div className="cart-controls">
-                    <div>
-                      <button type="button" onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity - 1)} aria-label="수량 줄이기">−</button>
-                      <b>{item.quantity}</b>
-                      <button type="button" onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity + 1)} aria-label="수량 늘리기">+</button>
+            items.map((item) => {
+              const stock = Number(item.stock ?? Infinity);
+              const hasStockLimit = Number.isFinite(stock);
+              const atStockLimit = hasStockLimit && item.quantity >= stock;
+              return (
+                <article className="cart-item" key={`${item.productSlug}-${item.optionId}`}>
+                  <div className="cart-thumb"><Image src={item.image} alt={item.name} fill sizes="120px" /></div>
+                  <div className="cart-item-copy">
+                    <span>{item.origin}</span>
+                    <Link href={`/products/${item.productSlug}`}><h3>{item.name}</h3></Link>
+                    <p>{item.optionLabel}</p>
+                    {hasStockLimit && <small className={atStockLimit ? "cart-stock-note limit" : "cart-stock-note"}>구매 가능 {stock}개</small>}
+                    <div className="cart-controls">
+                      <div>
+                        <button type="button" disabled={item.quantity <= 1} onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity - 1)} aria-label="수량 줄이기">−</button>
+                        <b aria-live="polite">{item.quantity}</b>
+                        <button type="button" disabled={atStockLimit} onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity + 1)} aria-label="수량 늘리기">+</button>
+                      </div>
+                      <button type="button" className="remove" onClick={() => removeWithUndo(item)}>삭제</button>
                     </div>
-                    <button type="button" className="remove" onClick={() => removeItem(item.productSlug, item.optionId)}>삭제</button>
                   </div>
-                </div>
-                <strong>{formatPrice(item.unitPrice * item.quantity)}</strong>
-              </article>
-            ))
+                  <strong>{formatPrice(item.unitPrice * item.quantity)}</strong>
+                </article>
+              );
+            })
           )}
         </section>
 
