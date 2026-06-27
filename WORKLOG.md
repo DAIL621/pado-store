@@ -62,3 +62,24 @@
 - `233b5ac Improve cart checkout empty state recovery`
 - `b4967f6 Improve mobile mypage order item layout`
 - `007266e Harden persisted cart item parsing`
+
+### 추가 안정화
+
+- 주문 생성 API에서 서버 DB 가격 기준으로 주문 금액 재계산
+- Toss 결제 승인 API에서 주문 금액과 결제 금액 일치 검증
+- 고객/관리자 API의 잘못된 JSON 요청 400 응답 처리
+- JSON 요청 파싱 공통 헬퍼 정리
+- 상품 상세/상품 목록 메타데이터 보강
+- PC/iPhone/Galaxy 전체 페이지 캡처 갱신
+
+### 추가 커밋
+
+- `df473c8 Recalculate order totals on server`
+- `80585d8 Validate Toss payment amount against order`
+- `50963ef Handle malformed checkout API requests`
+- `27c8852 Handle malformed admin API requests`
+- `72c9934 Deduplicate JSON request parsing`
+- `438ee41 Add product detail metadata`
+- `0be4205 Add product listing metadata`
+- `f9853ce Use stronger order number entropy`
+- `dd95de8 Add continuation responsive screenshots`

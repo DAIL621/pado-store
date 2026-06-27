@@ -62,3 +62,14 @@
 - Vercel Dashboard 최신 배포 성공 여부
 - 실제 iPhone Safari / Android Chrome 실기기 확인
 - Production Supabase/Kakao/Toss 외부 콘솔 URL 확인
+
+### 추가 검증
+
+- 주문 생성 API 금액 서버 재계산 빌드 검증: 성공
+- Toss 승인 금액 일치 검증 빌드 검증: 성공
+- 고객/관리자 API malformed JSON 처리 빌드 검증: 성공
+- 상품 상세/상품 목록 메타데이터 빌드 검증: 성공
+- Playwright 기존 3000 서버 재사용 전체 페이지 캡처 생성
+  - `screenshots/desktop-1920-continuation.png`
+  - `screenshots/iphone-15-pro-continuation.png`
+  - `screenshots/galaxy-s24-continuation.png`
