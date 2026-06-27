@@ -106,8 +106,14 @@ export async function POST(request: Request) {
   const parsedBody = await readJsonBody(request);
   if (!parsedBody.ok) return parsedBody.response;
   const { paymentKey, orderId, amount } = parsedBody.body;
+  const paymentAmount = Number(amount);
   const secretKey = process.env.TOSS_PAYMENTS_SECRET_KEY;
   const supabase = hasSupabaseAdminEnv() ? createAdminClient() : null;
+
+  if (!String(paymentKey ?? "").trim() || !String(orderId ?? "").trim() || !Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+    return NextResponse.json({ ok: false, message: "결제 승인 정보가 올바르지 않습니다." }, { status: 400 });
+  }
+
   const { data: order, error: orderError } = supabase
     ? await supabase
         .from("orders")
@@ -126,7 +132,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: orderError?.message ?? "주문을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  if (supabase && order && Number(order.total_amount) !== Number(amount)) {
+  if (supabase && order && Number(order.total_amount) !== paymentAmount) {
     return NextResponse.json({ ok: false, message: "주문 금액과 결제 금액이 일치하지 않습니다." }, { status: 400 });
   }
 
@@ -144,7 +150,7 @@ export async function POST(request: Request) {
       Authorization: `Basic ${encryptedSecretKey}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ paymentKey, orderId, amount })
+    body: JSON.stringify({ paymentKey, orderId, amount: paymentAmount })
   });
 
   const payment = await response.json();
@@ -166,7 +172,7 @@ export async function POST(request: Request) {
         .update({
           payment_key: paymentKey,
           method: payment.method,
-          amount: Number(amount),
+          amount: paymentAmount,
           status: "paid",
           approved_at: payment.approvedAt
         })

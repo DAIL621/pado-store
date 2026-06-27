@@ -91,3 +91,10 @@
 - `1c37f98 Deduplicate admin product option parsing`
 - `384c660 Clarify duplicate product slug errors`
 - `e3f40de Reject Toss confirm for missing orders`
+## 2026-06-27 결제/주문 안정성 추가 보강
+
+- Toss 결제 승인 요청의 필수값과 금액 유효성을 외부 Toss 호출 전에 검증하도록 보강
+- 결제 승인 금액 비교, Toss confirm 요청, 결제 레코드 저장에 동일한 정규화 금액을 사용하도록 정리
+- 주문번호 생성에서 `Math.random` fallback을 제거하고 Node `randomUUID`를 사용하도록 변경
+- 체크아웃 customerKey fallback도 Web Crypto 기반으로 정리
+- `pnpm run build` 성공 확인

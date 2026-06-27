@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { readJsonBody } from "@/lib/api/request";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -16,9 +17,7 @@ type OrderItemInput = {
 function makeOrderNo() {
   const date = new Date();
   const ymd = date.toISOString().slice(0, 10).replaceAll("-", "");
-  const random = typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID().replaceAll("-", "").slice(0, 7).toUpperCase()
-    : Math.random().toString(36).slice(2, 9).toUpperCase();
+  const random = randomUUID().replaceAll("-", "").slice(0, 7).toUpperCase();
   return `PADO-${ymd}-${random}`;
 }
 

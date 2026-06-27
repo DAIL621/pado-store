@@ -37,10 +37,13 @@ function makeOrderName(items: CartItem[]) {
 }
 
 function makeCustomerKey() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `PADO_${crypto.randomUUID().replaceAll("-", "")}`;
+  const webCrypto = globalThis.crypto;
+  if (webCrypto?.randomUUID) {
+    return `PADO_${webCrypto.randomUUID().replaceAll("-", "")}`;
   }
-  return `PADO_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+  const values = new Uint32Array(2);
+  webCrypto.getRandomValues(values);
+  return `PADO_${Date.now()}_${Array.from(values, (value) => value.toString(36)).join("")}`;
 }
 
 function getRequiredText(formData: FormData, key: string) {

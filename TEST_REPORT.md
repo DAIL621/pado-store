@@ -84,3 +84,10 @@
 - 상품 목록 `/products`: 상품 15개, 카테고리 탭 12개, 낮은 가격순 정렬 정상
 - 장바구니 `/cart`: 수량 증가가 재고 상한에서 멈추고 삭제 취소 안내 표시 정상
 - 주문서 `/checkout`: 빈 장바구니 안내 표시 및 결제 버튼 비활성화 정상
+## 2026-06-27 결제/주문 안정성 추가 검증
+
+- Toss 결제 승인 API가 `paymentKey`, `orderId`, `amount` 누락 또는 비정상 금액을 Toss 호출 전에 400으로 차단하도록 보강
+- Toss 승인 요청/저장 금액은 숫자로 정규화한 `paymentAmount`만 사용하도록 정리
+- 주문번호 생성은 Node `randomUUID` 기반으로 고정하여 약한 난수 fallback 제거
+- 체크아웃 Toss customerKey 생성은 Web Crypto 기반으로만 생성하도록 정리
+- `pnpm run build`: 성공
