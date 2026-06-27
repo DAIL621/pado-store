@@ -71,6 +71,7 @@
 - JSON 요청 파싱 공통 헬퍼 정리
 - 상품 상세/상품 목록 메타데이터 보강
 - PC/iPhone/Galaxy 전체 페이지 캡처 갱신
+- 주문 항목 상품명/옵션명/이미지를 DB 상품 기록 기준으로 저장하도록 보강
 
 ### 추가 커밋
 
@@ -83,3 +84,4 @@
 - `0be4205 Add product listing metadata`
 - `f9853ce Use stronger order number entropy`
 - `dd95de8 Add continuation responsive screenshots`
+- `2f878de Store order items from product records`
