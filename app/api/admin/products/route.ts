@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { readJsonBody } from "@/lib/api/request";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { getAdminSession } from "@/lib/auth/admin";
 
@@ -83,12 +84,9 @@ export async function POST(request: Request) {
     );
   }
 
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, message: "요청 형식이 올바르지 않습니다." }, { status: 400 });
-  }
+  const parsedBody = await readJsonBody(request);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.body;
   const supabase = createAdminClient();
 
   const requiredFields = ["name", "origin", "category", "subtitle", "description", "basePrice"] as const;

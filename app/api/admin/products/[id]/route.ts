@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth/admin";
+import { readJsonBody } from "@/lib/api/request";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 
 type ProductOptionInput = {
@@ -57,12 +58,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!admin.ok) return admin.response;
 
   const { id } = await params;
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, message: "요청 형식이 올바르지 않습니다." }, { status: 400 });
-  }
+  const parsedBody = await readJsonBody(request);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.body;
   const supabase = createAdminClient();
 
   if (body.action === "soldout") {
