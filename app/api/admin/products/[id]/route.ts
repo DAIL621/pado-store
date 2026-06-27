@@ -84,7 +84,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     .select()
     .single();
 
-  if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  if (error) {
+    const isDuplicate = error.code === "23505";
+    return NextResponse.json(
+      { ok: false, message: isDuplicate ? "이미 같은 URL 이름(slug)의 상품이 있습니다." : error.message },
+      { status: isDuplicate ? 409 : 500 }
+    );
+  }
 
   if (body.options !== undefined) {
     const options = parseProductOptions(body.options);
