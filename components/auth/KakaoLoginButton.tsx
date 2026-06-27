@@ -14,10 +14,12 @@ function ProfileIcon() {
 
 export function KakaoLoginButton({ nextPath = "/mypage", label = "카카오로 계속하기" }: { nextPath?: string; label?: string }) {
   const [signingIn, setSigningIn] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const login = async () => {
     if (signingIn) return;
     setSigningIn(true);
+    setErrorMessage("");
     try {
       const supabase = createClient();
       const safeNextPath = nextPath.startsWith("/") ? nextPath : "/mypage";
@@ -29,21 +31,24 @@ export function KakaoLoginButton({ nextPath = "/mypage", label = "카카오로 �
       });
 
       if (error) {
-        alert(error.message);
+        setErrorMessage(error.message);
         setSigningIn(false);
       }
     } catch {
-      alert("카카오 로그인 연결을 위해 Supabase URL과 키가 필요합니다.");
+      setErrorMessage("카카오 로그인 설정을 확인해주세요.");
       setSigningIn(false);
     }
   };
 
   return (
-    <button className="login-chip kakao-login-chip" onClick={login} type="button" disabled={signingIn} aria-busy={signingIn}>
-      <span className="kakao-mark" aria-hidden="true">K</span>
-      <ProfileIcon />
-      <span className="login-chip-label">{signingIn ? "연결 중..." : label}</span>
-      <span className="login-chip-mobile-label">{signingIn ? "연결중" : "로그인"}</span>
-    </button>
+    <span className="kakao-login-wrap">
+      <button className="login-chip kakao-login-chip" onClick={login} type="button" disabled={signingIn} aria-busy={signingIn}>
+        <span className="kakao-mark" aria-hidden="true">K</span>
+        <ProfileIcon />
+        <span className="login-chip-label">{signingIn ? "연결 중..." : label}</span>
+        <span className="login-chip-mobile-label">{signingIn ? "연결중" : "로그인"}</span>
+      </button>
+      {errorMessage && <span className="auth-inline-error" role="status">{errorMessage}</span>}
+    </span>
   );
 }
