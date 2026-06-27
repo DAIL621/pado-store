@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { formatPrice } from "@/data/products";
 import { createClient } from "@/lib/supabase/server";
+import { TrackingCopyButton } from "@/components/mypage/TrackingCopyButton";
 
 export const dynamic = "force-dynamic";
 
@@ -157,6 +158,7 @@ export default async function MyPage() {
                     <span>송장번호</span>
                     <strong>
                       {trackingNumber}
+                      {trackingNumber !== "미입력" && <TrackingCopyButton trackingNumber={trackingNumber} />}
                       {canTrack && (
                         <Link href={CJ_TRACKING_URL} target="_blank" rel="noreferrer" className="tracking-link">
                           배송조회
