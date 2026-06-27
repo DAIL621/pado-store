@@ -125,3 +125,11 @@
 - 장바구니, 주문서, 상품 상세 구매 박스, 주문 생성 API가 동일한 배송비 정책 함수를 사용하도록 정리
 - 주문 API의 서버 재계산 금액 정책은 유지
 - `pnpm run build`: 성공
+## 2026-06-27 반응형 안정성 재캡처
+
+- 기존 3000 포트 서버 재사용
+- Playwright + Microsoft Edge headless로 홈페이지 전체 캡처 생성
+- PC 1920px: `screenshots/desktop-1920-stability.png`
+- iPhone 15 Pro: `screenshots/iphone-15-pro-stability.png`
+- Galaxy S24: `screenshots/galaxy-s24-stability.png`
+- 캡처 생성 및 페이지 높이 확인 정상
