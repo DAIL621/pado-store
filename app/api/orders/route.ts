@@ -32,11 +32,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "상품 옵션과 수량을 다시 확인해주세요." }, { status: 400 });
   }
 
-  const subtotal = items.reduce((sum, item) => sum + Number(item.unitPrice) * Number(item.quantity), 0);
-  const shipping = subtotal >= 50000 ? 0 : 4000;
-  const totalAmount = subtotal + shipping;
+  const clientSubtotal = items.reduce((sum, item) => sum + Number(item.unitPrice) * Number(item.quantity), 0);
+  const clientShipping = clientSubtotal >= 50000 ? 0 : 4000;
+  const clientTotalAmount = clientSubtotal + clientShipping;
   const orderNo = makeOrderNo();
+  const recipientName = String(body.recipientName ?? "").trim();
+  const recipientPhone = String(body.recipientPhone ?? "").trim();
+  const phoneDigits = recipientPhone.replace(/\D/g, "");
+  const postcode = String(body.postcode ?? "").trim();
+  const address = String(body.address ?? "").trim();
+  const addressDetail = String(body.addressDetail ?? "").trim();
+  const memo = String(body.memo ?? "").trim();
   let userId: string | null = null;
+
+  if (!recipientName) {
+    return NextResponse.json({ ok: false, message: "받는 분 이름을 입력해주세요." }, { status: 400 });
+  }
+  if (phoneDigits.length < 10) {
+    return NextResponse.json({ ok: false, message: "연락처를 10자리 이상 입력해주세요." }, { status: 400 });
+  }
+  if (!address) {
+    return NextResponse.json({ ok: false, message: "배송지 주소를 입력해주세요." }, { status: 400 });
+  }
 
   try {
     const supabase = await createClient();
@@ -55,7 +72,7 @@ export async function POST(request: Request) {
       order: {
         id: `mock-${orderNo}`,
         order_no: orderNo,
-        total_amount: totalAmount,
+        total_amount: clientTotalAmount,
         status: "pending"
       },
       message: "Supabase 관리자 키가 없어 테스트 주문번호만 생성했습니다."
@@ -93,18 +110,29 @@ export async function POST(request: Request) {
     }
   }
 
+  const pricedItems = items.map((item) => {
+    const option = optionMap.get(String(item.optionId));
+    const product = Array.isArray(option?.products) ? option?.products[0] : option?.products;
+    const unitPrice = Number(product?.base_price ?? 0) + Number(option?.price_delta ?? 0);
+
+    return { item, unitPrice };
+  });
+  const subtotal = pricedItems.reduce((sum, { item, unitPrice }) => sum + unitPrice * Number(item.quantity), 0);
+  const shipping = subtotal >= 50000 ? 0 : 4000;
+  const totalAmount = subtotal + shipping;
+
   const { data: order, error } = await supabase
     .from("orders")
     .insert({
       order_no: orderNo,
       status: "pending",
       user_id: userId,
-      recipient_name: body.recipientName,
-      recipient_phone: body.recipientPhone,
-      postcode: body.postcode,
-      address: body.address,
-      address_detail: body.addressDetail,
-      memo: body.memo,
+      recipient_name: recipientName,
+      recipient_phone: recipientPhone,
+      postcode,
+      address,
+      address_detail: addressDetail,
+      memo,
       total_amount: totalAmount
     })
     .select()
@@ -112,14 +140,14 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
 
-  const orderItems = items.map((item) => ({
+  const orderItems = pricedItems.map(({ item, unitPrice }) => ({
     order_id: order.id,
     product_id: optionMap.get(String(item.optionId))?.product_id ?? null,
     option_id: item.optionId,
     product_slug: item.productSlug,
     product_name: item.name,
     option_name: item.optionLabel,
-    unit_price: Number(item.unitPrice),
+    unit_price: unitPrice,
     quantity: Number(item.quantity),
     image_url: item.image
   }));
