@@ -42,6 +42,15 @@ function makeCustomerKey() {
   return `PADO_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
 }
 
+function getRequiredText(formData: FormData, key: string) {
+  return String(formData.get(key) ?? "").trim();
+}
+
+function focusField(form: HTMLFormElement, key: string) {
+  const field = form.elements.namedItem(key);
+  if (field instanceof HTMLElement) field.focus();
+}
+
 export default function CheckoutPage() {
   const { items } = useCart();
   const [saving, setSaving] = useState(false);
@@ -60,6 +69,27 @@ export default function CheckoutPage() {
     }
 
     const formData = new FormData(event.currentTarget);
+    const recipientName = getRequiredText(formData, "recipientName");
+    const recipientPhone = getRequiredText(formData, "recipientPhone");
+    const address = getRequiredText(formData, "address");
+    const phoneDigits = recipientPhone.replace(/\D/g, "");
+
+    if (!recipientName) {
+      setMessage("받는 분 이름을 입력해주세요.");
+      focusField(event.currentTarget, "recipientName");
+      return;
+    }
+    if (phoneDigits.length < 10) {
+      setMessage("연락처를 10자리 이상 입력해주세요.");
+      focusField(event.currentTarget, "recipientPhone");
+      return;
+    }
+    if (!address) {
+      setMessage("배송지 주소를 입력해주세요.");
+      focusField(event.currentTarget, "address");
+      return;
+    }
+
     const clientKey = process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY;
     if (!clientKey) {
       setMessage("Toss Payments 클라이언트 키가 없습니다.");
@@ -79,12 +109,12 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items,
-          recipientName: formData.get("recipientName"),
-          recipientPhone: formData.get("recipientPhone"),
-          postcode: formData.get("postcode"),
-          address: formData.get("address"),
-          addressDetail: formData.get("addressDetail"),
-          memo: formData.get("memo")
+          recipientName,
+          recipientPhone,
+          postcode: getRequiredText(formData, "postcode"),
+          address,
+          addressDetail: getRequiredText(formData, "addressDetail"),
+          memo: getRequiredText(formData, "memo")
         })
       });
       const result = await response.json();
@@ -106,8 +136,8 @@ export default function CheckoutPage() {
         amount: { currency: "KRW", value: Number(order.total_amount) },
         orderId: order.order_no,
         orderName: makeOrderName(items),
-        customerName: String(formData.get("recipientName") ?? ""),
-        customerMobilePhone: String(formData.get("recipientPhone") ?? "").replace(/\D/g, ""),
+        customerName: recipientName,
+        customerMobilePhone: phoneDigits,
         successUrl: `${origin}/payments/toss/success`,
         failUrl: `${origin}/payments/toss/fail`
       });
@@ -131,13 +161,17 @@ export default function CheckoutPage() {
         <section className="checkout-form">
           <h2>받는 분 정보</h2>
           <p className="checkout-helper">오후 1시 이전 결제 완료 주문은 산지에서 당일 출고를 준비합니다.</p>
+          {message && <p className="form-message" role="status" aria-live="polite">{message}</p>}
           <label>이름<input name="recipientName" required placeholder="홍길동" autoComplete="name" /></label>
-          <label>연락처<input name="recipientPhone" required placeholder="010-0000-0000" autoComplete="tel" inputMode="tel" /></label>
+          <label>연락처<input name="recipientPhone" required placeholder="010-0000-0000" autoComplete="tel" inputMode="tel" pattern="[0-9\\-\\s]{10,}" /></label>
           <label>우편번호<input name="postcode" placeholder="00000" autoComplete="postal-code" inputMode="numeric" /></label>
           <label>주소<input name="address" required placeholder="배송지 주소" autoComplete="street-address" /></label>
           <label>상세주소<input name="addressDetail" placeholder="동/호수 등" autoComplete="address-line2" /></label>
           <label>배송 메모<textarea name="memo" rows={3} placeholder="부재 시 문 앞에 놓아주세요." /></label>
-          {message && <p className="form-message">{message}</p>}
+          <div className="checkout-delivery-note">
+            <strong>배송 전 확인</strong>
+            <span>냉장 상품은 수령 가능한 주소와 연락처를 꼭 확인해주세요.</span>
+          </div>
         </section>
 
         <aside className="order-summary">
@@ -165,7 +199,7 @@ export default function CheckoutPage() {
             <span>냉장배송</span>
             <span>산지출고</span>
           </div>
-          <button className="button teal full" disabled={saving || !items.length}>{saving ? "처리 중..." : "Toss로 결제하기"}</button>
+          <button type="submit" className="button teal full" disabled={saving || !items.length}>{saving ? "처리 중..." : "Toss로 결제하기"}</button>
           <p>Toss Payments 테스트 결제창으로 이동합니다.</p>
         </aside>
       </form>
