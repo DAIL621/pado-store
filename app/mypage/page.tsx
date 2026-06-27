@@ -14,7 +14,7 @@ const statusLabels: Record<string, string> = {
   cancelled: "취소"
 };
 
-const statusSteps = ["paid", "preparing", "shipped", "delivered"];
+const statusSteps = ["pending", "paid", "preparing", "shipped", "delivered"];
 const CJ_TRACKING_URL = "https://www.cjlogistics.com/ko/tool/parcel/tracking";
 
 type MyOrderItem = {
@@ -92,6 +92,10 @@ export default async function MyPage() {
             const trackingNumber = shipment?.tracking_number?.trim() || "미입력";
             const currentStep = statusSteps.indexOf(order.status);
             const canTrack = trackingNumber !== "미입력" && carrier.includes("CJ");
+            const orderItems = order.order_items ?? [];
+            const totalQuantity = orderItems.reduce((sum, item) => sum + Number(item.quantity), 0);
+            const firstItemName = orderItems[0]?.product_name ?? "주문 상품";
+            const productSummary = orderItems.length > 1 ? `${firstItemName} 외 ${orderItems.length - 1}건` : firstItemName;
             return (
               <article className="mypage-order-card" key={order.id}>
                 <div className="mypage-order-head">
@@ -101,17 +105,35 @@ export default async function MyPage() {
                   </div>
                   <strong>{statusLabels[order.status] ?? order.status}</strong>
                 </div>
+                <div className="mypage-order-summary">
+                  <div>
+                    <span>주문상품</span>
+                    <strong>{productSummary}</strong>
+                    <small>총 {totalQuantity}개</small>
+                  </div>
+                  <div>
+                    <span>배송조회</span>
+                    <strong>{canTrack ? "조회 가능" : trackingNumber === "미입력" ? "준비 중" : "송장 확인"}</strong>
+                    <small>{carrier}</small>
+                  </div>
+                  <div>
+                    <span>결제금액</span>
+                    <strong>{formatPrice(order.total_amount)}</strong>
+                    <small>{new Date(order.created_at).toLocaleDateString("ko-KR")}</small>
+                  </div>
+                </div>
                 <div className="mypage-status-steps" aria-label="주문 처리 단계">
                   {statusSteps.map((step, index) => (
                     <span
                       key={step}
-                      className={currentStep >= index ? "active" : ""}
+                      className={currentStep >= index ? "active" : order.status === "cancelled" ? "muted" : ""}
                       aria-current={order.status === step ? "step" : undefined}
                     >
                       {statusLabels[step]}
                     </span>
                   ))}
                 </div>
+                {order.status === "cancelled" && <p className="mypage-order-alert">취소된 주문입니다. 결제/환불 상태는 고객센터로 문의해주세요.</p>}
                 <div className="table-wrap">
                   <table>
                     <thead><tr><th>상품</th><th>옵션</th><th>수량</th><th>금액</th><th>재주문</th></tr></thead>
