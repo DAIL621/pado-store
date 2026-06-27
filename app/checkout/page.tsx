@@ -5,8 +5,7 @@ import Script from "next/script";
 import Link from "next/link";
 import { useCart, type CartItem } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
-
-const FREE_SHIPPING_THRESHOLD = 50000;
+import { calculateFreeShippingProgress, calculateRemainingForFreeShipping, calculateShipping } from "@/lib/order/pricing";
 
 type TossPayment = {
   requestPayment: (paymentRequest: {
@@ -60,10 +59,10 @@ export default function CheckoutPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0 ? 0 : 4000;
+  const shipping = calculateShipping(subtotal);
   const total = subtotal + shipping;
-  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+  const remainingForFreeShipping = calculateRemainingForFreeShipping(subtotal);
+  const freeShippingProgress = calculateFreeShippingProgress(subtotal);
   const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
   const canPay = items.length > 0 && unavailableItems.length === 0;
 

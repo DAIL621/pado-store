@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice, Product } from "@/data/products";
 import { useCart } from "@/components/cart/CartProvider";
-
-const FREE_SHIPPING_THRESHOLD = 50000;
+import { calculateFreeShippingProgress, calculateRemainingForFreeShipping } from "@/lib/order/pricing";
 
 export function ProductPurchase({ product }: { product: Product }) {
   const firstAvailableOption = product.options.find((item) => Number(item.stock ?? 0) > 0) ?? product.options[0];
@@ -20,8 +19,8 @@ export function ProductPurchase({ product }: { product: Product }) {
   const isSoldOut = !option || selectedStock <= 0;
   const unitPrice = option ? product.price + option.priceDelta : product.price;
   const total = unitPrice * quantity;
-  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - total);
-  const freeShippingProgress = Math.min(100, Math.round((total / FREE_SHIPPING_THRESHOLD) * 100));
+  const remainingForFreeShipping = calculateRemainingForFreeShipping(total);
+  const freeShippingProgress = calculateFreeShippingProgress(total);
   const isLowStock = !isSoldOut && selectedStock <= 5;
   const canDecrease = !isSoldOut && quantity > 1;
   const canIncrease = !isSoldOut && quantity < selectedStock;

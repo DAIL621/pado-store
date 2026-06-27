@@ -5,16 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { CartItem, useCart } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
-
-const FREE_SHIPPING_THRESHOLD = 50000;
+import { calculateFreeShippingProgress, calculateRemainingForFreeShipping, calculateShipping } from "@/lib/order/pricing";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, addItem } = useCart();
   const [removedItem, setRemovedItem] = useState<CartItem | null>(null);
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0 ? 0 : 4000;
-  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+  const shipping = calculateShipping(subtotal);
+  const remainingForFreeShipping = calculateRemainingForFreeShipping(subtotal);
+  const freeShippingProgress = calculateFreeShippingProgress(subtotal);
   const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
   const canCheckout = items.length > 0 && unavailableItems.length === 0;
 

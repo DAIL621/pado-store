@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { readJsonBody } from "@/lib/api/request";
+import { calculateShipping } from "@/lib/order/pricing";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
   }
 
   const clientSubtotal = items.reduce((sum, item) => sum + Number(item.unitPrice) * Number(item.quantity), 0);
-  const clientShipping = clientSubtotal >= 50000 ? 0 : 4000;
+  const clientShipping = calculateShipping(clientSubtotal);
   const clientTotalAmount = clientSubtotal + clientShipping;
   const orderNo = makeOrderNo();
   const recipientName = String(body.recipientName ?? "").trim();
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
     };
   });
   const subtotal = pricedItems.reduce((sum, { item, unitPrice }) => sum + unitPrice * Number(item.quantity), 0);
-  const shipping = subtotal >= 50000 ? 0 : 4000;
+  const shipping = calculateShipping(subtotal);
   const totalAmount = subtotal + shipping;
 
   const { data: order, error } = await supabase
