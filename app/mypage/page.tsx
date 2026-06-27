@@ -134,17 +134,17 @@ export default async function MyPage() {
                   ))}
                 </div>
                 {order.status === "cancelled" && <p className="mypage-order-alert">취소된 주문입니다. 결제/환불 상태는 고객센터로 문의해주세요.</p>}
-                <div className="table-wrap">
+                <div className="table-wrap mypage-items-table">
                   <table>
                     <thead><tr><th>상품</th><th>옵션</th><th>수량</th><th>금액</th><th>재주문</th></tr></thead>
                     <tbody>
                       {(order.order_items ?? []).map((item) => (
                         <tr key={item.id}>
-                          <td>{item.product_name}</td>
-                          <td>{item.option_name}</td>
-                          <td>{item.quantity}</td>
-                          <td>{formatPrice(item.unit_price * item.quantity)}</td>
-                          <td><Link href={`/products/${item.product_slug}`} className="small-button">재주문</Link></td>
+                          <td data-label="상품">{item.product_name}</td>
+                          <td data-label="옵션">{item.option_name}</td>
+                          <td data-label="수량">{item.quantity}</td>
+                          <td data-label="금액">{formatPrice(item.unit_price * item.quantity)}</td>
+                          <td data-label="재주문"><Link href={`/products/${item.product_slug}`} className="small-button">재주문</Link></td>
                         </tr>
                       ))}
                     </tbody>

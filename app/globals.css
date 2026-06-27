@@ -166,3 +166,15 @@
   .checkout-empty-note{padding:12px;margin-bottom:16px}
   .checkout-empty-note a,.checkout-empty-items a{width:100%;text-align:center}
 }
+
+/* My page mobile order item cards */
+@media(max-width:600px){
+  .mypage-items-table{overflow:visible}
+  .mypage-items-table table,.mypage-items-table tbody,.mypage-items-table tr,.mypage-items-table td{display:block;width:100%}
+  .mypage-items-table table{margin-top:10px;white-space:normal}
+  .mypage-items-table thead{display:none}
+  .mypage-items-table tr{border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin:0 0 10px;background:#fff}
+  .mypage-items-table td{display:grid;grid-template-columns:68px minmax(0,1fr);gap:10px;align-items:center;border-top:0;padding:6px 0;font-size:12px;white-space:normal}
+  .mypage-items-table td:before{content:attr(data-label);color:var(--muted);font-size:10px;font-weight:900}
+  .mypage-items-table .small-button{width:100%;justify-content:center;text-align:center}
+}
