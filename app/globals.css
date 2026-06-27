@@ -138,3 +138,19 @@
 /* Login conversion clarity */
 .login-benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 18px}.login-benefits span{display:grid;place-items:center;min-height:34px;border-radius:999px;background:#eef8f6;color:var(--teal);font-size:11px;font-weight:900}.login-benefits span:nth-child(2){background:#fff3ec;color:var(--coral)}
 @media(max-width:600px){.login-section{padding:42px 14px}.login-benefits{grid-template-columns:1fr;gap:7px}.login-benefits span{min-height:32px}}
+
+/* Mobile product detail bottom CTA */
+.mobile-purchase-meta{display:none}
+@media(max-width:900px){
+  .detail-page{padding-bottom:92px}
+  .mobile-purchase-bar{display:grid;grid-template-columns:minmax(94px,.42fr) minmax(0,1fr);align-items:center;gap:10px}
+  .mobile-purchase-meta{display:grid;gap:2px;min-width:0}
+  .mobile-purchase-meta span{color:var(--muted);font-size:10px;font-weight:900}
+  .mobile-purchase-meta strong{color:var(--teal);font-size:17px;line-height:1.1;letter-spacing:-.02em;white-space:nowrap}
+  .mobile-purchase-bar .button{min-height:48px;padding:0 14px;border-radius:12px;font-size:13px;white-space:nowrap;box-shadow:0 8px 18px rgba(0,127,131,.14)}
+}
+@media(max-width:380px){
+  .mobile-purchase-bar{grid-template-columns:82px minmax(0,1fr);gap:8px;padding-inline:10px}
+  .mobile-purchase-meta strong{font-size:15px}
+  .mobile-purchase-bar .button{min-height:44px;font-size:12px;padding-inline:10px}
+}
