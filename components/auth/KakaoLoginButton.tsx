@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 function ProfileIcon() {
@@ -12,7 +13,11 @@ function ProfileIcon() {
 }
 
 export function KakaoLoginButton({ nextPath = "/mypage", label = "카카오로 계속하기" }: { nextPath?: string; label?: string }) {
+  const [signingIn, setSigningIn] = useState(false);
+
   const login = async () => {
+    if (signingIn) return;
+    setSigningIn(true);
     try {
       const supabase = createClient();
       const safeNextPath = nextPath.startsWith("/") ? nextPath : "/mypage";
@@ -23,18 +28,22 @@ export function KakaoLoginButton({ nextPath = "/mypage", label = "카카오로 �
         }
       });
 
-      if (error) alert(error.message);
+      if (error) {
+        alert(error.message);
+        setSigningIn(false);
+      }
     } catch {
       alert("카카오 로그인 연결을 위해 Supabase URL과 키가 필요합니다.");
+      setSigningIn(false);
     }
   };
 
   return (
-    <button className="login-chip kakao-login-chip" onClick={login} type="button">
+    <button className="login-chip kakao-login-chip" onClick={login} type="button" disabled={signingIn} aria-busy={signingIn}>
       <span className="kakao-mark" aria-hidden="true">K</span>
       <ProfileIcon />
-      <span className="login-chip-label">{label}</span>
-      <span className="login-chip-mobile-label">로그인</span>
+      <span className="login-chip-label">{signingIn ? "연결 중..." : label}</span>
+      <span className="login-chip-mobile-label">{signingIn ? "연결중" : "로그인"}</span>
     </button>
   );
 }
