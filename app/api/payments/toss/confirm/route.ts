@@ -108,7 +108,7 @@ export async function POST(request: Request) {
   const { paymentKey, orderId, amount } = parsedBody.body;
   const secretKey = process.env.TOSS_PAYMENTS_SECRET_KEY;
   const supabase = hasSupabaseAdminEnv() ? createAdminClient() : null;
-  const { data: order } = supabase
+  const { data: order, error: orderError } = supabase
     ? await supabase
         .from("orders")
         .select("id, status, total_amount, payments(status)")
@@ -120,6 +120,10 @@ export async function POST(request: Request) {
 
   if (!secretKey) {
     return NextResponse.json({ ok: false, message: "Toss Payments 시크릿 키가 없습니다." }, { status: 503 });
+  }
+
+  if (supabase && (orderError || !order)) {
+    return NextResponse.json({ ok: false, message: orderError?.message ?? "주문을 찾을 수 없습니다." }, { status: 404 });
   }
 
   if (supabase && order && Number(order.total_amount) !== Number(amount)) {
