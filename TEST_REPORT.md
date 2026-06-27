@@ -73,3 +73,10 @@
   - `screenshots/desktop-1920-continuation.png`
   - `screenshots/iphone-15-pro-continuation.png`
   - `screenshots/galaxy-s24-continuation.png`
+
+### 로컬 상호작용 확인
+
+- 상품 상세 `/products/wando-live-abalone`: 옵션 2개, 구매 박스, 모바일 하단 CTA, 장바구니/바로구매 버튼 렌더링 정상
+- 상품 목록 `/products`: 상품 15개, 카테고리 탭 12개, 낮은 가격순 정렬 정상
+- 장바구니 `/cart`: 수량 증가가 재고 상한에서 멈추고 삭제 취소 안내 표시 정상
+- 주문서 `/checkout`: 빈 장바구니 안내 표시 및 결제 버튼 비활성화 정상
