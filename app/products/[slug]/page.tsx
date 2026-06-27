@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductPurchase } from "@/components/products/ProductPurchase";
 import { ProductCard } from "@/components/products/ProductCard";
@@ -7,6 +8,31 @@ import { formatPrice } from "@/data/products";
 import { getProductBySlug, getProducts } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+
+  if (!product) {
+    return { title: "상품을 찾을 수 없습니다" };
+  }
+
+  return {
+    title: product.name,
+    description: product.subtitle,
+    openGraph: {
+      title: `${product.name} | 파도스토리`,
+      description: product.subtitle,
+      images: [{ url: product.image, width: 1200, height: 630, alt: product.name }]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} | 파도스토리`,
+      description: product.subtitle,
+      images: [product.image]
+    }
+  };
+}
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
