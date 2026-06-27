@@ -48,7 +48,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!admin.ok) return admin.response;
 
   const { id } = await params;
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ ok: false, message: "요청 형식이 올바르지 않습니다." }, { status: 400 });
+  }
   const supabase = createAdminClient();
 
   const { data: currentOrder, error: orderError } = await supabase
