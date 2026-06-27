@@ -15,6 +15,8 @@ export default function CartPage() {
   const shipping = subtotal >= FREE_SHIPPING_THRESHOLD || subtotal === 0 ? 0 : 4000;
   const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+  const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
+  const canCheckout = items.length > 0 && unavailableItems.length === 0;
 
   const removeWithUndo = (item: CartItem) => {
     setRemovedItem(item);
@@ -50,6 +52,12 @@ export default function CartPage() {
               <button type="button" onClick={undoRemove}>삭제 취소</button>
             </div>
           )}
+          {!!unavailableItems.length && (
+            <div className="cart-stock-alert" role="status">
+              <strong>품절된 상품이 장바구니에 있습니다.</strong>
+              <span>품절 상품을 삭제한 뒤 주문을 진행해주세요.</span>
+            </div>
+          )}
           {items.length === 0 ? (
             <div className="empty-cart">
               <span aria-hidden="true">CART</span>
@@ -61,6 +69,7 @@ export default function CartPage() {
             items.map((item) => {
               const stock = Number(item.stock ?? Infinity);
               const hasStockLimit = Number.isFinite(stock);
+              const isUnavailable = hasStockLimit && stock <= 0;
               const atStockLimit = hasStockLimit && item.quantity >= stock;
               return (
                 <article className="cart-item" key={`${item.productSlug}-${item.optionId}`}>
@@ -69,7 +78,7 @@ export default function CartPage() {
                     <span>{item.origin}</span>
                     <Link href={`/products/${item.productSlug}`}><h3>{item.name}</h3></Link>
                     <p>{item.optionLabel}</p>
-                    {hasStockLimit && <small className={atStockLimit ? "cart-stock-note limit" : "cart-stock-note"}>구매 가능 {stock}개</small>}
+                    {hasStockLimit && <small className={atStockLimit || isUnavailable ? "cart-stock-note limit" : "cart-stock-note"}>{isUnavailable ? "현재 품절된 옵션입니다" : `구매 가능 ${stock}개`}</small>}
                     <div className="cart-controls">
                       <div>
                         <button type="button" disabled={item.quantity <= 1} onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity - 1)} aria-label="수량 줄이기">−</button>
@@ -102,12 +111,12 @@ export default function CartPage() {
           </div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(subtotal + shipping)}</strong></div>
           <Link
-            className={`button teal full ${!items.length ? "disabled" : ""}`}
-            href={items.length ? "/checkout" : "/cart"}
-            aria-disabled={!items.length}
-            tabIndex={items.length ? undefined : -1}
+            className={`button teal full ${!canCheckout ? "disabled" : ""}`}
+            href={canCheckout ? "/checkout" : "/cart"}
+            aria-disabled={!canCheckout}
+            tabIndex={canCheckout ? undefined : -1}
           >
-            {items.length ? "주문서 작성하기" : "상품을 먼저 담아주세요"}
+            {!items.length ? "상품을 먼저 담아주세요" : unavailableItems.length ? "품절 상품을 삭제해주세요" : "주문서 작성하기"}
           </Link>
           <p>평일 오후 1시 이전 주문은 당일 출고됩니다.</p>
         </aside>

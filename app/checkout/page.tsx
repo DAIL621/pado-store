@@ -64,11 +64,17 @@ export default function CheckoutPage() {
   const total = subtotal + shipping;
   const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const freeShippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+  const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
+  const canPay = items.length > 0 && unavailableItems.length === 0;
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!items.length) {
       setMessage("장바구니가 비어 있습니다.");
+      return;
+    }
+    if (unavailableItems.length) {
+      setMessage("품절된 상품을 장바구니에서 삭제한 뒤 주문해주세요.");
       return;
     }
 
@@ -172,6 +178,13 @@ export default function CheckoutPage() {
               <Link href="/products">상품 보러 가기</Link>
             </div>
           )}
+          {!!unavailableItems.length && (
+            <div className="checkout-empty-note" role="status">
+              <strong>품절된 상품이 포함되어 있습니다</strong>
+              <span>장바구니에서 품절 상품을 삭제하면 결제를 진행할 수 있습니다.</span>
+              <Link href="/cart">장바구니에서 확인하기</Link>
+            </div>
+          )}
           {message && <p className="form-message" role="status" aria-live="polite">{message}</p>}
           <label>이름<input name="recipientName" required placeholder="홍길동" autoComplete="name" /></label>
           <label>연락처<input name="recipientPhone" required placeholder="010-0000-0000" autoComplete="tel" inputMode="tel" pattern="[0-9\\-\\s]{10,}" /></label>
@@ -217,7 +230,7 @@ export default function CheckoutPage() {
             <span>냉장배송</span>
             <span>산지출고</span>
           </div>
-          <button type="submit" className="button teal full" disabled={saving || !items.length}>{!items.length ? "상품을 먼저 담아주세요" : saving ? "처리 중..." : "Toss로 결제하기"}</button>
+          <button type="submit" className="button teal full" disabled={saving || !canPay}>{!items.length ? "상품을 먼저 담아주세요" : unavailableItems.length ? "품절 상품을 삭제해주세요" : saving ? "처리 중..." : "Toss로 결제하기"}</button>
           <p>Toss Payments 테스트 결제창으로 이동합니다.</p>
         </aside>
       </form>
