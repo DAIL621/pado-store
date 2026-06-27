@@ -2,7 +2,15 @@ import type { Metadata } from "next";
 import { ProductCatalog } from "@/components/products/ProductCatalog";
 import { getProducts } from "@/lib/products";
 
-export const metadata: Metadata = { title: "전체 상품 | 파도스토리" };
+export const metadata: Metadata = {
+  title: "전체 상품 | 파도스토리",
+  description: "완도 활전복, 통영 참소라, 바다장어 등 산지에서 바로 보내는 파도스토리 수산물 상품을 확인하세요.",
+  openGraph: {
+    title: "전체 상품 | 파도스토리",
+    description: "산지에서 바로 보내는 제철 수산물을 한눈에 확인하세요.",
+    images: [{ url: "/images/story/hero-conch.webp", width: 1200, height: 630, alt: "파도스토리 전체 상품" }]
+  }
+};
 export const dynamic = "force-dynamic";
 
 export default async function ProductsPage() {
