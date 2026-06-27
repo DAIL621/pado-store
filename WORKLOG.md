@@ -74,6 +74,7 @@
 - 주문 항목 상품명/옵션명/이미지를 DB 상품 기록 기준으로 저장하도록 보강
 - 관리자 상품 옵션 파싱 로직 공통화
 - 관리자 상품 수정 slug 중복 오류 메시지 개선
+- Toss 승인 요청 시 주문번호 미존재를 승인 전 차단
 
 ### 추가 커밋
 
@@ -89,3 +90,4 @@
 - `2f878de Store order items from product records`
 - `1c37f98 Deduplicate admin product option parsing`
 - `384c660 Clarify duplicate product slug errors`
+- `e3f40de Reject Toss confirm for missing orders`
