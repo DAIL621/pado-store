@@ -26,6 +26,38 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
+  const quantity = Number(item.quantity);
+  const unitPrice = Number(item.unitPrice);
+  const stock = item.stock === undefined ? undefined : Number(item.stock);
+
+  if (
+    !item.productSlug ||
+    !item.name ||
+    !item.optionId ||
+    !item.optionLabel ||
+    !Number.isFinite(unitPrice) ||
+    unitPrice < 0 ||
+    !Number.isFinite(quantity) ||
+    quantity <= 0
+  ) {
+    return null;
+  }
+
+  const maxQuantity = Number.isFinite(stock) ? Math.max(1, Number(stock)) : Infinity;
+  return {
+    productSlug: String(item.productSlug),
+    name: String(item.name),
+    origin: String(item.origin ?? ""),
+    image: String(item.image ?? "/images/products/abalone-main.webp"),
+    optionId: String(item.optionId),
+    optionLabel: String(item.optionLabel),
+    unitPrice,
+    quantity: Math.max(1, Math.min(maxQuantity, Math.floor(quantity))),
+    stock: Number.isFinite(stock) ? Math.max(0, Number(stock)) : undefined
+  };
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [ready, setReady] = useState(false);
@@ -33,7 +65,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = window.localStorage.getItem("pado-cart");
     if (saved) {
-      try { setItems(JSON.parse(saved)); } catch { window.localStorage.removeItem("pado-cart"); }
+      try {
+        const parsed = JSON.parse(saved);
+        const normalized = Array.isArray(parsed)
+          ? parsed.map((item) => normalizeCartItem(item)).filter((item): item is CartItem => Boolean(item))
+          : [];
+        setItems(normalized);
+      } catch {
+        window.localStorage.removeItem("pado-cart");
+      }
     }
     setReady(true);
   }, []);
