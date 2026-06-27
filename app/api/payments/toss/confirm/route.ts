@@ -102,7 +102,13 @@ async function decrementOrderStock(supabase: ReturnType<typeof createAdminClient
 }
 
 export async function POST(request: Request) {
-  const { paymentKey, orderId, amount } = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ ok: false, message: "요청 형식이 올바르지 않습니다." }, { status: 400 });
+  }
+  const { paymentKey, orderId, amount } = body;
   const secretKey = process.env.TOSS_PAYMENTS_SECRET_KEY;
   const supabase = hasSupabaseAdminEnv() ? createAdminClient() : null;
   const { data: order } = supabase

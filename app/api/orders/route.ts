@@ -20,7 +20,12 @@ function makeOrderNo() {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ ok: false, message: "요청 형식이 올바르지 않습니다." }, { status: 400 });
+  }
   const items: OrderItemInput[] = Array.isArray(body.items) ? body.items : [];
 
   if (!items.length) {
