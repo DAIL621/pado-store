@@ -153,12 +153,12 @@ export function AdminOrdersManager() {
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="주문번호, 주문자, 연락처, 상품명, 송장번호 검색" />
         <label>시작일<input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} /></label>
         <label>종료일<input type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} /></label>
-        <button onClick={showToday}>오늘</button>
-        <button onClick={resetFilters}>초기화</button>
+        <button type="button" onClick={showToday}>오늘</button>
+        <button type="button" onClick={resetFilters}>초기화</button>
       </div>
       <div className="admin-filter-tabs">
         {statusFilterOptions.map((option) => (
-          <button key={option.value} className={statusFilter === option.value ? "active" : ""} onClick={() => setStatusFilter(option.value)}>
+          <button type="button" key={option.value} className={statusFilter === option.value ? "active" : ""} onClick={() => setStatusFilter(option.value)}>
             {option.label} {counts[option.value]}
           </button>
         ))}
@@ -196,12 +196,12 @@ export function AdminOrdersManager() {
                       {shipment?.tracking_number ? (
                         <div className="tracking-cell">
                           <span>{shipment.tracking_number}</span>
-                          <button onClick={() => copyTrackingNumber(shipment.tracking_number ?? "")}>복사</button>
+                          <button type="button" onClick={() => copyTrackingNumber(shipment.tracking_number ?? "")}>복사</button>
                         </div>
                       ) : "미입력"}
                     </td>
                     <td>{new Date(order.created_at).toLocaleDateString("ko-KR")}</td>
-                    <td className="admin-actions"><button onClick={() => setSelected(order)}>상세/수정</button></td>
+                    <td className="admin-actions"><button type="button" onClick={() => setSelected(order)}>상세/수정</button></td>
                   </tr>
                 );
               })}
@@ -278,7 +278,7 @@ function OrderDetailModal({
       <div className="admin-modal">
         <div className="modal-head">
           <h2>주문 상세</h2>
-          <button onClick={onClose}>닫기</button>
+          <button type="button" onClick={onClose}>닫기</button>
         </div>
         <div className="order-detail-grid">
           <section>
@@ -323,7 +323,7 @@ function OrderDetailModal({
           </table>
         </div>
         {message && <p className="form-message">{message}</p>}
-        <button className="button teal" onClick={save}>주문 정보 저장</button>
+        <button type="button" className="button teal" onClick={save}>주문 정보 저장</button>
       </div>
     </div>
   );

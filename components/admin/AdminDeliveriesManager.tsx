@@ -236,7 +236,7 @@ export function AdminDeliveriesManager() {
                     </td>
                     <td>{new Date(order.created_at).toLocaleDateString("ko-KR")}</td>
                     <td className="admin-actions">
-                      <button onClick={() => save(order)} disabled={savingId === order.id}>
+                      <button type="button" onClick={() => save(order)} disabled={savingId === order.id}>
                         {savingId === order.id ? "저장 중" : "저장"}
                       </button>
                     </td>

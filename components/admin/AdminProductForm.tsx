@@ -149,7 +149,7 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
             ))}
           </div>
 
-          <button className="button teal" disabled={saving}>{saving ? "저장 중..." : "상품 등록하기"}</button>
+          <button type="submit" className="button teal" disabled={saving}>{saving ? "저장 중..." : "상품 등록하기"}</button>
         </form>
       </div>
     </AdminLayout>

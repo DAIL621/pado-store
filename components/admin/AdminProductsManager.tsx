@@ -140,7 +140,7 @@ export function AdminProductsManager() {
           ["soldout", `품절 ${counts.soldout}`],
           ["hidden", `숨김 ${counts.hidden}`]
         ].map(([value, label]) => (
-          <button key={value} className={statusFilter === value ? "active" : ""} onClick={() => setStatusFilter(value as StatusFilter)}>
+          <button type="button" key={value} className={statusFilter === value ? "active" : ""} onClick={() => setStatusFilter(value as StatusFilter)}>
             {label}
           </button>
         ))}
@@ -183,13 +183,13 @@ export function AdminProductsManager() {
                     <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
                     <td>{new Date(product.created_at).toLocaleDateString("ko-KR")}</td>
                     <td className="admin-actions">
-                      <button onClick={() => setEditing(product)}>수정</button>
+                      <button type="button" onClick={() => setEditing(product)}>수정</button>
                       {status === "hidden" ? (
-                        <button onClick={() => recover(product)}>다시 판매하기</button>
+                        <button type="button" onClick={() => recover(product)}>다시 판매하기</button>
                       ) : (
                         <>
-                          <button onClick={() => makeSoldout(product)} disabled={status === "soldout"}>품절</button>
-                          <button onClick={() => hide(product)}>숨김</button>
+                          <button type="button" onClick={() => makeSoldout(product)} disabled={status === "soldout"}>품절</button>
+                          <button type="button" onClick={() => hide(product)}>숨김</button>
                         </>
                       )}
                     </td>
@@ -262,7 +262,7 @@ function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct
       <div className="admin-modal">
         <div className="modal-head">
           <h2>상품 수정</h2>
-          <button onClick={onClose}>닫기</button>
+          <button type="button" onClick={onClose}>닫기</button>
         </div>
         <form className="admin-form" onSubmit={submit}>
           <label>상품명<input value={form.name} onChange={(event) => update("name", event.target.value)} required /></label>
@@ -293,7 +293,7 @@ function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct
             ))}
           </div>
           {message && <p className="form-message">{message}</p>}
-          <button className="button teal">수정 저장</button>
+          <button type="submit" className="button teal">수정 저장</button>
         </form>
       </div>
     </div>
