@@ -16,7 +16,9 @@ type OrderItemInput = {
 function makeOrderNo() {
   const date = new Date();
   const ymd = date.toISOString().slice(0, 10).replaceAll("-", "");
-  const random = Math.random().toString(36).slice(2, 7).toUpperCase();
+  const random = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID().replaceAll("-", "").slice(0, 7).toUpperCase()
+    : Math.random().toString(36).slice(2, 9).toUpperCase();
   return `PADO-${ymd}-${random}`;
 }
 
