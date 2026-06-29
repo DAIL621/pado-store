@@ -22,7 +22,7 @@ export function KakaoLoginButton({ nextPath = "/mypage", label = "카카오로 �
     setErrorMessage("");
     try {
       const supabase = createClient();
-      const safeNextPath = nextPath.startsWith("/") ? nextPath : "/mypage";
+      const safeNextPath = nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/mypage";
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "kakao",
         options: {
