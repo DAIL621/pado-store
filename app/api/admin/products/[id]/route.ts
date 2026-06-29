@@ -1,30 +1,11 @@
 import { NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/auth/admin";
 import { readJsonBody } from "@/lib/api/request";
 import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/product-options";
-import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
-
-async function requireAdmin() {
-  if (!hasSupabaseAdminEnv()) {
-    return { ok: false as const, response: NextResponse.json({ ok: false, message: "Supabase 관리자 키가 필요합니다." }, { status: 503 }) };
-  }
-
-  const session = await getAdminSession();
-  if (!session.ok) {
-    return {
-      ok: false as const,
-      response: NextResponse.json(
-        { ok: false, message: session.reason === "not-logged-in" ? "로그인이 필요합니다." : "관리자 권한이 필요합니다." },
-        { status: session.reason === "not-logged-in" ? 401 : 403 }
-      )
-    };
-  }
-
-  return { ok: true as const };
-}
+import { requireAdminApi } from "@/lib/auth/admin-api";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const admin = await requireAdmin();
+  const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
 
   const { id } = await params;
@@ -131,7 +112,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const admin = await requireAdmin();
+  const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
 
   const { id } = await params;

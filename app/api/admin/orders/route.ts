@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/auth/admin";
-import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
+import { requireAdminApi } from "@/lib/auth/admin-api";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET() {
-  if (!hasSupabaseAdminEnv()) {
-    return NextResponse.json({ ok: false, message: "Supabase 관리자 키가 필요합니다." }, { status: 503 });
-  }
-
-  const session = await getAdminSession();
-  if (!session.ok) {
-    return NextResponse.json(
-      { ok: false, message: session.reason === "not-logged-in" ? "로그인이 필요합니다." : "관리자 권한이 필요합니다." },
-      { status: session.reason === "not-logged-in" ? 401 : 403 }
-    );
-  }
+  const admin = await requireAdminApi();
+  if (!admin.ok) return admin.response;
 
   const supabase = createAdminClient();
   const { data, error } = await supabase

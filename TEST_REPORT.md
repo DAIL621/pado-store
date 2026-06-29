@@ -133,3 +133,9 @@
 - iPhone 15 Pro: `screenshots/iphone-15-pro-stability.png`
 - Galaxy S24: `screenshots/galaxy-s24-stability.png`
 - 캡처 생성 및 페이지 높이 확인 정상
+## 2026-06-27 관리자 API 인증 가드 리팩토링 검증
+
+- 관리자 API의 Supabase 관리자 키/로그인/권한 확인 로직을 `requireAdminApi`로 공용화
+- 주문 목록, 주문 상태 변경, 상품 목록/등록, 상품 수정/숨김 API에 적용
+- 관리자 기능의 응답 상태 코드는 기존 503/401/403 흐름 유지
+- `pnpm run build`: 성공

@@ -1,29 +1,12 @@
 import { NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/api/request";
 import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/product-options";
-import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
-import { getAdminSession } from "@/lib/auth/admin";
-
-function missingSupabaseResponse() {
-  return NextResponse.json(
-    {
-      ok: false,
-      message: "Supabase 환경변수가 아직 없습니다. .env.local에 NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY를 입력해주세요."
-    },
-    { status: 503 }
-  );
-}
+import { requireAdminApi } from "@/lib/auth/admin-api";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET() {
-  if (!hasSupabaseAdminEnv()) return missingSupabaseResponse();
-
-  const adminSession = await getAdminSession();
-  if (!adminSession.ok) {
-    return NextResponse.json(
-      { ok: false, message: adminSession.reason === "not-logged-in" ? "로그인이 필요합니다." : "관리자 권한이 필요합니다." },
-      { status: adminSession.reason === "not-logged-in" ? 401 : 403 }
-    );
-  }
+  const admin = await requireAdminApi();
+  if (!admin.ok) return admin.response;
 
   const supabase = createAdminClient();
   const { data, error } = await supabase
@@ -36,23 +19,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!hasSupabaseAdminEnv()) {
-    return NextResponse.json(
-      {
-        ok: false,
-        message: "상품 등록에는 Supabase 관리자 키가 필요합니다. .env.local에 SUPABASE_SERVICE_ROLE_KEY를 입력해주세요."
-      },
-      { status: 503 }
-    );
-  }
-
-  const adminSession = await getAdminSession();
-  if (!adminSession.ok) {
-    return NextResponse.json(
-      { ok: false, message: adminSession.reason === "not-logged-in" ? "로그인이 필요합니다." : "관리자 권한이 필요합니다." },
-      { status: adminSession.reason === "not-logged-in" ? 401 : 403 }
-    );
-  }
+  const admin = await requireAdminApi();
+  if (!admin.ok) return admin.response;
 
   const parsedBody = await readJsonBody(request);
   if (!parsedBody.ok) return parsedBody.response;
