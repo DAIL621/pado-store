@@ -150,3 +150,9 @@
 - 마이페이지 송장 복사 버튼에 성공/실패 상태 문구 추가
 - Clipboard 권한 문제 발생 시 `복사 실패` 피드백 표시
 - `pnpm run build`: 성공
+## 2026-06-27 이미지 경로 안정성 검증
+
+- app/components/data/lib 내 로컬 이미지 경로 16개 점검
+- 실제 누락된 public 이미지 경로 없음 확인
+- 장바구니 fallback 이미지를 존재하지 않는 `abalone-main.webp`에서 `wando-abalone.webp`로 수정
+- `pnpm run build`: 성공

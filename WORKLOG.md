@@ -149,3 +149,9 @@
 - 마이페이지 송장 복사 버튼 상태를 `idle/copied/failed`로 정리
 - 복사 실패 시 고객에게 상태 문구 표시
 - `pnpm run build` 성공 확인
+## 2026-06-27 이미지 경로 안정성 점검
+
+- 로컬 코드 내 이미지 경로 존재 여부 점검
+- 장바구니 저장 데이터에 이미지가 없을 때 사용하는 fallback 이미지를 실제 존재하는 파일로 교체
+- `/icon.svg`는 Next app route, 관리자 placeholder는 예시 경로로 확인
+- `pnpm run build` 성공 확인
