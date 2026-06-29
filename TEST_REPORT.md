@@ -197,3 +197,8 @@
 - Toss 승인 요청 네트워크 오류 또는 Toss 승인 실패 시 예약 차감된 재고 복구
 - 이미 결제 완료된 주문은 중복 승인 호출 없이 성공 응답
 - `pnpm run build`: 성공
+## 2026-06-27 주문 payment row 생성 오류 처리 검증
+
+- 주문 생성 API에서 `payments` ready row 생성 실패를 더 이상 무시하지 않도록 보강
+- 결제 추적 row 생성 실패 시 Toss 결제창으로 넘어가지 않고 500 응답
+- `pnpm run build`: 성공

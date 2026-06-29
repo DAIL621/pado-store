@@ -166,12 +166,13 @@ export async function POST(request: Request) {
   const { error: itemError } = await supabase.from("order_items").insert(orderItems);
   if (itemError) return NextResponse.json({ ok: false, message: itemError.message }, { status: 500 });
 
-  await supabase.from("payments").insert({
+  const { error: paymentError } = await supabase.from("payments").insert({
     order_id: order.id,
     toss_order_id: orderNo,
     amount: totalAmount,
     status: "ready"
   });
+  if (paymentError) return NextResponse.json({ ok: false, message: paymentError.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, mode: "db", order });
 }

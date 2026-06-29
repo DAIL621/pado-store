@@ -194,3 +194,8 @@
 - 이미 paid 상태인 주문은 중복 confirm 없이 idempotent 성공 응답
 - 미사용 재고 사전 조회 함수 제거
 - `pnpm run build` 성공 확인
+## 2026-06-27 주문 payment 초기화 오류 처리
+
+- 주문 생성 API의 `payments` insert 결과를 확인하도록 수정
+- payment ready row 생성 실패 시 결제 진행 전 오류 반환
+- `pnpm run build` 성공 확인
