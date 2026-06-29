@@ -116,7 +116,10 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
       .eq("is_active", true)
       .single();
 
-    if (error || !data) return fallbackProducts.find((product) => product.slug === slug);
+    if (error || !data) {
+      const products = await getProducts();
+      return products.find((product) => product.slug === slug);
+    }
     return toProduct(data as ProductRow);
   } catch {
     return fallbackProducts.find((product) => product.slug === slug);
