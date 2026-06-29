@@ -16,7 +16,7 @@ type Props = {
 };
 
 export function ProductDetailEditor({ value, onChange }: Props) {
-  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [uploadMessage, setUploadMessage] = useState("");
 
   const update = <K extends keyof ProductDetail>(key: K, nextValue: ProductDetail[K]) => {
@@ -61,7 +61,24 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   };
 
   const uploadHeroFile = async (index: number, file: File) => {
-    setUploadingIndex(index);
+    uploadImageFile(`hero-${index}`, file, (url) => {
+      updateHeroFields(index, {
+        url,
+        description: value.heroImages[index]?.description || file.name.replace(/\.[^.]+$/, "")
+      });
+    });
+  };
+
+  const uploadJourneyFile = async (index: number, file: File) => {
+    uploadImageFile(`journey-${index}`, file, (url) => updateJourney(index, "image", url));
+  };
+
+  const uploadRecipeFile = async (index: number, file: File) => {
+    uploadImageFile(`recipe-${index}`, file, (url) => updateRecipe(index, "image", url));
+  };
+
+  const uploadImageFile = async (target: string, file: File, onUploaded: (url: string) => void) => {
+    setUploadingTarget(target);
     setUploadMessage("");
     try {
       const formData = new FormData();
@@ -75,15 +92,12 @@ export function ProductDetailEditor({ value, onChange }: Props) {
         setUploadMessage(result.message ?? "이미지 업로드에 실패했습니다.");
         return;
       }
-      updateHeroFields(index, {
-        url: result.url,
-        description: value.heroImages[index]?.description || file.name.replace(/\.[^.]+$/, "")
-      });
+      onUploaded(result.url);
       setUploadMessage("이미지가 업로드되었습니다.");
     } catch {
       setUploadMessage("이미지 업로드 중 오류가 발생했습니다.");
     } finally {
-      setUploadingIndex(null);
+      setUploadingTarget(null);
     }
   };
 
@@ -205,7 +219,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
                   }}
                 />
               </div>
-              {uploadingIndex === index && <small className="admin-upload-progress">업로드 중...</small>}
+              {uploadingTarget === `hero-${index}` && <small className="admin-upload-progress">업로드 중...</small>}
               <label>
                 사진 역할
                 <input value={image.label} onChange={(event) => updateHero(index, "label", event.target.value)} placeholder="예: 대표사진" />
@@ -254,10 +268,29 @@ export function ProductDetailEditor({ value, onChange }: Props) {
           {value.journey.map((step, index) => (
             <div className="admin-detail-card" key={step.key}>
               <b>{index + 1}. {step.title || "단계"}</b>
+              {step.image && (
+                <div className="admin-small-preview">
+                  <img src={step.image} alt={`${step.title} 미리보기`} />
+                </div>
+              )}
               <label>
                 단계 제목
                 <input value={step.title} onChange={(event) => updateJourney(index, "title", event.target.value)} />
               </label>
+              <label className="admin-file-chip">
+                사진 업로드
+                <input
+                  type="file"
+                  accept="image/*"
+                  aria-label={`${step.title || `여정 ${index + 1}`} 사진 업로드`}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) uploadJourneyFile(index, file);
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+              {uploadingTarget === `journey-${index}` && <small className="admin-upload-progress">업로드 중...</small>}
               <label>
                 사진 경로
                 <input value={step.image} onChange={(event) => updateJourney(index, "image", event.target.value)} placeholder="/images/story/sample.webp" />
@@ -293,6 +326,11 @@ export function ProductDetailEditor({ value, onChange }: Props) {
           {value.recipes.map((recipe, index) => (
             <div className="admin-detail-card" key={index}>
               <b>방법 {index + 1}</b>
+              {recipe.image && (
+                <div className="admin-small-preview">
+                  <img src={recipe.image} alt={`${recipe.title || `방법 ${index + 1}`} 미리보기`} />
+                </div>
+              )}
               <label>
                 제목
                 <input value={recipe.title} onChange={(event) => updateRecipe(index, "title", event.target.value)} placeholder="예: 전복버터구이" />
@@ -301,6 +339,20 @@ export function ProductDetailEditor({ value, onChange }: Props) {
                 설명
                 <textarea value={recipe.description} onChange={(event) => updateRecipe(index, "description", event.target.value)} rows={2} />
               </label>
+              <label className="admin-file-chip">
+                이미지 업로드
+                <input
+                  type="file"
+                  accept="image/*"
+                  aria-label={`${recipe.title || `방법 ${index + 1}`} 이미지 업로드`}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) uploadRecipeFile(index, file);
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+              {uploadingTarget === `recipe-${index}` && <small className="admin-upload-progress">업로드 중...</small>}
               <label>
                 이미지 경로 optional
                 <input value={recipe.image ?? ""} onChange={(event) => updateRecipe(index, "image", event.target.value)} placeholder="/images/recipes/sample.webp" />
