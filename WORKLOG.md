@@ -348,3 +348,17 @@
 - `pnpm run build` 성공
 - `pnpm run verify:detail-json` 성공
 - 검증 범위: 관리자 접근, 상품등록, 이미지 업로드, `detail_json` 저장, 상세페이지 자동 표시, 테스트 상품 soft delete
+
+## 2026-06-29 상세페이지 템플릿 엔진 1차 분리
+
+### 완료 작업
+
+- 상품 상세페이지의 자동 상세 렌더링 영역을 `ProductDetailTemplate` 컴포넌트로 분리
+- 기존 `detail_json` 렌더링 흐름 유지
+- 향후 동영상, 인증서, 추가 섹션을 표시할 수 있는 템플릿 슬롯 추가
+- 상품 상세 페이지 파일에서 자동 상세 섹션 중복/조건 렌더링 로직 제거
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
