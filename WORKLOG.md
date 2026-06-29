@@ -182,3 +182,8 @@
 
 - Playwright로 `/products` 모바일 viewport 확인
 - 검증용 상품 slug 미노출 확인
+## 2026-06-27 개발 관리자 쿠키 보안 보강
+
+- Production에서 개발 관리자 쿠키가 secure 속성을 사용하도록 수정
+- 로컬에서 개발 관리자 로그인 폼 미노출 확인
+- `pnpm run build` 성공 확인

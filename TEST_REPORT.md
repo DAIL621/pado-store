@@ -185,3 +185,8 @@
 - `/products` 모바일 viewport 확인
 - 상품 카드 14개 표시
 - `ops-state-test` 및 `test-` slug 노출 없음
+## 2026-06-27 개발 관리자 쿠키 보안 옵션 검증
+
+- `DEV_ADMIN_LOGIN_ENABLED` 비활성 상태에서 `/dev-admin-login` 폼 미노출 확인
+- 개발 관리자 세션 쿠키가 production 환경에서는 `secure`로 설정되도록 보강
+- `pnpm run build`: 성공
