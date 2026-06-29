@@ -80,3 +80,25 @@
 2. 실제 모바일 기기 기반 구매 흐름 확인
 3. Production 외부 콘솔 URL 최종 확인
 4. 리뷰 최소 기능 구현 여부 최종 결정
+## 2026-06-27 Phase 1 안정화 추가 업데이트
+
+### 추가 완료
+
+- Toss 결제 승인 요청 필수값/금액 검증 보강
+- 주문번호 및 결제 customerKey 생성 안정화
+- 품절 장바구니 항목의 주문서 진입/결제 차단 UX 보강
+- 마이페이지 송장번호 복사 및 복사 실패 피드백 추가
+- 주문 생성 중간 화면의 무동작 CTA 제거
+- 배송비/무료배송 정책 계산 공용화
+- 관리자 API 인증 가드 공용화
+- 로컬 이미지 경로 안정성 점검 및 장바구니 fallback 이미지 수정
+- 장바구니 탭 간 상태 동기화
+- PC/iPhone/Galaxy 반응형 안정성 캡처 추가
+- `DEPLOY_CHECKLIST.md` 생성
+
+### Phase 1 남은 외부 확인
+
+1. Vercel Dashboard 최신 배포 성공 여부 확인
+2. Production URL 기준 Supabase/Kakao/Toss redirect URL 확인
+3. 실제 iPhone Safari/Android Chrome 실기기 최종 확인
+4. 실제 배포 URL 기준 Toss 결제 성공/실패 반복 테스트
