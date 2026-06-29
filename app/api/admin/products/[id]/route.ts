@@ -106,6 +106,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         if (insertOptionError) return NextResponse.json({ ok: false, message: insertOptionError.message }, { status: 500 });
       }
     }
+
+    const removedOptionIds = (existingOptions ?? []).slice(options.length).map((option) => option.id);
+    if (removedOptionIds.length) {
+      const { error: deleteOptionError } = await supabase.from("product_options").delete().in("id", removedOptionIds);
+      if (deleteOptionError) return NextResponse.json({ ok: false, message: deleteOptionError.message }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ ok: true, product });

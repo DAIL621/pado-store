@@ -91,7 +91,10 @@ export async function POST(request: Request) {
   const options = optionInputs.map((option) => ({ ...option, product_id: product.id }));
 
   const { error: optionError } = await supabase.from("product_options").insert(options);
-  if (optionError) return NextResponse.json({ ok: false, message: optionError.message }, { status: 500 });
+  if (optionError) {
+    await supabase.from("products").delete().eq("id", product.id);
+    return NextResponse.json({ ok: false, message: optionError.message }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true, product, productUrl: `/products/${product.slug}` });
 }
