@@ -290,3 +290,15 @@
 
 - `pnpm run build` 성공
 - 실제 DB 저장 E2E는 Supabase 운영 DB에 `products.detail_json` 컬럼 적용 후 실행 예정
+
+## 2026-06-29 detail_json E2E 저장 검증 완료
+
+### 완료 작업
+
+- Supabase 운영 DB `detail_json` 컬럼 적용 이후 실제 관리자 상품 등록 흐름 재검증
+- 개발용 관리자 로그인으로 `/admin/new`, `/admin/products` 접근 확인
+- 테스트 상품 생성 후 `detail_json` 저장 확인
+- 대표사진 6장, 장점 5개, 산지에서 식탁까지, 포장/배송, 레시피, 구성품, FAQ 저장 확인
+- 저장된 데이터 기반 상품 상세페이지 자동 생성 확인
+- 테스트 상품 soft delete 처리
+- 검증 후 `DEV_ADMIN_LOGIN_ENABLED=false` 복구

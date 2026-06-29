@@ -55,12 +55,12 @@
 
 ## 2026-06-29 상세페이지 자동 생성 DB 적용 필요
 
-- 코드와 스키마 파일에는 `products.detail_json jsonb not null default '{}'::jsonb` 컬럼을 추가했다.
-- 실제 Supabase 운영 DB에는 아래 SQL을 한 번 적용해야 관리자 상세페이지 정보 저장이 정상 동작한다.
+- 완료: Supabase 운영 DB에 `products.detail_json jsonb not null default '{}'::jsonb` 컬럼 적용 후 E2E 저장 검증을 통과했다.
+- 적용 SQL:
 
 ```sql
 alter table products add column if not exists detail_json jsonb not null default '{}'::jsonb;
 ```
 
-- 이 항목은 외부 Supabase 콘솔 권한이 필요한 작업이며, 코드 개발 종료 사유가 아니다.
-- SQL 적용 후에는 로컬에서 `DEV_ADMIN_LOGIN_ENABLED=true`로 임시 전환하고 `pnpm run verify:detail-json`을 실행하면 End-to-End 저장 검증을 바로 진행할 수 있다.
+- 검증 명령: `pnpm run verify:detail-json`
+- 결과: 상품 등록, `detail_json` 저장, 상세페이지 자동 표시, 테스트 상품 soft delete 성공.

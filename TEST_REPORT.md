@@ -302,3 +302,32 @@
 
 - `pnpm run build`: 성공
 - 실제 E2E 저장 테스트: Supabase DB `detail_json` 컬럼 적용 후 실행 가능
+
+## 2026-06-29 detail_json 운영 DB 적용 후 E2E 검증
+
+### 실행 조건
+
+- Supabase 운영 DB `products.detail_json` 컬럼 적용 완료
+- 로컬에서 `DEV_ADMIN_LOGIN_ENABLED=true` 임시 전환
+- 검증 후 `DEV_ADMIN_LOGIN_ENABLED=false` 복구
+
+### 실행 명령
+
+- `pnpm run verify:detail-json`
+
+### 검증 결과
+
+- 개발용 관리자 로그인: 성공
+- `/admin/new` 접근: 성공
+- `/admin/products` 접근: 성공
+- 테스트 상품 등록: 성공
+- `detail_json` 저장: 성공
+- 대표사진 6장 저장: 성공
+- 상품 장점 5개 저장: 성공
+- 산지에서 식탁까지 저장: 성공
+- 포장/배송 정보 저장: 성공
+- 맛있게 먹는 방법 저장: 성공
+- 구성품 저장: 성공
+- FAQ 저장: 성공
+- 저장 후 상품 상세페이지 자동 표시: 성공
+- 테스트 상품 soft delete: 성공
