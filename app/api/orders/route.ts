@@ -22,6 +22,12 @@ function makeOrderNo() {
   return `PADO-${ymd}-${random}`;
 }
 
+async function cleanupCreatedOrder(supabase: ReturnType<typeof createAdminClient>, orderId: string) {
+  await supabase.from("payments").delete().eq("order_id", orderId);
+  await supabase.from("order_items").delete().eq("order_id", orderId);
+  await supabase.from("orders").delete().eq("id", orderId);
+}
+
 export async function POST(request: Request) {
   const parsedBody = await readJsonBody(request);
   if (!parsedBody.ok) return parsedBody.response;
@@ -164,7 +170,10 @@ export async function POST(request: Request) {
   }));
 
   const { error: itemError } = await supabase.from("order_items").insert(orderItems);
-  if (itemError) return NextResponse.json({ ok: false, message: itemError.message }, { status: 500 });
+  if (itemError) {
+    await cleanupCreatedOrder(supabase, order.id);
+    return NextResponse.json({ ok: false, message: itemError.message }, { status: 500 });
+  }
 
   const { error: paymentError } = await supabase.from("payments").insert({
     order_id: order.id,
@@ -172,7 +181,10 @@ export async function POST(request: Request) {
     amount: totalAmount,
     status: "ready"
   });
-  if (paymentError) return NextResponse.json({ ok: false, message: paymentError.message }, { status: 500 });
+  if (paymentError) {
+    await cleanupCreatedOrder(supabase, order.id);
+    return NextResponse.json({ ok: false, message: paymentError.message }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true, mode: "db", order });
 }
