@@ -58,24 +58,35 @@ function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
   };
 }
 
+function parseCartItems(value: string | null) {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed)
+      ? parsed.map((item) => normalizeCartItem(item)).filter((item): item is CartItem => Boolean(item))
+      : [];
+  } catch {
+    window.localStorage.removeItem("pado-cart");
+    return [];
+  }
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("pado-cart");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const normalized = Array.isArray(parsed)
-          ? parsed.map((item) => normalizeCartItem(item)).filter((item): item is CartItem => Boolean(item))
-          : [];
-        setItems(normalized);
-      } catch {
-        window.localStorage.removeItem("pado-cart");
-      }
-    }
+    setItems(parseCartItems(window.localStorage.getItem("pado-cart")));
     setReady(true);
+  }, []);
+
+  useEffect(() => {
+    const syncCart = (event: StorageEvent) => {
+      if (event.key === "pado-cart") setItems(parseCartItems(event.newValue));
+    };
+
+    window.addEventListener("storage", syncCart);
+    return () => window.removeEventListener("storage", syncCart);
   }, []);
 
   useEffect(() => {

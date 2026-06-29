@@ -155,3 +155,9 @@
 - 장바구니 저장 데이터에 이미지가 없을 때 사용하는 fallback 이미지를 실제 존재하는 파일로 교체
 - `/icon.svg`는 Next app route, 관리자 placeholder는 예시 경로로 확인
 - `pnpm run build` 성공 확인
+## 2026-06-27 장바구니 탭 동기화 보강
+
+- 장바구니 localStorage 파싱 로직을 `parseCartItems`로 분리
+- 브라우저 storage 이벤트를 구독해 탭 간 장바구니 상태 동기화
+- Playwright 두 탭 상호작용 검증 완료
+- `pnpm run build` 성공 확인

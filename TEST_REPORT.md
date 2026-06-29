@@ -156,3 +156,9 @@
 - 실제 누락된 public 이미지 경로 없음 확인
 - 장바구니 fallback 이미지를 존재하지 않는 `abalone-main.webp`에서 `wando-abalone.webp`로 수정
 - `pnpm run build`: 성공
+## 2026-06-27 장바구니 탭 동기화 검증
+
+- `pado-cart` 파싱 로직을 공용 헬퍼로 분리
+- localStorage `storage` 이벤트로 다른 탭의 장바구니 변경을 현재 탭에 반영
+- Playwright 두 탭 검증: 다른 탭에서 장바구니 저장 시 첫 번째 탭에 상품 표시 정상
+- `pnpm run build`: 성공
