@@ -17,7 +17,7 @@ export function TrackingCopyButton({ trackingNumber }: { trackingNumber: string 
   };
 
   return (
-    <button type="button" className="tracking-copy-button" onClick={copy} aria-live="polite">
+    <button type="button" className="tracking-copy-button" onClick={copy} aria-label={`송장번호 ${trackingNumber} 복사`} aria-live="polite">
       {status === "copied" ? "복사됨" : status === "failed" ? "복사 실패" : "송장 복사"}
     </button>
   );

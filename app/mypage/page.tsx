@@ -92,7 +92,8 @@ export default async function MyPage() {
             const carrier = shipment?.carrier?.trim() || "미입력";
             const trackingNumber = shipment?.tracking_number?.trim() || "미입력";
             const currentStep = statusSteps.indexOf(order.status);
-            const canTrack = trackingNumber !== "미입력" && carrier.includes("CJ");
+            const canTrack = trackingNumber !== "미입력" && (carrier.includes("CJ") || carrier.includes("대한통운"));
+            const trackingHref = `${CJ_TRACKING_URL}?gnbInvcNo=${encodeURIComponent(trackingNumber)}`;
             const orderItems = order.order_items ?? [];
             const totalQuantity = orderItems.reduce((sum, item) => sum + Number(item.quantity), 0);
             const firstItemName = orderItems[0]?.product_name ?? "주문 상품";
@@ -160,7 +161,7 @@ export default async function MyPage() {
                       {trackingNumber}
                       {trackingNumber !== "미입력" && <TrackingCopyButton trackingNumber={trackingNumber} />}
                       {canTrack && (
-                        <Link href={CJ_TRACKING_URL} target="_blank" rel="noreferrer" className="tracking-link">
+                        <Link href={trackingHref} target="_blank" rel="noreferrer" className="tracking-link">
                           배송조회
                         </Link>
                       )}
