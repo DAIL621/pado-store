@@ -101,11 +101,11 @@ export default function CheckoutPage() {
 
     const clientKey = process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY;
     if (!clientKey) {
-      setMessage("Toss Payments 클라이언트 키가 없습니다.");
+      setMessage("결제 설정이 준비되지 않았습니다. 고객센터로 문의해주세요.");
       return;
     }
     if (!window.TossPayments) {
-      setMessage("Toss Payments SDK를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      setMessage("결제 모듈을 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
       return;
     }
 
@@ -134,7 +134,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      setMessage("Toss Payments 결제창을 여는 중입니다...");
+      setMessage("안전 결제창을 여는 중입니다...");
       const origin = window.location.origin;
       const order = result.order;
       const tossPayments = window.TossPayments(clientKey);
@@ -229,8 +229,8 @@ export default function CheckoutPage() {
             <span>냉장배송</span>
             <span>산지출고</span>
           </div>
-          <button type="submit" className="button teal full" disabled={saving || !canPay}>{!items.length ? "상품을 먼저 담아주세요" : unavailableItems.length ? "품절 상품을 삭제해주세요" : saving ? "처리 중..." : "Toss로 결제하기"}</button>
-          <p>Toss Payments 테스트 결제창으로 이동합니다.</p>
+          <button type="submit" className="button teal full" disabled={saving || !canPay}>{!items.length ? "상품을 먼저 담아주세요" : unavailableItems.length ? "품절 상품을 삭제해주세요" : saving ? "처리 중..." : "안전하게 결제하기"}</button>
+          <p>결제는 Toss Payments 안전 결제창에서 진행됩니다.</p>
         </aside>
       </form>
     </div>
