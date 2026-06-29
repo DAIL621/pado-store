@@ -178,7 +178,7 @@ export async function POST(request: Request) {
 
   if (supabase) {
     if (order) {
-      await supabase
+      const { error: paymentUpdateError } = await supabase
         .from("payments")
         .update({
           payment_key: paymentKey,
@@ -189,7 +189,15 @@ export async function POST(request: Request) {
         })
         .eq("order_id", order.id);
 
-      await supabase.from("orders").update({ status: "paid" }).eq("id", order.id);
+      const { error: orderUpdateError } = await supabase.from("orders").update({ status: "paid" }).eq("id", order.id);
+
+      if (paymentUpdateError || orderUpdateError) {
+        return NextResponse.json({
+          ok: true,
+          payment,
+          warning: "결제는 승인되었지만 주문 상태 반영 확인이 필요합니다. 고객센터로 문의해주세요."
+        });
+      }
     }
   }
 

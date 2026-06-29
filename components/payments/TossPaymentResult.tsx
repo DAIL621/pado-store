@@ -47,7 +47,7 @@ export function TossPaymentResult({ paymentKey, orderId, amount }: Props) {
 
         clearCart();
         setStatus("success");
-        setMessage("결제가 완료되었습니다.");
+        setMessage(result.warning ?? "결제가 완료되었습니다.");
       } catch {
         setStatus("failed");
         setMessage("결제 승인 요청 중 오류가 발생했습니다.");
