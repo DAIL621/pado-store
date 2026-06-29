@@ -98,8 +98,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     count: items.reduce((sum, item) => sum + item.quantity, 0),
     ready,
     addItem: (next) => setItems((current) => {
+      if (!Number.isFinite(Number(next.quantity)) || Number(next.quantity) <= 0) return current;
       const found = current.find((item) => item.productSlug === next.productSlug && item.optionId === next.optionId);
       const maxQuantity = Number.isFinite(Number(next.stock)) ? Number(next.stock) : Infinity;
+      if (maxQuantity <= 0) return current;
       return found
         ? current.map((item) => item === found ? { ...item, stock: next.stock, quantity: Math.min(maxQuantity, item.quantity + next.quantity) } : item)
         : [...current, { ...next, quantity: Math.min(maxQuantity, next.quantity) }];
