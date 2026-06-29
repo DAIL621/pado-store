@@ -2,8 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { formatPrice } from "@/data/products";
-import { ProductDetailEditor } from "@/components/admin/ProductDetailEditor";
-import { createProductDetailFormValue, type ProductDetail } from "@/lib/products/detail";
+import {
+  AdminProductBuilder,
+  type AdminProductBuilderPayload,
+  type AdminProductFormState,
+  type AdminProductOptionForm
+} from "@/components/admin/AdminProductBuilder";
+import type { ProductDetail } from "@/lib/products/detail";
 
 type ProductOption = { id: string; name: string; price_delta: number; stock: number };
 
@@ -27,7 +32,6 @@ type AdminProduct = {
 
 type ProductStatus = "selling" | "soldout" | "hidden";
 type StatusFilter = "all" | ProductStatus;
-type OptionForm = { name: string; priceDelta: string; stock: string };
 
 const getTotalStock = (product: AdminProduct) =>
   (product.product_options ?? []).reduce((total, option) => total + (Number(option.stock) || 0), 0);
@@ -43,7 +47,7 @@ const statusLabel: Record<ProductStatus, string> = {
   hidden: "숨김"
 };
 
-const toOptionForms = (product: AdminProduct): OptionForm[] =>
+const toOptionForms = (product: AdminProduct): AdminProductOptionForm[] =>
   (product.product_options?.length ? product.product_options : [{ id: "", name: "기본 옵션", price_delta: 0, stock: 0 }]).map((option) => ({
     name: option.name,
     priceDelta: String(option.price_delta),
@@ -220,7 +224,7 @@ export function AdminProductsManager() {
 }
 
 function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct; onClose: () => void; onSaved: () => void }) {
-  const [form, setForm] = useState({
+  const initialForm: AdminProductFormState = {
     name: product.name,
     slug: product.slug,
     origin: product.origin,
@@ -231,34 +235,20 @@ function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct
     imageUrl: product.image_url ?? "",
     badge: product.badge ?? "",
     highlights: (product.highlights ?? []).join(", ")
-  });
-  const [options, setOptions] = useState<OptionForm[]>(toOptionForms(product));
-  const [detailJson, setDetailJson] = useState(() => createProductDetailFormValue(product.detail_json));
-  const [message, setMessage] = useState("");
-
-  const update = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }));
-  const updateOption = (index: number, key: keyof OptionForm, value: string) => {
-    setOptions((current) => current.map((option, optionIndex) => (optionIndex === index ? { ...option, [key]: value } : option)));
-  };
-  const addOption = () => setOptions((current) => [...current, { name: "", priceDelta: "0", stock: "0" }]);
-  const removeOption = (index: number) => {
-    setOptions((current) => (current.length === 1 ? current : current.filter((_, optionIndex) => optionIndex !== index)));
   };
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setMessage("저장 중입니다...");
+  const updateProduct = async ({ form, options, detailJson }: AdminProductBuilderPayload) => {
     const response = await fetch(`/api/admin/products/${product.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, options, detailJson })
     });
     const result = await response.json();
-    if (!response.ok) {
-      setMessage(result.message ?? "수정에 실패했습니다.");
-      return;
-    }
-    onSaved();
+
+    return {
+      ok: response.ok,
+      message: response.ok ? "상품 정보가 저장되었습니다." : result.message
+    };
   };
 
   return (
@@ -268,38 +258,18 @@ function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct
           <h2>상품 수정</h2>
           <button type="button" onClick={onClose}>닫기</button>
         </div>
-        <form className="admin-form" onSubmit={submit}>
-          <label>상품명<input value={form.name} onChange={(event) => update("name", event.target.value)} required /></label>
-          <label>URL 이름<input value={form.slug} onChange={(event) => update("slug", event.target.value)} required /></label>
-          <label>산지<input value={form.origin} onChange={(event) => update("origin", event.target.value)} required /></label>
-          <label>카테고리<input value={form.category} onChange={(event) => update("category", event.target.value)} required /></label>
-          <label>기본 가격<input type="number" value={form.basePrice} onChange={(event) => update("basePrice", event.target.value)} required /></label>
-          <label>배지<input value={form.badge} onChange={(event) => update("badge", event.target.value)} /></label>
-          <label className="wide">한 줄 설명<input value={form.subtitle} onChange={(event) => update("subtitle", event.target.value)} /></label>
-          <label className="wide">이미지 경로<input value={form.imageUrl} onChange={(event) => update("imageUrl", event.target.value)} /></label>
-          <label className="wide">상세 설명<textarea value={form.description} onChange={(event) => update("description", event.target.value)} rows={4} /></label>
-          <label className="wide">핵심 장점<input value={form.highlights} onChange={(event) => update("highlights", event.target.value)} /></label>
-          <div className="wide option-editor">
-            <div className="option-editor-head">
-              <div>
-                <strong>상품 옵션 / 재고</strong>
-                <small>재고를 0으로 저장하면 고객 화면에서 품절로 표시되고 구매가 막힙니다.</small>
-              </div>
-              <button type="button" onClick={addOption}>+ 옵션 추가</button>
-            </div>
-            {options.map((option, index) => (
-              <div className="option-row" key={index}>
-                <label>옵션명<input value={option.name} onChange={(event) => updateOption(index, "name", event.target.value)} required /></label>
-                <label>추가금액<input type="number" value={option.priceDelta} onChange={(event) => updateOption(index, "priceDelta", event.target.value)} required /></label>
-                <label>재고<input type="number" value={option.stock} onChange={(event) => updateOption(index, "stock", event.target.value)} required min="0" /></label>
-                <button type="button" className="remove-option" onClick={() => removeOption(index)} disabled={options.length === 1}>삭제</button>
-              </div>
-            ))}
-          </div>
-          <ProductDetailEditor value={detailJson} onChange={setDetailJson} />
-          {message && <p className="form-message">{message}</p>}
-          <button type="submit" className="button teal">수정 저장</button>
-        </form>
+        <AdminProductBuilder
+          title={`${product.name} 수정`}
+          initialMessage="상품 정보와 상세페이지 자동 생성 데이터를 수정할 수 있습니다."
+          submitLabel="수정 저장"
+          savingLabel="저장 중..."
+          successMessage="상품 정보가 저장되었습니다."
+          initialForm={initialForm}
+          initialOptions={toOptionForms(product)}
+          initialDetail={product.detail_json}
+          onSubmit={updateProduct}
+          onSuccess={onSaved}
+        />
       </div>
     </div>
   );
