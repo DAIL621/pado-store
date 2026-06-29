@@ -52,3 +52,14 @@
 - Toss 테스트 결제 성공/실패 왕복과 결제 완료 후 주문상태/재고 반영은 실제 배포 URL에서 반복 검증 필요.
 
 위 항목은 외부 권한 또는 실기기가 필요한 확인 작업이며, 내부 개발 종료 사유가 아니다.
+
+## 2026-06-29 상세페이지 자동 생성 DB 적용 필요
+
+- 코드와 스키마 파일에는 `products.detail_json jsonb not null default '{}'::jsonb` 컬럼을 추가했다.
+- 실제 Supabase 운영 DB에는 아래 SQL을 한 번 적용해야 관리자 상세페이지 정보 저장이 정상 동작한다.
+
+```sql
+alter table products add column if not exists detail_json jsonb not null default '{}'::jsonb;
+```
+
+- 이 항목은 외부 Supabase 콘솔 권한이 필요한 작업이며, 코드 개발 종료 사유가 아니다.

@@ -1,3 +1,5 @@
+import type { ProductDetail } from "@/lib/products/detail";
+
 export type ProductOption = {
   id: string;
   label: string;
@@ -31,6 +33,7 @@ export type Product = {
   originInfo: ProductInfoBlock;
   producerInfo: ProductInfoBlock;
   isActive?: boolean;
+  detail?: ProductDetail;
 };
 
 const defaultShipping: ProductInfoBlock = {

@@ -84,3 +84,8 @@
 - [ ] Toss success/fail URLs use the production domain
 - [ ] `NEXT_PUBLIC_SITE_URL` is updated to the final production URL
 - [ ] Real device check is completed on iPhone and Android
+
+## 2026-06-29 추가 DB 체크
+
+- [ ] Supabase SQL Editor에서 `alter table products add column if not exists detail_json jsonb not null default '{}'::jsonb;` 실행
+- [ ] 관리자 상품 등록/수정에서 상세페이지 정보 저장 후 상품 상세페이지 반영 확인

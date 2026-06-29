@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/api/request";
 import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/product-options";
 import { requireAdminApi } from "@/lib/auth/admin-api";
+import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET() {
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
       base_price: basePrice,
       image_url: body.imageUrl || "/images/products/wando-abalone.webp",
       badge: body.badge || null,
+      detail_json: normalizeProductDetailInput(body.detailJson ?? body.detail_json),
       highlights: String(body.highlights ?? "")
         .split(",")
         .map((item) => item.trim())

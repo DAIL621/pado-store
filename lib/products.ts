@@ -1,4 +1,5 @@
 import { products as fallbackProducts, type Product, type ProductOption } from "@/data/products";
+import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { isPublicProductSlug } from "@/lib/products/public-slug";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,6 +15,7 @@ type ProductRow = {
   image_url: string | null;
   badge: string | null;
   highlights: string[] | null;
+  detail_json?: unknown;
   is_active: boolean;
   product_options?: OptionRow[];
 };
@@ -33,6 +35,8 @@ function toProduct(row: ProductRow): Product {
   const normalPrice = price + (price >= 40000 ? 6000 : 5000);
   const discountRate = Math.round((1 - price / normalPrice) * 100);
   const image = row.image_url ?? "/images/products/wando-abalone.webp";
+  const detail = normalizeProductDetailInput(row.detail_json);
+  const detailImages = detail.heroImages.length ? detail.heroImages.map((item) => item.url) : [image];
 
   return {
     id: row.id,
@@ -47,8 +51,9 @@ function toProduct(row: ProductRow): Product {
     discountRate,
     image,
     badge: row.badge ?? undefined,
-    detailImages: [image],
+    detailImages,
     highlights: row.highlights ?? [],
+    detail,
     isActive: row.is_active,
     shippingInfo: {
       title: "평일 오후 1시 이전 주문 당일 출고",

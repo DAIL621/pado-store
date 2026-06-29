@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { formatPrice } from "@/data/products";
+import { ProductDetailEditor } from "@/components/admin/ProductDetailEditor";
+import { createProductDetailFormValue, type ProductDetail } from "@/lib/products/detail";
 
 type ProductOption = { id: string; name: string; price_delta: number; stock: number };
 
@@ -17,6 +19,7 @@ type AdminProduct = {
   image_url: string | null;
   badge: string | null;
   highlights: string[] | null;
+  detail_json?: ProductDetail | null;
   is_active: boolean;
   created_at: string;
   product_options?: ProductOption[];
@@ -230,6 +233,7 @@ function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct
     highlights: (product.highlights ?? []).join(", ")
   });
   const [options, setOptions] = useState<OptionForm[]>(toOptionForms(product));
+  const [detailJson, setDetailJson] = useState(() => createProductDetailFormValue(product.detail_json));
   const [message, setMessage] = useState("");
 
   const update = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }));
@@ -247,7 +251,7 @@ function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct
     const response = await fetch(`/api/admin/products/${product.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, options })
+      body: JSON.stringify({ ...form, options, detailJson })
     });
     const result = await response.json();
     if (!response.ok) {
@@ -292,6 +296,7 @@ function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct
               </div>
             ))}
           </div>
+          <ProductDetailEditor value={detailJson} onChange={setDetailJson} />
           {message && <p className="form-message">{message}</p>}
           <button type="submit" className="button teal">수정 저장</button>
         </form>

@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { AdminLayout, type AdminUser } from "@/components/admin/AdminLayout";
+import { ProductDetailEditor } from "@/components/admin/ProductDetailEditor";
+import { createProductDetailFormValue } from "@/lib/products/detail";
 
 type OptionForm = {
   name: string;
@@ -27,6 +29,7 @@ const initialOptions: OptionForm[] = [{ name: "기본 옵션", priceDelta: "0", 
 export function AdminProductForm({ admin }: { admin: AdminUser }) {
   const [form, setForm] = useState(initialForm);
   const [options, setOptions] = useState<OptionForm[]>(initialOptions);
+  const [detailJson, setDetailJson] = useState(() => createProductDetailFormValue());
   const [message, setMessage] = useState("관리자 권한이 확인되었습니다. 상품을 등록할 수 있습니다.");
   const [createdUrl, setCreatedUrl] = useState("");
   const [saving, setSaving] = useState(false);
@@ -56,7 +59,7 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
     const response = await fetch("/api/admin/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, options })
+      body: JSON.stringify({ ...form, options, detailJson })
     });
     const result = await response.json();
 
@@ -68,6 +71,7 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
 
     setForm(initialForm);
     setOptions(initialOptions);
+    setDetailJson(createProductDetailFormValue());
     setCreatedUrl(result.productUrl ?? "");
     setMessage("상품이 등록되었습니다. 상품 목록 페이지에서 확인할 수 있습니다.");
     setSaving(false);
@@ -148,6 +152,8 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
               </div>
             ))}
           </div>
+
+          <ProductDetailEditor value={detailJson} onChange={setDetailJson} />
 
           <button type="submit" className="button teal" disabled={saving}>{saving ? "저장 중..." : "상품 등록하기"}</button>
         </form>

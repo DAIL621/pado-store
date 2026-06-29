@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/api/request";
 import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/product-options";
 import { requireAdminApi } from "@/lib/auth/admin-api";
+import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -52,6 +53,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
+  }
+  if (body.detailJson !== undefined || body.detail_json !== undefined) {
+    updates.detail_json = normalizeProductDetailInput(body.detailJson ?? body.detail_json);
   }
 
   if (updates.base_price !== undefined && (!Number.isFinite(updates.base_price) || Number(updates.base_price) < 0)) {

@@ -44,6 +44,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     .slice(0, 3);
   const totalStock = product.options.reduce((sum, option) => sum + Number(option.stock ?? 0), 0);
   const isSoldOut = totalStock <= 0;
+  const detail = product.detail;
+  const heroImages = detail?.heroImages ?? [];
+  const benefits = detail?.benefits ?? [];
+  const journey = detail?.journey ?? [];
+  const packaging = detail?.packaging ?? [];
+  const recipes = detail?.recipes ?? [];
+  const components = detail?.components ?? [];
+  const faq = detail?.faq ?? [];
+  const hasAutoDetail = Boolean(
+    heroImages.length || benefits.length || journey.length || packaging.length || recipes.length || components.length || faq.length
+  );
 
   return (
     <div className="detail-page">
@@ -96,6 +107,122 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <ProductPurchase product={product} />
         </div>
       </section>
+
+      {hasAutoDetail && (
+        <section className="section detail-auto-section">
+          <div className="shell">
+            <div className="section-heading">
+              <div>
+                <span className="eyebrow">PADO DETAIL</span>
+                <h2>관리자가 입력한 상세 정보</h2>
+              </div>
+              <p>상품별 입력 데이터로 자동 구성되는 상세페이지 영역입니다.</p>
+            </div>
+
+            {heroImages.length > 0 && (
+              <div className="detail-auto-gallery">
+                {heroImages.map((image) => (
+                  <figure key={`${image.label}-${image.url}`}>
+                    <div>
+                      <Image src={image.url} alt={`${product.name} ${image.label}`} fill sizes="(max-width: 700px) 100vw, 33vw" />
+                    </div>
+                    <figcaption>
+                      <strong>{image.label}</strong>
+                      {image.description && <span>{image.description}</span>}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            )}
+
+            {benefits.length > 0 && (
+              <div className="detail-auto-block">
+                <h3>왜 파도스토리 {product.name}인가?</h3>
+                <ul className="detail-auto-benefits">
+                  {benefits.map((benefit) => (
+                    <li key={benefit}>{benefit}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {journey.length > 0 && (
+              <div className="detail-auto-block">
+                <h3>산지에서 식탁까지</h3>
+                <div className="detail-auto-journey">
+                  {journey.map((step, index) => (
+                    <article key={`${step.key}-${index}`}>
+                      {step.image && (
+                        <div>
+                          <Image src={step.image} alt={`${product.name} ${step.title}`} fill sizes="(max-width: 700px) 100vw, 20vw" />
+                        </div>
+                      )}
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <h4>{step.title}</h4>
+                      {step.description && <p>{step.description}</p>}
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {packaging.length > 0 && (
+              <div className="detail-auto-block">
+                <h3>신선함을 지키는 포장</h3>
+                <ul className="detail-auto-list">
+                  {packaging.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {recipes.length > 0 && (
+              <div className="detail-auto-block">
+                <h3>맛있게 먹는 방법</h3>
+                <div className="detail-auto-recipes">
+                  {recipes.map((recipe, index) => (
+                    <article key={`${recipe.title}-${index}`}>
+                      {recipe.image && (
+                        <div>
+                          <Image src={recipe.image} alt={recipe.title} fill sizes="(max-width: 700px) 100vw, 33vw" />
+                        </div>
+                      )}
+                      <h4>{recipe.title}</h4>
+                      <p>{recipe.description}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {components.length > 0 && (
+              <div className="detail-auto-block">
+                <h3>구성품</h3>
+                <ul className="detail-auto-list">
+                  {components.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {faq.length > 0 && (
+              <div className="detail-auto-block">
+                <h3>FAQ</h3>
+                <div className="detail-auto-faq">
+                  {faq.map((item, index) => (
+                    <details key={`${item.question}-${index}`}>
+                      <summary>{item.question}</summary>
+                      <p>{item.answer}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="detail-story">
         <div className="shell narrow">

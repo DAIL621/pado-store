@@ -39,10 +39,13 @@ create table if not exists products (
   image_url text,
   badge text,
   highlights text[] not null default '{}',
+  detail_json jsonb not null default '{}'::jsonb,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table products add column if not exists detail_json jsonb not null default '{}'::jsonb;
 
 create table if not exists product_options (
   id uuid primary key default gen_random_uuid(),
