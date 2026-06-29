@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice, Product } from "@/data/products";
 import { useCart } from "@/components/cart/CartProvider";
@@ -12,18 +12,27 @@ export function ProductPurchase({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [message, setMessage] = useState("");
-  const { addItem } = useCart();
+  const { addItem, items } = useCart();
   const router = useRouter();
   const option = product.options.find((item) => item.id === optionId) ?? firstAvailableOption;
   const selectedStock = Number(option?.stock ?? 0);
+  const cartQuantityForOption = items.find((item) => item.productSlug === product.slug && item.optionId === optionId)?.quantity ?? 0;
+  const remainingStock = Math.max(0, selectedStock - cartQuantityForOption);
   const isSoldOut = !option || selectedStock <= 0;
   const unitPrice = option ? product.price + option.priceDelta : product.price;
   const total = unitPrice * quantity;
   const remainingForFreeShipping = calculateRemainingForFreeShipping(total);
   const freeShippingProgress = calculateFreeShippingProgress(total);
-  const isLowStock = !isSoldOut && selectedStock <= 5;
-  const canDecrease = !isSoldOut && quantity > 1;
-  const canIncrease = !isSoldOut && quantity < selectedStock;
+  const canAddSelected = !isSoldOut && remainingStock > 0;
+  const isLowStock = !isSoldOut && remainingStock <= 5;
+  const canDecrease = canAddSelected && quantity > 1;
+  const canIncrease = canAddSelected && quantity < remainingStock;
+
+  useEffect(() => {
+    if (canAddSelected && quantity > remainingStock) {
+      setQuantity(Math.max(1, remainingStock));
+    }
+  }, [canAddSelected, quantity, remainingStock]);
 
   const decreaseQuantity = () => {
     if (!canDecrease) return;
@@ -42,8 +51,12 @@ export function ProductPurchase({ product }: { product: Product }) {
 
   const add = () => {
     if (!option || isSoldOut) return false;
-    if (quantity > selectedStock) {
-      setMessage(`현재 재고는 ${selectedStock}개입니다.`);
+    if (!canAddSelected) {
+      setMessage("이미 장바구니에 구매 가능 수량을 모두 담았습니다.");
+      return false;
+    }
+    if (quantity > remainingStock) {
+      setMessage(`추가로 구매 가능한 수량은 ${remainingStock}개입니다.`);
       return false;
     }
 
@@ -95,7 +108,15 @@ export function ProductPurchase({ product }: { product: Product }) {
       {option && (
         <div className={`selected-option-info ${isLowStock ? "low-stock" : ""}`}>
           <span>{option.label}</span>
-          <strong>{isSoldOut ? "품절" : `구매 가능 ${selectedStock}개`}</strong>
+          <strong>
+            {isSoldOut
+              ? "품절"
+              : cartQuantityForOption > 0
+                ? remainingStock > 0
+                  ? `장바구니 ${cartQuantityForOption}개 · 추가 가능 ${remainingStock}개`
+                  : "장바구니에 모두 담김"
+                : `구매 가능 ${selectedStock}개`}
+          </strong>
         </div>
       )}
       {isSoldOut && <p className="soldout-message" role="status">현재 선택한 옵션은 품절입니다. 다른 옵션을 선택해주세요.</p>}
@@ -118,8 +139,8 @@ export function ProductPurchase({ product }: { product: Product }) {
       </div>
       <div className="total-row"><span>총 상품금액</span><strong>{formatPrice(total)}</strong></div>
       <div className="purchase-actions">
-        <button type="button" className="button outline" disabled={isSoldOut} onClick={add}>{added ? "장바구니에 담았습니다" : "장바구니 담기"}</button>
-        <button type="button" className="button teal" disabled={isSoldOut} onClick={buyNow}>바로 구매하기</button>
+        <button type="button" className="button outline" disabled={!canAddSelected} onClick={add}>{added ? "장바구니에 담았습니다" : "장바구니 담기"}</button>
+        <button type="button" className="button teal" disabled={!canAddSelected} onClick={buyNow}>바로 구매하기</button>
       </div>
       <small>신선식품 특성상 산지 조업 상황에 따라 출고 일정이 조정될 수 있습니다.</small>
     </div>
