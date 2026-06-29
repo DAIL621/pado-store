@@ -41,6 +41,30 @@ const getStatus = (product: AdminProduct): ProductStatus => {
   return getTotalStock(product) > 0 ? "selling" : "soldout";
 };
 
+const getDetailScore = (product: AdminProduct) => {
+  const detail = product.detail_json;
+  if (!detail) return 0;
+
+  const checks = [
+    detail.heroImages?.some((image) => image.url),
+    detail.benefits?.some(Boolean),
+    detail.journey?.some((step) => step.description || step.image),
+    detail.packaging?.some(Boolean),
+    detail.recipes?.some((recipe) => recipe.title || recipe.description || recipe.image),
+    detail.components?.some(Boolean),
+    detail.faq?.some((item) => item.question || item.answer)
+  ];
+
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+};
+
+const getDetailScoreLabel = (score: number) => {
+  if (score >= 80) return "완성";
+  if (score >= 45) return "보강";
+  if (score > 0) return "초안";
+  return "미입력";
+};
+
 const statusLabel: Record<ProductStatus, string> = {
   selling: "판매중",
   soldout: "품절",
@@ -168,6 +192,7 @@ export function AdminProductsManager() {
                 <th>카테고리</th>
                 <th>가격</th>
                 <th>재고</th>
+                <th>상세</th>
                 <th>상태</th>
                 <th>등록일</th>
                 <th>관리</th>
@@ -176,6 +201,7 @@ export function AdminProductsManager() {
             <tbody>
               {filtered.map((product) => {
                 const status = getStatus(product);
+                const detailScore = getDetailScore(product);
                 return (
                   <tr key={product.id}>
                     <td>
@@ -187,6 +213,11 @@ export function AdminProductsManager() {
                     <td>{product.category}</td>
                     <td>{formatPrice(product.base_price)}</td>
                     <td>{getTotalStock(product).toLocaleString("ko-KR")}개</td>
+                    <td>
+                      <span className={`detail-score ${detailScore >= 80 ? "complete" : detailScore > 0 ? "draft" : "empty"}`}>
+                        {getDetailScoreLabel(detailScore)} {detailScore}%
+                      </span>
+                    </td>
                     <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
                     <td>{new Date(product.created_at).toLocaleDateString("ko-KR")}</td>
                     <td className="admin-actions">
