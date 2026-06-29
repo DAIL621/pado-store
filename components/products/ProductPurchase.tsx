@@ -103,9 +103,9 @@ export function ProductPurchase({ product }: { product: Product }) {
       <div className="quantity-row">
         <span>수량</span>
         <div>
-          <button type="button" disabled={!canDecrease} onClick={decreaseQuantity} aria-label="수량 줄이기">-</button>
+          <button type="button" disabled={!canDecrease} onClick={decreaseQuantity} aria-label={`${product.name} 수량 줄이기`}>-</button>
           <b aria-live="polite">{quantity}</b>
-          <button type="button" disabled={!canIncrease} onClick={increaseQuantity} aria-label="수량 늘리기">+</button>
+          <button type="button" disabled={!canIncrease} onClick={increaseQuantity} aria-label={`${product.name} 수량 늘리기`}>+</button>
         </div>
       </div>
       <div className="purchase-free-shipping" aria-label="무료배송 진행률">
