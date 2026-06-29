@@ -32,6 +32,19 @@ async function getOrderStockRequirements(supabase: ReturnType<typeof createAdmin
   return { ok: true as const, quantities };
 }
 
+async function rollbackDecrementedStock(
+  supabase: ReturnType<typeof createAdminClient>,
+  decremented: { optionId: string; previousStock: number; nextStock: number }[]
+) {
+  for (const rollback of decremented.reverse()) {
+    await supabase
+      .from("product_options")
+      .update({ stock: rollback.previousStock })
+      .eq("id", rollback.optionId)
+      .eq("stock", rollback.nextStock);
+  }
+}
+
 async function decrementOrderStock(supabase: ReturnType<typeof createAdminClient>, orderId: string) {
   const requirements = await getOrderStockRequirements(supabase, orderId);
   if (!requirements.ok) return requirements;
@@ -45,11 +58,13 @@ async function decrementOrderStock(supabase: ReturnType<typeof createAdminClient
       .single();
 
     if (optionError || !option) {
+      await rollbackDecrementedStock(supabase, decremented);
       return { ok: false as const, message: optionError?.message ?? `${item.label} 옵션을 찾을 수 없습니다.` };
     }
 
     const previousStock = Number(option.stock);
     if (previousStock < item.quantity) {
+      await rollbackDecrementedStock(supabase, decremented);
       return { ok: false as const, message: `${item.label} 재고가 부족합니다. 현재 ${previousStock}개 남아 있습니다.` };
     }
 
@@ -62,13 +77,7 @@ async function decrementOrderStock(supabase: ReturnType<typeof createAdminClient
       .select("id");
 
     if (updateError || !updated?.length) {
-      for (const rollback of decremented.reverse()) {
-        await supabase
-          .from("product_options")
-          .update({ stock: rollback.previousStock })
-          .eq("id", rollback.optionId)
-          .eq("stock", rollback.nextStock);
-      }
+      await rollbackDecrementedStock(supabase, decremented);
       return { ok: false as const, message: `${item.label} 재고가 동시에 변경되었습니다. 다시 확인해주세요.` };
     }
 
