@@ -1,4 +1,5 @@
 import { products as fallbackProducts, type Product, type ProductOption } from "@/data/products";
+import { isPublicProductSlug } from "@/lib/products/public-slug";
 import { createClient } from "@/lib/supabase/server";
 
 type ProductRow = {
@@ -26,11 +27,6 @@ type OptionRow = {
 
 const hasSupabaseEnv = () =>
   Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
-function isPublicProductSlug(slug: string) {
-  const normalized = slug.toLowerCase();
-  return !normalized.startsWith("ops-") && !normalized.includes("test");
-}
 
 function toProduct(row: ProductRow): Product {
   const price = row.base_price;

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { readJsonBody } from "@/lib/api/request";
 import { calculateShipping } from "@/lib/order/pricing";
+import { isPublicProductSlug } from "@/lib/products/public-slug";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
   for (const item of items) {
     const option = optionMap.get(String(item.optionId));
     const product = Array.isArray(option?.products) ? option?.products[0] : option?.products;
-    if (!option || !product?.is_active || product.slug !== item.productSlug) {
+    if (!isPublicProductSlug(item.productSlug) || !option || !product?.is_active || product.slug !== item.productSlug) {
       return NextResponse.json({ ok: false, message: `${item.name} 상품 옵션을 확인할 수 없습니다.` }, { status: 400 });
     }
     const requestedQuantity = requestedQuantityByOption.get(String(item.optionId)) ?? Number(item.quantity);
