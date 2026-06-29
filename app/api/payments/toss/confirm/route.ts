@@ -32,30 +32,6 @@ async function getOrderStockRequirements(supabase: ReturnType<typeof createAdmin
   return { ok: true as const, quantities };
 }
 
-async function checkOrderStock(supabase: ReturnType<typeof createAdminClient>, orderId: string) {
-  const requirements = await getOrderStockRequirements(supabase, orderId);
-  if (!requirements.ok) return requirements;
-
-  for (const [optionId, item] of requirements.quantities) {
-    const { data: option, error: optionError } = await supabase
-      .from("product_options")
-      .select("id, stock")
-      .eq("id", optionId)
-      .single();
-
-    if (optionError || !option) {
-      return { ok: false as const, message: optionError?.message ?? `${item.label} 옵션을 찾을 수 없습니다.` };
-    }
-
-    const currentStock = Number(option.stock);
-    if (currentStock < item.quantity) {
-      return { ok: false as const, message: `${item.label} 재고가 부족합니다. 현재 ${currentStock}개 남아 있습니다.` };
-    }
-  }
-
-  return { ok: true as const };
-}
-
 async function decrementOrderStock(supabase: ReturnType<typeof createAdminClient>, orderId: string) {
   const requirements = await getOrderStockRequirements(supabase, orderId);
   if (!requirements.ok) return requirements;
@@ -102,6 +78,26 @@ async function decrementOrderStock(supabase: ReturnType<typeof createAdminClient
   return { ok: true as const };
 }
 
+async function restoreOrderStock(supabase: ReturnType<typeof createAdminClient>, orderId: string) {
+  const requirements = await getOrderStockRequirements(supabase, orderId);
+  if (!requirements.ok) return;
+
+  for (const [optionId, item] of requirements.quantities) {
+    const { data: option } = await supabase
+      .from("product_options")
+      .select("id, stock")
+      .eq("id", optionId)
+      .single();
+
+    if (!option) continue;
+
+    await supabase
+      .from("product_options")
+      .update({ stock: Number(option.stock) + item.quantity })
+      .eq("id", optionId);
+  }
+}
+
 export async function POST(request: Request) {
   const parsedBody = await readJsonBody(request);
   if (!parsedBody.ok) return parsedBody.response;
@@ -136,37 +132,43 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "주문 금액과 결제 금액이 일치하지 않습니다." }, { status: 400 });
   }
 
-  if (supabase && order && !alreadyPaid) {
-    const stockCheck = await checkOrderStock(supabase, order.id);
-    if (!stockCheck.ok) {
-      return NextResponse.json({ ok: false, message: stockCheck.message }, { status: 409 });
+  if (supabase && order && alreadyPaid) {
+    return NextResponse.json({ ok: true, payment: { orderId, status: "paid", alreadyConfirmed: true } });
+  }
+
+  let stockReserved = false;
+  if (supabase && order) {
+    const stockResult = await decrementOrderStock(supabase, order.id);
+    if (!stockResult.ok) {
+      return NextResponse.json({ ok: false, message: stockResult.message }, { status: 409 });
     }
+    stockReserved = true;
   }
 
   const encryptedSecretKey = Buffer.from(`${secretKey}:`).toString("base64");
-  const response = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${encryptedSecretKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ paymentKey, orderId, amount: paymentAmount })
-  });
+  let response: Response;
+  try {
+    response = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${encryptedSecretKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ paymentKey, orderId, amount: paymentAmount })
+    });
+  } catch {
+    if (stockReserved && supabase && order) await restoreOrderStock(supabase, order.id);
+    return NextResponse.json({ ok: false, message: "결제 승인 요청 중 오류가 발생했습니다." }, { status: 502 });
+  }
 
   const payment = await response.json();
   if (!response.ok) {
+    if (stockReserved && supabase && order) await restoreOrderStock(supabase, order.id);
     return NextResponse.json({ ok: false, message: payment.message ?? "결제 승인에 실패했습니다.", payment }, { status: 400 });
   }
 
   if (supabase) {
     if (order) {
-      if (!alreadyPaid) {
-        const stockResult = await decrementOrderStock(supabase, order.id);
-        if (!stockResult.ok) {
-          return NextResponse.json({ ok: false, message: stockResult.message }, { status: 409 });
-        }
-      }
-
       await supabase
         .from("payments")
         .update({

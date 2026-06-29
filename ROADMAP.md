@@ -93,6 +93,7 @@
 - 관리자 API 인증 가드 공용화
 - 로컬 이미지 경로 안정성 점검 및 장바구니 fallback 이미지 수정
 - 장바구니 탭 간 상태 동기화
+- Toss 승인 전 재고 예약 차감 및 실패 시 재고 복구
 - PC/iPhone/Galaxy 반응형 안정성 캡처 추가
 - `DEPLOY_CHECKLIST.md` 생성
 

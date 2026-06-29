@@ -190,3 +190,10 @@
 - `DEV_ADMIN_LOGIN_ENABLED` 비활성 상태에서 `/dev-admin-login` 폼 미노출 확인
 - 개발 관리자 세션 쿠키가 production 환경에서는 `secure`로 설정되도록 보강
 - `pnpm run build`: 성공
+## 2026-06-27 Toss 승인 전 재고 예약 차감 검증
+
+- Toss 승인 호출 전에 주문 상품 재고를 먼저 차감하도록 결제 승인 순서 보강
+- 재고 예약 차감 실패 시 Toss 승인 호출 전 409로 차단
+- Toss 승인 요청 네트워크 오류 또는 Toss 승인 실패 시 예약 차감된 재고 복구
+- 이미 결제 완료된 주문은 중복 승인 호출 없이 성공 응답
+- `pnpm run build`: 성공

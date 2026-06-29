@@ -187,3 +187,10 @@
 - Production에서 개발 관리자 쿠키가 secure 속성을 사용하도록 수정
 - 로컬에서 개발 관리자 로그인 폼 미노출 확인
 - `pnpm run build` 성공 확인
+## 2026-06-27 Toss 승인 전 재고 예약 차감 보강
+
+- 결제 승인 API에서 Toss confirm 이전에 재고를 예약 차감하도록 순서 변경
+- Toss confirm 실패/네트워크 오류 시 예약 재고 복구 처리 추가
+- 이미 paid 상태인 주문은 중복 confirm 없이 idempotent 성공 응답
+- 미사용 재고 사전 조회 함수 제거
+- `pnpm run build` 성공 확인
