@@ -161,3 +161,8 @@
 - 브라우저 storage 이벤트를 구독해 탭 간 장바구니 상태 동기화
 - Playwright 두 탭 상호작용 검증 완료
 - `pnpm run build` 성공 확인
+## 2026-06-27 DEPLOY_CHECKLIST 보완
+
+- 누락되어 있던 `DEPLOY_CHECKLIST.md` 생성
+- Vercel 배포 전 환경변수와 외부 콘솔 수정 항목 정리
+- Production Smoke Test 체크리스트 추가

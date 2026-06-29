@@ -162,3 +162,8 @@
 - localStorage `storage` 이벤트로 다른 탭의 장바구니 변경을 현재 탭에 반영
 - Playwright 두 탭 검증: 다른 탭에서 장바구니 저장 시 첫 번째 탭에 상품 표시 정상
 - `pnpm run build`: 성공
+## 2026-06-27 배포 체크리스트 문서 확인
+
+- `DEPLOY_CHECKLIST.md` 누락 확인
+- Production 환경변수, Supabase, Toss, Kakao, Vercel, SEO, Smoke Test 항목을 포함해 문서 생성
+- 코드 변경 없음
