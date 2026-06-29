@@ -167,3 +167,9 @@
 - `DEPLOY_CHECKLIST.md` 누락 확인
 - Production 환경변수, Supabase, Toss, Kakao, Vercel, SEO, Smoke Test 항목을 포함해 문서 생성
 - 코드 변경 없음
+## 2026-06-27 Health API 환경변수 점검 검증
+
+- `/api/health`가 주요 Production 환경변수 준비 여부를 boolean으로 반환하도록 보강
+- 로컬 응답 확인: `service=pado-story-store`, `status=ok`
+- 로컬 `.env.local` 기준 `NEXT_PUBLIC_SITE_URL`만 false 확인
+- `pnpm run build`: 성공

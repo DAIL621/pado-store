@@ -37,3 +37,8 @@
 - 실제 iPhone Safari, Android Chrome 실기기 최종 확인 필요
 
 위 항목은 외부 콘솔 또는 실기기가 필요한 BLOCKERS이며, 내부 코드 개선 작업의 종료 사유가 아니다.
+## 2026-06-27 Health API 기준 환경변수 확인 필요
+
+- 로컬 `/api/health` 확인 결과 `NEXT_PUBLIC_SITE_URL`이 false로 표시됨.
+- Vercel Production 환경변수에는 실제 배포 URL 또는 연결 도메인을 `NEXT_PUBLIC_SITE_URL`로 등록해야 함.
+- 이 항목은 외부 Vercel Dashboard 설정이 필요하므로 내부 개발 중단 사유가 아님.

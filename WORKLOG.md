@@ -166,3 +166,9 @@
 - 누락되어 있던 `DEPLOY_CHECKLIST.md` 생성
 - Vercel 배포 전 환경변수와 외부 콘솔 수정 항목 정리
 - Production Smoke Test 체크리스트 추가
+## 2026-06-27 Health API 운영 점검 보강
+
+- `/api/health`에 Supabase/Toss/Kakao/Site URL/DEV_ADMIN_LOGIN 상태 체크 추가
+- 비밀값은 노출하지 않고 boolean readiness만 반환
+- 로컬 응답 확인 완료
+- `pnpm run build` 성공 확인
