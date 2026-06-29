@@ -1,9 +1,11 @@
 "use client";
 
+import type { DragEvent } from "react";
 import {
   DEFAULT_PACKAGING,
   type ProductDetail,
   type ProductDetailFaq,
+  type ProductDetailImage,
   type ProductDetailRecipe
 } from "@/lib/products/detail";
 
@@ -17,11 +19,29 @@ export function ProductDetailEditor({ value, onChange }: Props) {
     onChange({ ...value, [key]: nextValue });
   };
 
-  const updateHero = (index: number, key: "url" | "description", nextValue: string) => {
+  const updateHero = (index: number, key: keyof ProductDetailImage, nextValue: string) => {
     update(
       "heroImages",
       value.heroImages.map((image, imageIndex) => (imageIndex === index ? { ...image, [key]: nextValue } : image))
     );
+  };
+
+  const moveHero = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= value.heroImages.length) return;
+    const next = [...value.heroImages];
+    const [item] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, item);
+    update("heroImages", next);
+  };
+
+  const handleHeroDragStart = (event: DragEvent<HTMLDivElement>, index: number) => {
+    event.dataTransfer.setData("text/plain", String(index));
+  };
+
+  const handleHeroDrop = (event: DragEvent<HTMLDivElement>, index: number) => {
+    event.preventDefault();
+    const fromIndex = Number(event.dataTransfer.getData("text/plain"));
+    if (Number.isInteger(fromIndex)) moveHero(fromIndex, index);
   };
 
   const updateBenefit = (index: number, nextValue: string) => {
@@ -29,6 +49,15 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       "benefits",
       value.benefits.map((benefit, benefitIndex) => (benefitIndex === index ? nextValue : benefit))
     );
+  };
+
+  const addBenefit = () => {
+    if (value.benefits.length >= 5) return;
+    update("benefits", [...value.benefits, ""]);
+  };
+
+  const removeBenefit = (index: number) => {
+    update("benefits", value.benefits.length <= 1 ? [""] : value.benefits.filter((_, benefitIndex) => benefitIndex !== index));
   };
 
   const updateJourney = (index: number, key: "title" | "image" | "description", nextValue: string) => {
@@ -75,21 +104,50 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   const removeFaq = (index: number) =>
     update("faq", value.faq.length <= 1 ? [{ question: "", answer: "" }] : value.faq.filter((_, faqIndex) => faqIndex !== index));
 
+  const completedHeroCount = value.heroImages.filter((image) => image.url.trim()).length;
+  const completedBenefitCount = value.benefits.filter((benefit) => benefit.trim()).length;
+  const completedJourneyCount = value.journey.filter((step) => step.description.trim() || step.image.trim()).length;
+
   return (
     <div className="wide admin-detail-editor">
       <div className="admin-detail-editor-head">
         <div>
           <strong>상세페이지 자동 생성 정보</strong>
-          <small>입력한 정보는 products.detail_json에 저장되고 상품 상세페이지에 자동 표시됩니다.</small>
+          <small>DB 컬럼 적용 후 이 데이터가 `products.detail_json`에 저장되고 상품 상세페이지에 자동 표시됩니다.</small>
         </div>
+        <span className="admin-detail-version">v{value.schemaVersion}</span>
+      </div>
+
+      <div className="admin-detail-progress" aria-label="상세페이지 입력 진행률">
+        <span>사진 {completedHeroCount}/6</span>
+        <span>장점 {completedBenefitCount}/5</span>
+        <span>여정 {completedJourneyCount}/5</span>
       </div>
 
       <details open>
         <summary>상세페이지 대표사진 6장</summary>
+        <p className="admin-detail-help">카드를 드래그하거나 위/아래 버튼으로 상세페이지 사진 노출 순서를 조정할 수 있습니다.</p>
         <div className="admin-detail-grid">
           {value.heroImages.map((image, index) => (
-            <div className="admin-detail-card" key={image.label}>
-              <b>{index + 1}. {image.label}</b>
+            <div
+              className="admin-detail-card draggable"
+              draggable
+              key={`${image.label}-${index}`}
+              onDragOver={(event) => event.preventDefault()}
+              onDragStart={(event) => handleHeroDragStart(event, index)}
+              onDrop={(event) => handleHeroDrop(event, index)}
+            >
+              <div className="admin-detail-card-head">
+                <b>{index + 1}. {image.label}</b>
+                <span>
+                  <button type="button" onClick={() => moveHero(index, index - 1)} disabled={index === 0}>위</button>
+                  <button type="button" onClick={() => moveHero(index, index + 1)} disabled={index === value.heroImages.length - 1}>아래</button>
+                </span>
+              </div>
+              <label>
+                사진 역할
+                <input value={image.label} onChange={(event) => updateHero(index, "label", event.target.value)} placeholder="예: 대표사진" />
+              </label>
               <label>
                 사진 경로
                 <input value={image.url} onChange={(event) => updateHero(index, "url", event.target.value)} placeholder="/images/products/sample.webp" />
@@ -104,19 +162,31 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       </details>
 
       <details>
-        <summary>상품 장점 5개</summary>
+        <summary>상품 장점</summary>
+        <p className="admin-detail-help">최대 5개까지 입력됩니다. 비어 있는 항목은 상세페이지에서 표시하지 않습니다.</p>
         <div className="admin-detail-list">
           {value.benefits.map((benefit, index) => (
-            <label key={index}>
-              장점 {index + 1}
-              <input value={benefit} onChange={(event) => updateBenefit(index, event.target.value)} placeholder="예: 당일 선별" />
-            </label>
+            <div className="admin-detail-inline" key={index}>
+              <label>
+                장점 {index + 1}
+                <input value={benefit} onChange={(event) => updateBenefit(index, event.target.value)} placeholder="예: 당일 선별" />
+              </label>
+              <button type="button" onClick={() => removeBenefit(index)}>삭제</button>
+            </div>
           ))}
+          <button type="button" onClick={addBenefit} disabled={value.benefits.length >= 5}>+ 장점 추가</button>
         </div>
       </details>
 
       <details>
         <summary>산지에서 식탁까지</summary>
+        <div className="admin-journey-preview" aria-label="여정 미리보기">
+          {value.journey.map((step, index) => (
+            <span key={step.key} className={step.description || step.image ? "filled" : ""}>
+              {index + 1}. {step.title || "단계"}
+            </span>
+          ))}
+        </div>
         <div className="admin-detail-grid">
           {value.journey.map((step, index) => (
             <div className="admin-detail-card" key={step.key}>
@@ -214,6 +284,11 @@ export function ProductDetailEditor({ value, onChange }: Props) {
           ))}
           <button type="button" onClick={addFaq}>+ FAQ 추가</button>
         </div>
+      </details>
+
+      <details>
+        <summary>향후 확장 슬롯</summary>
+        <p className="admin-detail-help">동영상, 인증서, 추가 섹션은 JSON 구조에 준비되어 있습니다. 이번 단계에서는 저장 구조만 유지하고 UI는 이후 운영 데이터가 준비되면 확장합니다.</p>
       </details>
     </div>
   );

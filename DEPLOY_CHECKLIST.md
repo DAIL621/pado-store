@@ -89,3 +89,5 @@
 
 - [ ] Supabase SQL Editor에서 `alter table products add column if not exists detail_json jsonb not null default '{}'::jsonb;` 실행
 - [ ] 관리자 상품 등록/수정에서 상세페이지 정보 저장 후 상품 상세페이지 반영 확인
+- [ ] 로컬에서 `DEV_ADMIN_LOGIN_ENABLED=true`로 임시 전환 후 `pnpm run verify:detail-json` 실행
+- [ ] 검증 후 `DEV_ADMIN_LOGIN_ENABLED=false` 복구 확인

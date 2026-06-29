@@ -282,3 +282,23 @@
 ### 남은 검증
 
 - Supabase 운영 DB에 `products.detail_json` 컬럼 적용 후 실제 관리자 저장/조회 반복 검증 필요
+
+## 2026-06-29 상세페이지 자동 생성 E2E 준비 검증
+
+### 준비 내용
+
+- `pnpm run verify:detail-json` 스크립트 추가
+- 스크립트 검증 범위:
+  - `/dev-admin-login` 접근
+  - 개발용 관리자 로그인
+  - `/admin/new` 접근 및 상세 에디터 마크업 확인
+  - `/admin/products` 접근
+  - 테스트 상품 생성
+  - `detail_json.schemaVersion` 및 대표사진 6장 저장 확인
+  - 상품 상세페이지 자동 표시 확인
+  - 테스트 상품 soft delete
+
+### 현재 상태
+
+- `pnpm run build`: 성공
+- 실제 E2E 저장 테스트: Supabase DB `detail_json` 컬럼 적용 후 실행 가능

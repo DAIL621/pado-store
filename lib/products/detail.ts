@@ -22,7 +22,26 @@ export type ProductDetailFaq = {
   answer: string;
 };
 
+export type ProductDetailVideo = {
+  title: string;
+  url: string;
+  thumbnail?: string;
+};
+
+export type ProductDetailCertificate = {
+  title: string;
+  image: string;
+  description?: string;
+};
+
+export type ProductDetailExtraSection = {
+  type: string;
+  title: string;
+  items?: unknown[];
+};
+
 export type ProductDetail = {
+  schemaVersion: number;
   heroImages: ProductDetailImage[];
   benefits: string[];
   journey: ProductDetailJourneyStep[];
@@ -30,7 +49,12 @@ export type ProductDetail = {
   recipes: ProductDetailRecipe[];
   components: string[];
   faq: ProductDetailFaq[];
+  videos: ProductDetailVideo[];
+  certificates: ProductDetailCertificate[];
+  extraSections: ProductDetailExtraSection[];
 };
+
+export const DETAIL_SCHEMA_VERSION = 1;
 
 export const HERO_IMAGE_LABELS = [
   "대표사진",
@@ -70,19 +94,20 @@ export function createProductDetailFormValue(input?: unknown): ProductDetail {
   const journeySource = Array.isArray(source.journey) ? source.journey : [];
 
   return {
-    heroImages: HERO_IMAGE_LABELS.map((label, index) => {
+    schemaVersion: DETAIL_SCHEMA_VERSION,
+    heroImages: HERO_IMAGE_LABELS.map((defaultLabel, index) => {
       const item = asRecord(heroSource[index]);
       return {
-        label,
+        label: cleanText(item.label) || defaultLabel,
         url: cleanText(item.url),
         description: cleanText(item.description)
       };
     }),
-    benefits: Array.from({ length: 5 }, (_, index) => cleanTextList(source.benefits)[index] ?? ""),
+    benefits: padTextList(cleanTextList(source.benefits), 3),
     journey: JOURNEY_STEPS.map((step, index) => {
       const item = asRecord(journeySource[index]);
       return {
-        key: step.key,
+        key: cleanText(item.key) || step.key,
         title: cleanText(item.title) || step.title,
         image: cleanText(item.image),
         description: cleanText(item.description)
@@ -91,7 +116,10 @@ export function createProductDetailFormValue(input?: unknown): ProductDetail {
     packaging: cleanTextList(source.packaging).length ? cleanTextList(source.packaging) : [...DEFAULT_PACKAGING],
     recipes: normalizeRecipes(source.recipes, true),
     components: cleanTextList(source.components).length ? cleanTextList(source.components) : [""],
-    faq: normalizeFaq(source.faq, true)
+    faq: normalizeFaq(source.faq, true),
+    videos: normalizeVideos(source.videos),
+    certificates: normalizeCertificates(source.certificates),
+    extraSections: normalizeExtraSections(source.extraSections)
   };
 }
 
@@ -101,6 +129,7 @@ export function normalizeProductDetailInput(input?: unknown): ProductDetail {
   const journeySource = Array.isArray(source.journey) ? source.journey : [];
 
   return {
+    schemaVersion: DETAIL_SCHEMA_VERSION,
     heroImages: heroSource
       .map((item, index) => {
         const record = asRecord(item);
@@ -134,8 +163,17 @@ export function normalizeProductDetailInput(input?: unknown): ProductDetail {
     packaging: cleanTextList(source.packaging),
     recipes: normalizeRecipes(source.recipes, false),
     components: cleanTextList(source.components),
-    faq: normalizeFaq(source.faq, false)
+    faq: normalizeFaq(source.faq, false),
+    videos: normalizeVideos(source.videos),
+    certificates: normalizeCertificates(source.certificates),
+    extraSections: normalizeExtraSections(source.extraSections)
   };
+}
+
+function padTextList(items: string[], minimumLength: number) {
+  const next = [...items];
+  while (next.length < minimumLength) next.push("");
+  return next.slice(0, 5);
 }
 
 function normalizeRecipes(value: unknown, forForm: boolean): ProductDetailRecipe[] {
@@ -169,4 +207,49 @@ function normalizeFaq(value: unknown, forForm: boolean): ProductDetailFaq[] {
     : [];
 
   return faq.length || !forForm ? faq : [{ question: "", answer: "" }];
+}
+
+function normalizeVideos(value: unknown): ProductDetailVideo[] {
+  return Array.isArray(value)
+    ? value
+        .map((item) => {
+          const record = asRecord(item);
+          return {
+            title: cleanText(record.title),
+            url: cleanText(record.url),
+            thumbnail: cleanText(record.thumbnail)
+          };
+        })
+        .filter((item) => item.title || item.url || item.thumbnail)
+    : [];
+}
+
+function normalizeCertificates(value: unknown): ProductDetailCertificate[] {
+  return Array.isArray(value)
+    ? value
+        .map((item) => {
+          const record = asRecord(item);
+          return {
+            title: cleanText(record.title),
+            image: cleanText(record.image),
+            description: cleanText(record.description)
+          };
+        })
+        .filter((item) => item.title || item.image || item.description)
+    : [];
+}
+
+function normalizeExtraSections(value: unknown): ProductDetailExtraSection[] {
+  return Array.isArray(value)
+    ? value
+        .map((item) => {
+          const record = asRecord(item);
+          return {
+            type: cleanText(record.type),
+            title: cleanText(record.title),
+            items: Array.isArray(record.items) ? record.items : []
+          };
+        })
+        .filter((item) => item.type || item.title || item.items?.length)
+    : [];
 }

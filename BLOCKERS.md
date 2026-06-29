@@ -63,3 +63,4 @@ alter table products add column if not exists detail_json jsonb not null default
 ```
 
 - 이 항목은 외부 Supabase 콘솔 권한이 필요한 작업이며, 코드 개발 종료 사유가 아니다.
+- SQL 적용 후에는 로컬에서 `DEV_ADMIN_LOGIN_ENABLED=true`로 임시 전환하고 `pnpm run verify:detail-json`을 실행하면 End-to-End 저장 검증을 바로 진행할 수 있다.

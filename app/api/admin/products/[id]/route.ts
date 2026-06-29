@@ -71,8 +71,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   if (error) {
     const isDuplicate = error.code === "23505";
+    const isMissingDetailColumn = error.message.includes("detail_json");
     return NextResponse.json(
-      { ok: false, message: isDuplicate ? "이미 같은 URL 이름(slug)의 상품이 있습니다." : error.message },
+      {
+        ok: false,
+        message: isDuplicate
+          ? "이미 같은 URL 이름(slug)의 상품이 있습니다."
+          : isMissingDetailColumn
+            ? "Supabase products.detail_json 컬럼이 필요합니다. SQL Editor에서 alter table products add column if not exists detail_json jsonb not null default '{}'::jsonb; 를 먼저 실행해주세요."
+            : error.message
+      },
       { status: isDuplicate ? 409 : 500 }
     );
   }

@@ -272,3 +272,21 @@
 - `pnpm run build` 성공
 - 기존 상품에 `detail_json`이 없거나 비어 있어도 상세페이지가 깨지지 않도록 정규화 처리
 - 상세 자동 섹션은 저장된 데이터가 있을 때만 표시되도록 boolean 조건 처리
+
+## 2026-06-29 상세페이지 자동 생성 E2E 준비 및 관리자 UX 보강
+
+### 완료 작업
+
+- `detail_json` 구조에 `schemaVersion` 추가
+- 향후 동영상, 인증서, 추가 섹션 확장을 위한 `videos`, `certificates`, `extraSections` 슬롯 추가
+- 관리자 상세페이지 입력 UI에 사진 드래그/위아래 순서 변경 기능 추가
+- 상품 장점 추가/삭제 UX 추가
+- Journey 단계 미리보기 추가
+- 상세 입력 진행 상태(사진/장점/여정 개수) 표시 추가
+- Supabase `detail_json` 컬럼 미적용 시 관리자 API 오류 메시지를 SQL 안내형으로 개선
+- SQL 적용 후 즉시 실행 가능한 `pnpm run verify:detail-json` E2E 검증 스크립트 추가
+
+### 검증
+
+- `pnpm run build` 성공
+- 실제 DB 저장 E2E는 Supabase 운영 DB에 `products.detail_json` 컬럼 적용 후 실행 예정
