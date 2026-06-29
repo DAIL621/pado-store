@@ -3,21 +3,22 @@
 import { useState } from "react";
 
 export function TrackingCopyButton({ trackingNumber }: { trackingNumber: string }) {
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(trackingNumber);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
+      setStatus("copied");
+      window.setTimeout(() => setStatus("idle"), 1800);
     } catch {
-      setCopied(false);
+      setStatus("failed");
+      window.setTimeout(() => setStatus("idle"), 1800);
     }
   };
 
   return (
     <button type="button" className="tracking-copy-button" onClick={copy} aria-live="polite">
-      {copied ? "복사됨" : "송장 복사"}
+      {status === "copied" ? "복사됨" : status === "failed" ? "복사 실패" : "송장 복사"}
     </button>
   );
 }
