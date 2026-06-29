@@ -92,7 +92,10 @@ export async function getProducts(): Promise<Product[]> {
       .map((row) => toProduct(row as ProductRow))
       .filter((product) => isPublicProductSlug(product.slug));
     const remoteSlugs = new Set(remoteProducts.map((product) => product.slug));
-    const missingFallbackProducts = fallbackProducts.filter((product) => !remoteSlugs.has(product.slug));
+    const remoteNames = new Set(remoteProducts.map((product) => product.name.trim().toLowerCase()));
+    const missingFallbackProducts = fallbackProducts.filter((product) =>
+      !remoteSlugs.has(product.slug) && !remoteNames.has(product.name.trim().toLowerCase())
+    );
     return [...remoteProducts, ...missingFallbackProducts];
   } catch {
     return fallbackProducts;
