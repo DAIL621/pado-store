@@ -31,7 +31,7 @@ export function KakaoLoginButton({ nextPath = "/mypage", label = "카카오로 �
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage("카카오 로그인 연결에 실패했습니다. 잠시 후 다시 시도해주세요.");
         setSigningIn(false);
       }
     } catch {
