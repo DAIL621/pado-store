@@ -91,3 +91,5 @@
 - [x] 관리자 상품 등록/수정에서 상세페이지 정보 저장 후 상품 상세페이지 반영 확인
 - [x] 로컬에서 `DEV_ADMIN_LOGIN_ENABLED=true`로 임시 전환 후 `pnpm run verify:detail-json` 실행
 - [x] 검증 후 `DEV_ADMIN_LOGIN_ENABLED=false` 복구 확인
+- [ ] 운영 이미지 업로드 저장소 결정: Supabase Storage / S3 / Cloudflare R2 중 선택
+- [ ] 운영 업로드 저장소 연결 후 관리자 대표사진 업로드 재검증

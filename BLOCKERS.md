@@ -64,3 +64,11 @@ alter table products add column if not exists detail_json jsonb not null default
 
 - 검증 명령: `pnpm run verify:detail-json`
 - 결과: 상품 등록, `detail_json` 저장, 상세페이지 자동 표시, 테스트 상품 soft delete 성공.
+
+## 2026-06-29 운영 이미지 업로드 저장소 결정 필요
+
+- 관리자 대표사진 업로드 UX와 로컬 개발용 `/api/admin/uploads` 저장 API는 구현했다.
+- 현재 로컬에서는 `public/uploads/products`에 파일을 저장해 즉시 미리보기와 상세페이지 검증이 가능하다.
+- Vercel 운영 환경에서는 로컬 파일 시스템 저장이 영구 저장소로 적합하지 않다.
+- 실제 운영 전 Supabase Storage, S3, Cloudflare R2 중 하나를 이미지 저장소로 결정해야 한다.
+- 이 항목은 외부 콘솔/스토리지 권한이 필요한 작업이며, 현재 관리자 UI 개발 진행을 막지는 않는다.

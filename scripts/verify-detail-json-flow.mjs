@@ -1,5 +1,7 @@
 const baseUrl = process.env.PADO_TEST_BASE_URL || "http://127.0.0.1:3000";
 const password = process.env.DEV_ADMIN_PASSWORD || "pado-admin-test";
+const tinyPngBase64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=";
 
 const cookieJar = new Map();
 
@@ -89,6 +91,16 @@ assert(adminNewHtml.includes("admin-detail-editor"), "detail editor markup not f
 const adminProducts = await request("/admin/products");
 assert(adminProducts.status === 200, `/admin/products failed: ${adminProducts.status}`);
 
+const uploadForm = new FormData();
+uploadForm.append("file", new File([Buffer.from(tinyPngBase64, "base64")], "detail-test.png", { type: "image/png" }));
+const upload = await request("/api/admin/uploads", {
+  method: "POST",
+  body: uploadForm
+});
+const uploadResult = await readJson(upload);
+assert(upload.ok, `image upload failed: ${upload.status}`);
+assert(uploadResult.url?.startsWith("/uploads/products/"), "uploaded image url was not returned");
+
 const create = await request("/api/admin/products", {
   method: "POST",
   headers: { "content-type": "application/json" },
@@ -104,7 +116,10 @@ const create = await request("/api/admin/products", {
     badge: "검증",
     highlights: "자동 상세, 관리자 입력, 저장 검증",
     options: [{ name: "검증 옵션 1kg", priceDelta: "0", stock: "3" }],
-    detailJson
+    detailJson: {
+      ...detailJson,
+      heroImages: detailJson.heroImages.map((image, index) => (index === 0 ? { ...image, url: uploadResult.url } : image))
+    }
   })
 });
 const createResult = await readJson(create);
@@ -129,12 +144,20 @@ if (productId) {
   assert(remove.ok, `test product soft delete failed: ${remove.status}`);
 }
 
+if (uploadResult.url) {
+  const { unlink } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  const target = join(process.cwd(), "public", uploadResult.url.replace(/^\//, ""));
+  await unlink(target).catch(() => {});
+}
+
 console.log(JSON.stringify({
   ok: true,
   slug,
   adminNew: true,
   adminProducts: true,
   detailJsonSaved: true,
+  imageUpload: true,
   detailPageRendered: true,
   testProductSoftDeleted: Boolean(productId)
 }, null, 2));

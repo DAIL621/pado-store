@@ -302,3 +302,33 @@
 - 저장된 데이터 기반 상품 상세페이지 자동 생성 확인
 - 테스트 상품 soft delete 처리
 - 검증 후 `DEV_ADMIN_LOGIN_ENABLED=false` 복구
+
+## 2026-06-29 관리자 상품등록 UX 1차 고도화
+
+### 완료 작업
+
+- 관리자 상품등록 화면을 Accordion 기반 섹션 구조로 개편
+- 상품등록 진행률 표시 추가
+- 실시간 상세페이지 미리보기 패널 추가
+- 대표사진 6장 클릭 업로드/드래그 업로드/썸네일/삭제/순서 변경 UX 추가
+- 로컬 개발용 관리자 이미지 업로드 API 추가: `/api/admin/uploads`
+- AI 연결 준비용 더미 생성 함수 추가
+  - `generateProductDescription`
+  - `generateAdvantages`
+  - `generateFAQ`
+  - `generateCookingGuide`
+  - `generateOriginStory`
+  - `generateShippingText`
+- 상품명/산지 기반 상세페이지 초안 자동 채우기 버튼 추가
+- E2E 검증 스크립트에 이미지 업로드 검증 추가
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
+- 검증 범위: 관리자 로그인, 상품등록, 이미지 업로드, `detail_json` 저장, 상세페이지 자동 표시, 테스트 상품 soft delete
+
+### 참고
+
+- 현재 업로드 API는 로컬 개발 검증용이다.
+- 운영 배포에서는 Supabase Storage 또는 별도 이미지 저장소로 전환하는 것이 필요하다.

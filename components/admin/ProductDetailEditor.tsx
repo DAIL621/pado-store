@@ -1,6 +1,7 @@
 "use client";
 
 import type { DragEvent } from "react";
+import { useState } from "react";
 import {
   DEFAULT_PACKAGING,
   type ProductDetail,
@@ -15,6 +16,9 @@ type Props = {
 };
 
 export function ProductDetailEditor({ value, onChange }: Props) {
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadMessage, setUploadMessage] = useState("");
+
   const update = <K extends keyof ProductDetail>(key: K, nextValue: ProductDetail[K]) => {
     onChange({ ...value, [key]: nextValue });
   };
@@ -23,6 +27,13 @@ export function ProductDetailEditor({ value, onChange }: Props) {
     update(
       "heroImages",
       value.heroImages.map((image, imageIndex) => (imageIndex === index ? { ...image, [key]: nextValue } : image))
+    );
+  };
+
+  const updateHeroFields = (index: number, fields: Partial<ProductDetailImage>) => {
+    update(
+      "heroImages",
+      value.heroImages.map((image, imageIndex) => (imageIndex === index ? { ...image, ...fields } : image))
     );
   };
 
@@ -40,8 +51,40 @@ export function ProductDetailEditor({ value, onChange }: Props) {
 
   const handleHeroDrop = (event: DragEvent<HTMLDivElement>, index: number) => {
     event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      uploadHeroFile(index, file);
+      return;
+    }
     const fromIndex = Number(event.dataTransfer.getData("text/plain"));
     if (Number.isInteger(fromIndex)) moveHero(fromIndex, index);
+  };
+
+  const uploadHeroFile = async (index: number, file: File) => {
+    setUploadingIndex(index);
+    setUploadMessage("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body: formData
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setUploadMessage(result.message ?? "이미지 업로드에 실패했습니다.");
+        return;
+      }
+      updateHeroFields(index, {
+        url: result.url,
+        description: value.heroImages[index]?.description || file.name.replace(/\.[^.]+$/, "")
+      });
+      setUploadMessage("이미지가 업로드되었습니다.");
+    } catch {
+      setUploadMessage("이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setUploadingIndex(null);
+    }
   };
 
   const updateBenefit = (index: number, nextValue: string) => {
@@ -127,6 +170,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       <details open>
         <summary>상세페이지 대표사진 6장</summary>
         <p className="admin-detail-help">카드를 드래그하거나 위/아래 버튼으로 상세페이지 사진 노출 순서를 조정할 수 있습니다.</p>
+        {uploadMessage && <p className="admin-detail-upload-message" role="status">{uploadMessage}</p>}
         <div className="admin-detail-grid">
           {value.heroImages.map((image, index) => (
             <div
@@ -144,6 +188,24 @@ export function ProductDetailEditor({ value, onChange }: Props) {
                   <button type="button" onClick={() => moveHero(index, index + 1)} disabled={index === value.heroImages.length - 1}>아래</button>
                 </span>
               </div>
+              <div className={`admin-image-upload-box ${image.url ? "has-image" : ""}`}>
+                {image.url ? (
+                  <img src={image.url} alt={`${image.label} 미리보기`} />
+                ) : (
+                  <span>이미지를 드롭하거나 클릭해 업로드</span>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  aria-label={`${image.label} 업로드`}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) uploadHeroFile(index, file);
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </div>
+              {uploadingIndex === index && <small className="admin-upload-progress">업로드 중...</small>}
               <label>
                 사진 역할
                 <input value={image.label} onChange={(event) => updateHero(index, "label", event.target.value)} placeholder="예: 대표사진" />
@@ -156,6 +218,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
                 사진 설명
                 <input value={image.description ?? ""} onChange={(event) => updateHero(index, "description", event.target.value)} placeholder="상세페이지 보조 설명" />
               </label>
+              <button type="button" onClick={() => updateHero(index, "url", "")} disabled={!image.url}>이미지 삭제</button>
             </div>
           ))}
         </div>
