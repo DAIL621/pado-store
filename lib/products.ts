@@ -27,6 +27,11 @@ type OptionRow = {
 const hasSupabaseEnv = () =>
   Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
+function isPublicProductSlug(slug: string) {
+  const normalized = slug.toLowerCase();
+  return !normalized.startsWith("ops-") && !normalized.includes("test");
+}
+
 function toProduct(row: ProductRow): Product {
   const price = row.base_price;
   const normalPrice = price + (price >= 40000 ? 6000 : 5000);
@@ -87,7 +92,9 @@ export async function getProducts(): Promise<Product[]> {
 
     if (error || !data?.length) return fallbackProducts;
 
-    const remoteProducts = data.map((row) => toProduct(row as ProductRow));
+    const remoteProducts = data
+      .map((row) => toProduct(row as ProductRow))
+      .filter((product) => isPublicProductSlug(product.slug));
     const remoteSlugs = new Set(remoteProducts.map((product) => product.slug));
     const missingFallbackProducts = fallbackProducts.filter((product) => !remoteSlugs.has(product.slug));
     return [...remoteProducts, ...missingFallbackProducts];
@@ -97,6 +104,7 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
+  if (!isPublicProductSlug(slug)) return undefined;
   if (!hasSupabaseEnv()) return fallbackProducts.find((product) => product.slug === slug);
 
   try {

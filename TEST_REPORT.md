@@ -173,3 +173,9 @@
 - 로컬 응답 확인: `service=pado-story-store`, `status=ok`
 - 로컬 `.env.local` 기준 `NEXT_PUBLIC_SITE_URL`만 false 확인
 - `pnpm run build`: 성공
+## 2026-06-27 공개 상품/sitemap 안정성 검증
+
+- 고객-facing 상품 조회에서 `ops-` 또는 `test` 성격의 검증용 slug 제외
+- sitemap 상품 URL에 `encodeURIComponent` 적용
+- 로컬 sitemap 확인: `ops-state-test` 없음, 깨진 한글 URL 없음, 인코딩된 한글 URL 확인
+- `pnpm run build`: 성공

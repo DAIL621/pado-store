@@ -172,3 +172,9 @@
 - 비밀값은 노출하지 않고 boolean readiness만 반환
 - 로컬 응답 확인 완료
 - `pnpm run build` 성공 확인
+## 2026-06-27 공개 상품/sitemap 정리
+
+- 검증용 slug가 공개 상품 목록/상세/sitemap에 노출되지 않도록 방어
+- sitemap 상품 상세 URL 인코딩 처리
+- 로컬 sitemap 응답 검증 완료
+- `pnpm run build` 성공 확인
