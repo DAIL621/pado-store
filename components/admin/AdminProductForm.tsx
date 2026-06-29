@@ -35,6 +35,7 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
         initialForm={emptyProductForm}
         initialOptions={defaultProductOptions}
         resetAfterSuccess
+        draftStorageKey="pado-admin-product-create-draft"
         onSubmit={createProduct}
       />
     </AdminLayout>

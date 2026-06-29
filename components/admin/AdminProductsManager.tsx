@@ -267,6 +267,7 @@ function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct
           initialForm={initialForm}
           initialOptions={toOptionForms(product)}
           initialDetail={product.detail_json}
+          draftStorageKey={`pado-admin-product-edit-draft-${product.id}`}
           onSubmit={updateProduct}
           onSuccess={onSaved}
         />

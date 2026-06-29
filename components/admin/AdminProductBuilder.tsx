@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ProductDetailEditor } from "@/components/admin/ProductDetailEditor";
 import { ProductDetailPreview } from "@/components/admin/ProductDetailPreview";
 import { generateProductDescription, generateProductDetailDraft } from "@/lib/admin/ai-product-drafts";
@@ -47,6 +47,7 @@ type Props = {
   initialOptions: AdminProductOptionForm[];
   initialDetail?: ProductDetail | null;
   resetAfterSuccess?: boolean;
+  draftStorageKey?: string;
   onSubmit: (payload: AdminProductBuilderPayload) => Promise<SubmitResult>;
   onSuccess?: (result: SubmitResult) => void | Promise<void>;
 };
@@ -76,6 +77,7 @@ export function AdminProductBuilder({
   initialOptions,
   initialDetail,
   resetAfterSuccess = false,
+  draftStorageKey,
   onSubmit,
   onSuccess
 }: Props) {
@@ -85,7 +87,52 @@ export function AdminProductBuilder({
   const [message, setMessage] = useState(initialMessage);
   const [createdUrl, setCreatedUrl] = useState("");
   const [saving, setSaving] = useState(false);
+  const [draftStatus, setDraftStatus] = useState("");
+  const [draftReady, setDraftReady] = useState(!draftStorageKey);
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (!draftStorageKey) return;
+
+    try {
+      const raw = window.localStorage.getItem(draftStorageKey);
+      if (raw) {
+        const draft = JSON.parse(raw) as Partial<AdminProductBuilderPayload> & { savedAt?: string };
+        if (draft.form) setForm((current) => ({ ...current, ...draft.form }));
+        if (draft.options?.length) setOptions(draft.options);
+        if (draft.detailJson) setDetailJson(createProductDetailFormValue(draft.detailJson));
+        const savedAt = draft.savedAt ? new Date(draft.savedAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }) : "";
+        setDraftStatus(savedAt ? `${savedAt} 자동 저장 초안을 불러왔습니다.` : "자동 저장 초안을 불러왔습니다.");
+      }
+    } catch {
+      setDraftStatus("저장된 초안을 불러오지 못했습니다. 새 입력은 계속 가능합니다.");
+    } finally {
+      setDraftReady(true);
+    }
+  }, [draftStorageKey]);
+
+  useEffect(() => {
+    if (!draftStorageKey || !draftReady || saving) return;
+
+    const timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(
+          draftStorageKey,
+          JSON.stringify({
+            form,
+            options,
+            detailJson,
+            savedAt: new Date().toISOString()
+          })
+        );
+        setDraftStatus("초안 자동 저장됨");
+      } catch {
+        setDraftStatus("브라우저 저장 공간 부족으로 초안 자동 저장에 실패했습니다.");
+      }
+    }, 800);
+
+    return () => window.clearTimeout(timer);
+  }, [detailJson, draftReady, draftStorageKey, form, options, saving]);
 
   const update = (key: keyof AdminProductFormState, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -169,6 +216,7 @@ export function AdminProductBuilder({
       setOptions(initialOptions);
       setDetailJson(createProductDetailFormValue(initialDetail));
     }
+    if (draftStorageKey) window.localStorage.removeItem(draftStorageKey);
     setCreatedUrl(result.productUrl ?? "");
     setMessage(result.message ?? successMessage);
     setSaving(false);
@@ -189,6 +237,7 @@ export function AdminProductBuilder({
         <div>
           <h2>{title}</h2>
           <span className="admin-message">{message}</span>
+          {draftStatus && <small className="admin-draft-status">{draftStatus}</small>}
           {createdUrl && <a className="admin-message-link" href={createdUrl} target="_blank">방금 저장한 상품 보기 →</a>}
         </div>
         <button type="button" className="button outline" onClick={fillDraft}>초안 자동 채우기</button>
