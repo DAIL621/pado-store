@@ -442,3 +442,17 @@
 - `pnpm run build`: 성공
 - `pnpm run verify:detail-json`: 성공
 - 상품 목록 접근: 성공
+
+## 2026-06-29 관리자 모달 레이아웃 검증
+
+### 검증 범위
+
+- 상품 수정 모달 기본 레이아웃 CSS
+- 모달 내부 공통 상품 빌더 스크롤 구조
+- 모바일 폭에서 모달 여백/패널 padding
+- 기존 상품 등록 E2E 영향 여부
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-json`: 성공
