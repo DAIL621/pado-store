@@ -43,9 +43,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "상품 옵션과 수량을 다시 확인해주세요." }, { status: 400 });
   }
 
-  const clientSubtotal = items.reduce((sum, item) => sum + Number(item.unitPrice) * Number(item.quantity), 0);
-  const clientShipping = calculateShipping(clientSubtotal);
-  const clientTotalAmount = clientSubtotal + clientShipping;
   const orderNo = makeOrderNo();
   const recipientName = String(body.recipientName ?? "").trim();
   const recipientPhone = String(body.recipientPhone ?? "").trim();
@@ -78,16 +75,9 @@ export async function POST(request: Request) {
 
   if (!hasSupabaseAdminEnv()) {
     return NextResponse.json({
-      ok: true,
-      mode: "mock",
-      order: {
-        id: `mock-${orderNo}`,
-        order_no: orderNo,
-        total_amount: clientTotalAmount,
-        status: "pending"
-      },
-      message: "Supabase 관리자 키가 없어 테스트 주문번호만 생성했습니다."
-    });
+      ok: false,
+      message: "주문 처리 설정이 준비되지 않았습니다. 고객센터로 문의해주세요."
+    }, { status: 503 });
   }
 
   const supabase = createAdminClient();
