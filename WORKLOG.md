@@ -199,3 +199,7 @@
 - 주문 생성 API의 `payments` insert 결과를 확인하도록 수정
 - payment ready row 생성 실패 시 결제 진행 전 오류 반환
 - `pnpm run build` 성공 확인
+## 2026-06-27 장바구니 수량 버튼 접근성 보강
+
+- 장바구니 수량 조절 버튼 aria-label을 상품명 포함 문구로 변경
+- `pnpm run build` 성공 확인

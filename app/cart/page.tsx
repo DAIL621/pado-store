@@ -80,9 +80,9 @@ export default function CartPage() {
                     {hasStockLimit && <small className={atStockLimit || isUnavailable ? "cart-stock-note limit" : "cart-stock-note"}>{isUnavailable ? "현재 품절된 옵션입니다" : `구매 가능 ${stock}개`}</small>}
                     <div className="cart-controls">
                       <div>
-                        <button type="button" disabled={item.quantity <= 1} onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity - 1)} aria-label="수량 줄이기">−</button>
+                        <button type="button" disabled={item.quantity <= 1} onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity - 1)} aria-label={`${item.name} 수량 줄이기`}>−</button>
                         <b aria-live="polite">{item.quantity}</b>
-                        <button type="button" disabled={atStockLimit} onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity + 1)} aria-label="수량 늘리기">+</button>
+                        <button type="button" disabled={atStockLimit} onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity + 1)} aria-label={`${item.name} 수량 늘리기`}>+</button>
                       </div>
                       <button type="button" className="remove" onClick={() => removeWithUndo(item)}>삭제</button>
                     </div>
