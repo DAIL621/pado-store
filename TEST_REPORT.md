@@ -179,3 +179,9 @@
 - sitemap 상품 URL에 `encodeURIComponent` 적용
 - 로컬 sitemap 확인: `ops-state-test` 없음, 깨진 한글 URL 없음, 인코딩된 한글 URL 확인
 - `pnpm run build`: 성공
+## 2026-06-27 공개 상품 목록 테스트 상품 노출 확인
+
+- 기존 3000 포트 서버 재사용
+- `/products` 모바일 viewport 확인
+- 상품 카드 14개 표시
+- `ops-state-test` 및 `test-` slug 노출 없음
