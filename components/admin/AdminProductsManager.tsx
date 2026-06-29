@@ -184,7 +184,7 @@ export function AdminProductsManager() {
           <span className="admin-message">검색 결과 {filtered.length}개</span>
         </div>
         <div className="table-wrap">
-          <table>
+          <table className="product-admin-table">
             <thead>
               <tr>
                 <th>상품명</th>

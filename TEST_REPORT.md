@@ -347,6 +347,27 @@
 
 - `pnpm run build`: 성공
 - `pnpm run verify:detail-json`: 성공
+
+## 2026-06-29 관리자 상품 목록 모바일 카드형 검증
+
+### 검증 범위
+
+- 모바일 상품 목록 카드형 표시
+- 상세 완성도 뱃지 표시
+- 관리 버튼 모바일 접근성
+- iPhone / Android Playwright 캡처
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-json`: 성공
+- iPhone 캡처: 생성 완료
+- Android 캡처: 생성 완료
+
+### 발견 사항
+
+- Playwright full-page 캡처에서는 sticky header가 긴 페이지 중간에 반복 표시될 수 있다.
+- 실제 브라우저 스크롤 동작 문제는 아니며, 캡처 방식 특성으로 판단한다.
 - 이미지 업로드: 성공
 - 상품 등록: 성공
 - 상세페이지 자동 표시: 성공
