@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { isValidTrackingNumber, TRACKING_NUMBER_MESSAGE } from "@/lib/shipping/tracking";
 
 type DeliveryStatus = "preparing" | "shipped" | "delivered";
 
@@ -59,10 +60,6 @@ function getProductSummary(order: DeliveryOrder) {
 
 function isDeliveryStatus(status: string): status is DeliveryStatus {
   return deliveryStatuses.includes(status as DeliveryStatus);
-}
-
-function isValidTrackingNumber(value: string) {
-  return /^[0-9A-Za-z-]{6,40}$/.test(value.trim());
 }
 
 function makeDraft(order: DeliveryOrder): DeliveryDraft {
@@ -148,7 +145,7 @@ export function AdminDeliveriesManager() {
       return;
     }
     if (cleanedTrackingNumber && !isValidTrackingNumber(cleanedTrackingNumber)) {
-      setMessage("송장번호는 영문, 숫자, 하이픈 6~40자로 입력해주세요.");
+      setMessage(TRACKING_NUMBER_MESSAGE);
       return;
     }
 

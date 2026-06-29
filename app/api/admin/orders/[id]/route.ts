@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/admin-api";
 import { readJsonBody } from "@/lib/api/request";
+import { isValidTrackingNumber, TRACKING_NUMBER_MESSAGE } from "@/lib/shipping/tracking";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const allowedStatuses = ["pending", "paid", "preparing", "shipped", "delivered", "cancelled"] as const;
@@ -21,10 +22,6 @@ function isOrderStatus(value: unknown): value is OrderStatus {
 
 function cleanText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
-}
-
-function isValidTrackingNumber(value: string) {
-  return /^[0-9A-Za-z-]{6,40}$/.test(value);
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -72,7 +69,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   if (body.trackingNumber !== undefined || body.carrier !== undefined) {
     if (nextTrackingNumber && !isValidTrackingNumber(nextTrackingNumber)) {
-      return NextResponse.json({ ok: false, message: "송장번호는 영문, 숫자, 하이픈 6~40자로 입력해주세요." }, { status: 400 });
+      return NextResponse.json({ ok: false, message: TRACKING_NUMBER_MESSAGE }, { status: 400 });
     }
     if (nextTrackingNumber && !nextCarrier) {
       return NextResponse.json({ ok: false, message: "송장번호를 입력하려면 택배사가 필요합니다." }, { status: 400 });
