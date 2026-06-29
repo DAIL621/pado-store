@@ -4,8 +4,8 @@
 
 ### 현재 진행률
 
-- Phase 1 진행률: 86%
-- 예상 오픈 준비도: 88%
+- Phase 1 진행률: 90%
+- 예상 오픈 준비도: 91%
 
 ### 완료 또는 개선된 항목
 
@@ -103,3 +103,29 @@
 2. Production URL 기준 Supabase/Kakao/Toss redirect URL 확인
 3. 실제 iPhone Safari/Android Chrome 실기기 최종 확인
 4. 실제 배포 URL 기준 Toss 결제 성공/실패 반복 테스트
+
+## 2026-06-29 Phase 1 운영 안정화 업데이트
+
+### 추가 완료
+
+- 주문 생성 실패 시 반쪽 주문 데이터 cleanup
+- 주문 API mock 성공 응답 제거
+- 상품 상세 장바구니 기존 수량 반영 및 추가 가능 수량 안내
+- 모바일 상품 목록 구매 가능 필터/정렬 보강
+- 마이페이지 송장번호 포함 CJ대한통운 배송조회 링크
+- 송장번호 검증 공통화
+- Toss 승인 전 재고 부분 차감 실패 롤백
+- 숨김/테스트 상품 직접 주문 차단
+- DB 상품과 fallback 상품 중복 노출 방지
+- 결제 승인 후 DB 반영 실패 경고 표시
+- 관리자 상품 옵션 생성/수정 동기화
+- 카카오 로그인 redirect 방어
+- 장바구니 provider 비정상 입력 방어
+
+### Phase 1 남은 핵심 확인
+
+1. Vercel Dashboard 최신 배포 성공 확인
+2. Production `NEXT_PUBLIC_SITE_URL` 및 외부 redirect URL 최종 등록
+3. 실제 모바일 실기기 구매 흐름 확인
+4. 실제 배포 URL 기준 Toss 결제 성공/실패 반복 검증
+5. 리뷰 최소 기능 구현 여부 최종 결정

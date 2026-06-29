@@ -43,6 +43,7 @@
 - [ ] Install command uses pnpm
 - [ ] Latest GitHub commit deploys successfully
 - [ ] Preview deployment is checked before production promotion when possible
+- [ ] `/api/health` returns true for Supabase, Toss, Kakao, Site URL, and `DEV_ADMIN_LOGIN_ENABLED=false`
 
 ## 6. SEO And Public Assets
 
@@ -60,11 +61,18 @@
 - [ ] Android Chrome home/products/product detail/cart/checkout
 - [ ] Kakao login
 - [ ] Product option selection
+- [ ] Product detail prevents adding more than remaining stock after cart quantity
 - [ ] Cart quantity change/delete/undo
+- [ ] Cart does not accept zero-stock or invalid quantity items
 - [ ] Checkout validation
+- [ ] Order creation fails safely if order items/payment row cannot be saved
 - [ ] Toss test payment
+- [ ] Toss confirm rolls back partial stock reservation failures
+- [ ] Toss success shows a customer warning if payment is approved but order status persistence needs manual check
 - [ ] MyPage order history
+- [ ] MyPage CJ tracking link opens with invoice number when available
 - [ ] Admin product management
+- [ ] Admin product option removal no longer leaves stale extra options
 - [ ] Admin order management
 - [ ] Admin delivery management
 

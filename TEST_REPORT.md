@@ -211,3 +211,42 @@
 
 - 상품 상세 구매 박스 수량 증가/감소 버튼 aria-label에 상품명 포함
 - `pnpm run build`: 성공
+
+## 2026-06-29 Phase 1 운영 안정화 검증
+
+### 검증 범위
+
+- 주문 생성 실패 cleanup
+- 상품 상세 장바구니 기존 수량 반영
+- 모바일 상품 목록 구매 가능 필터/정렬
+- 주문서 결제 문구
+- 마이페이지 배송조회 링크/송장 복사 접근성
+- 주문 API mock 응답 제거
+- Toss 결제 승인 전 재고 부분 차감 롤백
+- 공개 상품 slug 주문 API 검증
+- DB/fallback 상품 중복 제거
+- 결제 승인 후 DB 반영 경고 표시
+- 관리자 상품 옵션 생성/수정 동기화
+- 카카오 로그인 redirect 대상 방어
+- 장바구니 provider 방어 로직
+
+### 빌드 결과
+
+- 명령: `pnpm run build`
+- 결과: 성공
+- 반복 확인: 주요 변경 커밋마다 성공 확인
+
+### 로컬 응답 확인
+
+- `/products`: 200
+- `/cart`: 200
+- `/checkout`: 200
+- `/api/health`: `NEXT_PUBLIC_SITE_URL=false`, 나머지 주요 환경변수 true
+- `/sitemap.xml`: 테스트 slug 미노출, 상품 URL 인코딩 확인
+
+### 남은 외부 검증
+
+- Vercel Dashboard 최신 커밋 배포 완료 여부
+- Production `NEXT_PUBLIC_SITE_URL` 등록 여부
+- 실제 iPhone Safari / Android Chrome 최종 구매 흐름
+- Production URL 기준 Kakao/Toss redirect 왕복

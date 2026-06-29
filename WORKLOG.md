@@ -207,3 +207,48 @@
 
 - 상품 상세 수량 조절 버튼 aria-label을 상품명 포함 문구로 변경
 - `pnpm run build` 성공 확인
+
+## 2026-06-29 Phase 1 운영 안정화 연속 작업
+
+### 완료 작업
+
+- 주문 생성 중 `order_items` 또는 `payments` 저장 실패 시 생성된 주문 데이터를 정리하도록 보강
+- 상품 상세 구매 박스가 장바구니에 이미 담긴 수량을 제외한 추가 가능 수량을 안내하도록 개선
+- 모바일 상품 목록에 `구매 가능만` 필터와 높은 가격순 정렬 추가
+- 주문서 결제 문구를 운영용 안전결제 문구로 정리
+- 마이페이지 CJ대한통운 배송조회 링크에 송장번호 파라미터 연결
+- 주문 API의 mock 주문번호 성공 응답 제거
+- 송장번호 검증 로직 공통화
+- Toss 승인 전 재고 예약 차감의 부분 실패 롤백 보강
+- 숨김/테스트 상품 slug가 주문 API로 직접 들어와도 차단하도록 보강
+- DB 상품과 fallback 상품의 이름 중복 노출 방지
+- Toss 승인 후 DB 반영 실패 시 중복 결제를 유도하지 않고 경고를 표시하도록 보강
+- 관리자 상품 등록 실패 cleanup 및 옵션 개수 동기화 보강
+- 카카오 로그인 리다이렉트 대상 방어 보강
+- 장바구니 provider에서 비정상 수량/재고 0 추가 방어
+
+### 커밋
+
+- `456c608 Clean up incomplete order creation`
+- `d7b2cff Respect cart quantity in product purchase`
+- `b55883f Improve mobile product filtering`
+- `35a5445 Polish checkout payment copy`
+- `306bf7f Improve mypage tracking links`
+- `af480b9 Disable mock order creation in production path`
+- `7959e96 Share tracking number validation`
+- `4ea9cd6 Rollback partial stock reservations`
+- `da8ebed Polish Kakao login error copy`
+- `6f1de78 Recover product detail lookup from public list`
+- `6869ef7 Validate public product slugs on order creation`
+- `a6b1f9e Surface payment persistence warnings`
+- `5dd9e7f Keep product options in sync`
+- `cdf907a Harden cart item additions`
+- `522c3b3 Avoid duplicate fallback products`
+- `648a6da Harden Kakao login redirect target`
+
+### 검증
+
+- 각 주요 변경 후 `pnpm run build` 성공 확인
+- 기존 `127.0.0.1:3000` 서버에서 `/products`, `/cart`, `/checkout` 200 응답 확인
+- `/api/health` 로컬 응답 확인: `NEXT_PUBLIC_SITE_URL`만 false, 나머지 주요 환경변수 true
+- `/sitemap.xml` 공개 상품 URL 인코딩 및 테스트 slug 미노출 확인

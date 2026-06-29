@@ -42,3 +42,13 @@
 - 로컬 `/api/health` 확인 결과 `NEXT_PUBLIC_SITE_URL`이 false로 표시됨.
 - Vercel Production 환경변수에는 실제 배포 URL 또는 연결 도메인을 `NEXT_PUBLIC_SITE_URL`로 등록해야 함.
 - 이 항목은 외부 Vercel Dashboard 설정이 필요하므로 내부 개발 중단 사유가 아님.
+
+## 2026-06-29 외부 확인 필요 항목
+
+- 최신 커밋 `648a6da` 이후 Vercel 자동 배포 완료 여부는 Vercel Dashboard에서 확인 필요.
+- 로컬 `/api/health` 기준 `NEXT_PUBLIC_SITE_URL`이 false이므로 Vercel Production 환경변수에 실제 배포 URL 등록 필요.
+- Supabase Redirect URL, Kakao Redirect URI, Toss 성공/실패 URL은 실제 Production URL 기준으로 외부 콘솔에서 최종 확인 필요.
+- 실제 iPhone Safari / Android Chrome 실기기에서 홈, 상품목록, 상품상세, 장바구니, 주문서, 마이페이지 흐름 확인 필요.
+- Toss 테스트 결제 성공/실패 왕복과 결제 완료 후 주문상태/재고 반영은 실제 배포 URL에서 반복 검증 필요.
+
+위 항목은 외부 권한 또는 실기기가 필요한 확인 작업이며, 내부 개발 종료 사유가 아니다.
