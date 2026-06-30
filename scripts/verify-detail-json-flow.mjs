@@ -52,25 +52,31 @@ const slug = `detail-auto-verification-${stamp}`;
 
 const detailJson = {
   heroImages: [
-    { label: "대표사진", url: "/images/products/wando-abalone.webp", description: "대표 사진 검증" },
-    { label: "크기 비교 사진", url: "/images/products/tongyeong-conch.webp", description: "크기 비교 검증" },
-    { label: "신선도/질감 사진", url: "/images/products/tongyeong-eel.webp", description: "신선도 검증" },
-    { label: "구성품 사진", url: "/images/products/tongyeong-oyster.webp", description: "구성품 검증" },
-    { label: "포장 상태 사진", url: "/images/products/mokpo-hairtail.webp", description: "포장 검증" },
-    { label: "조리 후 모습 사진", url: "/images/products/tongyeong-octopus.webp", description: "조리 후 검증" }
+    { label: "Main photo", url: "/images/products/wando-abalone.webp", description: "Primary verification image" },
+    { label: "Size comparison", url: "/images/products/tongyeong-conch.webp", description: "Size comparison image" },
+    { label: "Fresh texture", url: "/images/products/tongyeong-eel.webp", description: "Freshness verification image" },
+    { label: "Components", url: "/images/products/tongyeong-oyster.webp", description: "Package components image" },
+    { label: "Packaging", url: "/images/products/mokpo-hairtail.webp", description: "Packaging state image" },
+    { label: "Cooked dish", url: "/images/products/tongyeong-octopus.webp", description: "Cooked dish image" }
   ],
-  benefits: ["완도산 활전복", "당일 선별", "산소포장", "오후 1시 이전 당일 출고", "신선도 보장"],
+  benefits: ["Wando origin", "Same-day sorting", "Oxygen packaging", "Ships before 1 PM", "Freshness guarantee"],
   journey: [
-    { key: "origin", title: "산지", image: "/images/story/tongyeong-sea.webp", description: "통영 산지에서 준비합니다." },
-    { key: "sorting", title: "선별", image: "/images/story/why-sorting.webp", description: "상태 좋은 상품만 선별합니다." },
-    { key: "packing", title: "포장", image: "/images/story/why-packing.webp", description: "신선 포장 후 출고합니다." },
-    { key: "delivery", title: "배송", image: "/images/story/hero-conch.webp", description: "냉장 배송으로 이동합니다." },
-    { key: "table", title: "식탁", image: "/images/products/wando-abalone.webp", description: "식탁에서 바로 즐길 수 있습니다." }
+    { key: "origin", title: "Origin", image: "/images/story/tongyeong-sea.webp", description: "Prepared at the local fishery." },
+    { key: "sorting", title: "Sorting", image: "/images/story/why-sorting.webp", description: "Only good products are selected." },
+    { key: "packing", title: "Packing", image: "/images/story/why-packing.webp", description: "Packed cold before shipment." },
+    { key: "delivery", title: "Delivery", image: "/images/story/hero-conch.webp", description: "Delivered through refrigerated shipping." },
+    { key: "table", title: "Table", image: "/images/products/wando-abalone.webp", description: "Ready to enjoy at home." }
   ],
-  packaging: ["아이스팩 동봉", "냉장 신선 포장", "평일 오후 1시 이전 주문 당일 출고", "안전한 포장으로 신선도 유지"],
-  recipes: [{ title: "전복버터구이", description: "버터와 마늘을 넣고 구워 드세요.", image: "/images/products/wando-abalone.webp" }],
-  components: ["검증 상품 1kg", "아이스팩", "보관 안내문"],
-  faq: [{ question: "언제 출고되나요?", answer: "평일 오후 1시 이전 주문 건은 당일 출고됩니다." }]
+  packaging: ["Ice pack included", "Fresh refrigerated packaging", "Ships same day before 1 PM", "Packed to protect freshness"],
+  recipes: [
+    {
+      title: "Butter grilled abalone",
+      description: "Cook with butter and garlic until golden.",
+      image: "/images/products/wando-abalone.webp"
+    }
+  ],
+  components: ["Verification product 1kg", "Ice pack", "Storage guide"],
+  faq: [{ question: "When does it ship?", answer: "Weekday orders before 1 PM ship the same day." }]
 };
 
 const loginPage = await request("/dev-admin-login");
@@ -105,17 +111,17 @@ const create = await request("/api/admin/products", {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({
-    name: `상세 자동화 검증 상품 ${stamp}`,
+    name: `Detail Auto Verification Product ${stamp}`,
     slug,
-    origin: "통영",
-    category: "검증상품",
-    subtitle: "상세페이지 자동 생성 검증용 상품",
-    description: "관리자 입력 데이터가 상품 상세페이지에 자동 표시되는지 확인합니다.",
+    origin: "Wando",
+    category: "Verification",
+    subtitle: "Automatic detail page verification product",
+    description: "Checks whether admin detail_json data renders through the master product detail template.",
     basePrice: "12300",
     imageUrl: "/images/products/wando-abalone.webp",
-    badge: "검증",
-    highlights: "자동 상세, 관리자 입력, 저장 검증",
-    options: [{ name: "검증 옵션 1kg", priceDelta: "0", stock: "3" }],
+    badge: "TEST",
+    highlights: "Automatic detail, Admin input, Save verification",
+    options: [{ name: "Verification option 1kg", priceDelta: "0", stock: "3" }],
     detailJson: {
       ...detailJson,
       heroImages: detailJson.heroImages.map((image, index) => (index === 0 ? { ...image, url: uploadResult.url } : image))
@@ -135,8 +141,18 @@ assert(createResult.product?.detail_json?.heroImages?.length === 6, "heroImages 
 const detail = await request(`/products/${slug}`);
 const detailHtml = await detail.text();
 assert(detail.status === 200, `detail page failed: ${detail.status}`);
-assert(detailHtml.includes("완도산 활전복"), "benefit was not rendered on detail page");
-assert(detailHtml.includes("언제 출고되나요?"), "FAQ was not rendered on detail page");
+assert(detailHtml.includes("detail-master-hero"), "master detail hero was not rendered");
+assert(detailHtml.includes("detail-master-features"), "feature section was not rendered");
+assert(detailHtml.includes("detail-master-overview"), "overview section was not rendered");
+assert(detailHtml.includes("detail-master-timeline"), "timeline section was not rendered");
+assert(detailHtml.includes("detail-master-advantages"), "advantage section was not rendered");
+assert(detailHtml.includes("detail-master-gallery"), "gallery section was not rendered");
+assert(detailHtml.includes("detail-master-cooking"), "cooking section was not rendered");
+assert(detailHtml.includes("detail-master-shipping"), "packaging section was not rendered");
+assert(detailHtml.includes("detail-master-components"), "components section was not rendered");
+assert(detailHtml.includes("detail-master-faq"), "FAQ section was not rendered");
+assert(detailHtml.includes("Wando origin"), "benefit was not rendered on detail page");
+assert(detailHtml.includes("When does it ship?"), "FAQ content was not rendered on detail page");
 
 const productId = createResult.product?.id;
 if (productId) {
@@ -151,13 +167,20 @@ if (uploadResult.url) {
   await unlink(target).catch(() => {});
 }
 
-console.log(JSON.stringify({
-  ok: true,
-  slug,
-  adminNew: true,
-  adminProducts: true,
-  detailJsonSaved: true,
-  imageUpload: true,
-  detailPageRendered: true,
-  testProductSoftDeleted: Boolean(productId)
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      ok: true,
+      slug,
+      adminNew: true,
+      adminProducts: true,
+      detailJsonSaved: true,
+      imageUpload: true,
+      masterTemplateSections: true,
+      detailPageRendered: true,
+      testProductSoftDeleted: Boolean(productId)
+    },
+    null,
+    2
+  )
+);
