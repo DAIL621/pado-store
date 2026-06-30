@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { isDevAdminLoginEnabled, setDevAdminSession } from "@/lib/auth/dev-admin";
+import { isDevAdminLoginEnabled, setDevAdminSessionCookie } from "@/lib/auth/dev-admin";
 
 export async function POST(request: Request) {
   if (!isDevAdminLoginEnabled()) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/", request.url), { status: 303 });
   }
 
   const formData = await request.formData();
@@ -11,9 +11,11 @@ export async function POST(request: Request) {
   const expectedPassword = process.env.DEV_ADMIN_PASSWORD;
 
   if (!expectedPassword || password !== expectedPassword) {
-    return NextResponse.redirect(new URL("/dev-admin-login?error=1", request.url));
+    return NextResponse.redirect(new URL("/dev-admin-login?error=1", request.url), { status: 303 });
   }
 
-  await setDevAdminSession();
-  return NextResponse.redirect(new URL("/admin", request.url));
+  const nextPath = String(formData.get("next") ?? "/admin/products");
+  const safeNextPath = nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/admin/products";
+  const response = NextResponse.redirect(new URL(safeNextPath, request.url), { status: 303 });
+  return setDevAdminSessionCookie(response);
 }

@@ -87,7 +87,8 @@ const login = await request("/api/dev-admin-login", {
   headers: { "content-type": "application/x-www-form-urlencoded" },
   body: new URLSearchParams({ password }).toString()
 });
-assert(login.status === 307 || login.status === 303, `dev admin login failed: ${login.status}`);
+assert(login.status === 303, `dev admin login should redirect with 303, got: ${login.status}`);
+assert(login.headers.get("location")?.endsWith("/admin/products"), "dev admin login did not redirect to /admin/products");
 
 const adminNew = await request("/admin/new");
 const adminNewHtml = await adminNew.text();
@@ -95,7 +96,9 @@ assert(adminNew.status === 200, `/admin/new failed: ${adminNew.status}`);
 assert(adminNewHtml.includes("admin-detail-editor"), "detail editor markup not found on /admin/new");
 
 const adminProducts = await request("/admin/products");
+const adminProductsHtml = await adminProducts.text();
 assert(adminProducts.status === 200, `/admin/products failed: ${adminProducts.status}`);
+assert(!adminProductsHtml.includes("카카오로 3초 로그인"), "/admin/products fell back to the Kakao login page");
 
 const uploadForm = new FormData();
 uploadForm.append("file", new File([Buffer.from(tinyPngBase64, "base64")], "detail-test.png", { type: "image/png" }));

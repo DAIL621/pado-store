@@ -544,3 +544,18 @@
 - `pnpm run verify:detail-template` 성공
 - Playwright/Edge 캡처: 상품 상세 Desktop, iPhone, Android 폭 확인
 - Playwright/Edge 캡처: 신뢰 바 적용 후 Desktop, iPhone, Android 폭 재확인
+
+## 2026-06-30 개발용 관리자 로그인 진입 수정
+
+### 완료 작업
+
+- `/api/dev-admin-login` 성공 응답이 303 redirect로 `/admin/products`에 이동하도록 수정
+- 개발 관리자 쿠키를 redirect 응답 객체에 직접 설정하도록 개선
+- `/dev-admin-login`에 안전한 `next` hidden field와 오류 메시지 표시 추가
+- E2E 검증에서 개발 관리자 로그인 redirect 대상과 `/admin/products` 카카오 로그인 fallback 방지 여부 확인
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:admin` 성공
+- 실제 로컬 HTTP 검증: `/dev-admin-login` 200, 로그인 303, `pado_dev_admin` 쿠키 생성, `/admin`, `/admin/products`, `/admin/new` 200 확인

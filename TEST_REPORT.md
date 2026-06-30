@@ -594,3 +594,23 @@
 - 상품 상세 Desktop 캡처: 성공
 - 상품 상세 iPhone 캡처: 성공
 - 상품 상세 Android 캡처: 성공
+
+## 2026-06-30 개발용 관리자 로그인 진입 검증
+
+### 검증 범위
+
+- `/dev-admin-login` 페이지 접근
+- `pado-admin-test` 입력 후 `/admin/products` redirect
+- 개발 관리자 쿠키 생성
+- `/admin`, `/admin/products`, `/admin/new` 직접 접속
+- 일반 `/login?next=/admin` fallback 방지
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:admin`: 성공
+- 실제 로컬 HTTP 검증: 성공
+- 로그인 응답: 303
+- 로그인 성공 위치: `/admin/products`
+- `/admin/products` 카카오 로그인 fallback: 없음
+- `/admin/new` 카카오 로그인 fallback: 없음
