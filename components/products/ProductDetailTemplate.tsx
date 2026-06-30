@@ -314,11 +314,18 @@ function InfoCard({ label, title, body }: DetailTemplateInfoCard) {
 
 function FeatureCard({ index, title }: { index: number; title: string }) {
   const icons = ["산", "선", "냉", "출", "품"];
+  const descriptions = [
+    "산지와 원물 기준을 먼저 확인합니다.",
+    "상태가 좋은 상품만 골라 보냅니다.",
+    "상품 특성에 맞는 온도로 준비합니다.",
+    "주문 후 식탁까지의 시간을 줄입니다.",
+    "받는 순간의 만족도를 기준으로 봅니다."
+  ];
   return (
     <article className="detail-master-feature-card fade-up">
       <span>{icons[index] ?? "✓"}</span>
       <strong>{title}</strong>
-      <p>구매 전 확인해야 할 핵심 기준을 상품별 데이터로 자동 표시합니다.</p>
+      <p>{descriptions[index] ?? "상품별 핵심 기준을 확인합니다."}</p>
     </article>
   );
 }
