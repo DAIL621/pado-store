@@ -15,11 +15,15 @@ type Props = {
   onChange: (value: ProductDetail) => void;
 };
 
+const MAX_UPLOAD_SIZE = 8 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
 export function ProductDetailEditor({ value, onChange }: Props) {
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [uploadCompleteTarget, setUploadCompleteTarget] = useState<string | null>(null);
   const [dragOverHeroIndex, setDragOverHeroIndex] = useState<number | null>(null);
   const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadMessageTone, setUploadMessageTone] = useState<"info" | "success" | "error">("info");
 
   const update = <K extends keyof ProductDetail>(key: K, nextValue: ProductDetail[K]) => {
     onChange({ ...value, [key]: nextValue });
@@ -59,6 +63,11 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       uploadHeroFiles(index, files);
       return;
     }
+    if (event.dataTransfer.files?.length) {
+      setUploadMessageTone("error");
+      setUploadMessage("이미지 파일만 업로드할 수 있습니다. JPG, PNG, WebP 파일을 선택해주세요.");
+      return;
+    }
     const fromIndex = Number(event.dataTransfer.getData("text/plain"));
     if (Number.isInteger(fromIndex)) moveHero(fromIndex, index);
   };
@@ -72,18 +81,27 @@ export function ProductDetailEditor({ value, onChange }: Props) {
     for (const [offset, file] of files.entries()) {
       const targetIndex = startIndex + offset;
       if (targetIndex >= value.heroImages.length) break;
+      const previousImage = nextImages[targetIndex];
       const description = nextImages[targetIndex]?.description || file.name.replace(/\.[^.]+$/, "");
+      const previewUrl = URL.createObjectURL(file);
       nextImages = nextImages.map((image, imageIndex) =>
-        imageIndex === targetIndex ? { ...image, url: URL.createObjectURL(file), description } : image
+        imageIndex === targetIndex ? { ...image, url: previewUrl, description } : image
       );
       onChange({ ...value, heroImages: nextImages });
 
-      await uploadImageFile(`hero-${targetIndex}`, file, (url) => {
+      const uploaded = await uploadImageFile(`hero-${targetIndex}`, file, (url) => {
         nextImages = nextImages.map((image, imageIndex) =>
           imageIndex === targetIndex ? { ...image, url, description } : image
         );
         onChange({ ...value, heroImages: nextImages });
       });
+      URL.revokeObjectURL(previewUrl);
+      if (!uploaded) {
+        nextImages = nextImages.map((image, imageIndex) =>
+          imageIndex === targetIndex && previousImage ? previousImage : image
+        );
+        onChange({ ...value, heroImages: nextImages });
+      }
     }
   };
 
@@ -96,9 +114,25 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   };
 
   const uploadImageFile = async (target: string, file: File, onUploaded: (url: string) => void) => {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setUploadMessageTone("error");
+      setUploadMessage("지원하지 않는 이미지 형식입니다. JPG, PNG, WebP, GIF 파일을 사용해주세요.");
+      return false;
+    }
+    if (file.size > MAX_UPLOAD_SIZE) {
+      setUploadMessageTone("error");
+      setUploadMessage("이미지 용량이 너무 큽니다. 8MB 이하 파일로 다시 업로드해주세요.");
+      return false;
+    }
+
     setUploadingTarget(target);
     setUploadCompleteTarget(null);
-    setUploadMessage("");
+    setUploadMessageTone("info");
+    setUploadMessage("이미지를 업로드하고 있습니다...");
+    const slowTimer = window.setTimeout(() => {
+      setUploadMessageTone("info");
+      setUploadMessage("업로드가 평소보다 오래 걸리고 있습니다. 창을 닫지 말고 잠시만 기다려주세요.");
+    }, 6000);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -108,16 +142,22 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       });
       const result = await response.json();
       if (!response.ok) {
+        setUploadMessageTone("error");
         setUploadMessage(result.message ?? "이미지 업로드에 실패했습니다.");
-        return;
+        return false;
       }
       onUploaded(result.url);
       setUploadCompleteTarget(target);
+      setUploadMessageTone("success");
       setUploadMessage("이미지가 업로드되었습니다.");
       window.setTimeout(() => setUploadCompleteTarget((current) => (current === target ? null : current)), 2200);
+      return true;
     } catch {
+      setUploadMessageTone("error");
       setUploadMessage("이미지 업로드 중 오류가 발생했습니다.");
+      return false;
     } finally {
+      window.clearTimeout(slowTimer);
       setUploadingTarget(null);
     }
   };
@@ -205,7 +245,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       <details open>
         <summary>상세페이지 대표사진 6장</summary>
         <p className="admin-detail-help">카드를 드래그하거나 위/아래 버튼으로 순서를 조정할 수 있습니다. 여러 이미지를 한 번에 드롭하면 현재 카드부터 순서대로 채워집니다.</p>
-        {uploadMessage && <p className="admin-detail-upload-message" role="status">{uploadMessage}</p>}
+        {uploadMessage && <p className={`admin-detail-upload-message ${uploadMessageTone}`} role="status">{uploadMessage}</p>}
         <div className="admin-detail-grid">
           {value.heroImages.map((image, index) => (
             <div
@@ -230,7 +270,10 @@ export function ProductDetailEditor({ value, onChange }: Props) {
                 {image.url ? (
                   <img src={image.url} alt={`${image.label} 미리보기`} />
                 ) : (
-                  <span>이미지를 드롭하거나 클릭해 업로드</span>
+                  <span>
+                    이미지를 드롭하거나 클릭해 업로드
+                    <small>JPG · PNG · WebP · GIF / 최대 8MB</small>
+                  </span>
                 )}
                 {uploadCompleteTarget === `hero-${index}` && <strong className="admin-upload-check" aria-label="업로드 완료">✓</strong>}
                 <input
