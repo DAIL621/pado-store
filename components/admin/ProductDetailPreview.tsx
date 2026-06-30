@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { formatPrice, type ProductOption } from "@/data/products";
 import type { ProductDetail } from "@/lib/products/detail";
 
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export function ProductDetailPreview({ form, options, detail }: Props) {
+  const [viewMode, setViewMode] = useState<"mobile" | "desktop">("mobile");
   const price = Number(form.basePrice) || 0;
   const fallbackImage = form.imageUrl || "/images/products/wando-abalone.webp";
   const mainImage = detail.heroImages.find((image) => image.url)?.url || fallbackImage;
@@ -28,12 +30,27 @@ export function ProductDetailPreview({ form, options, detail }: Props) {
   const packaging = detail.packaging.filter(Boolean);
   const components = detail.components.filter(Boolean);
   const faq = detail.faq.filter((item) => item.question || item.answer);
+  const completedSections = [
+    heroImages.length,
+    benefits.length,
+    journey.length,
+    packaging.length,
+    components.length,
+    faq.length
+  ].filter(Boolean).length;
 
   return (
-    <aside className="admin-live-preview" aria-label="상세페이지 미리보기">
+    <aside className={`admin-live-preview ${viewMode === "desktop" ? "desktop-preview" : "mobile-preview"}`} aria-label="상세페이지 미리보기">
       <div className="admin-live-preview-head">
-        <span>LIVE PREVIEW</span>
-        <strong>{form.name || "상품명을 입력하세요"}</strong>
+        <div>
+          <span>LIVE PREVIEW</span>
+          <strong>{form.name || "상품명을 입력하세요"}</strong>
+          <small>완성 섹션 {completedSections}/6</small>
+        </div>
+        <div className="admin-preview-mode" aria-label="미리보기 화면 크기">
+          <button type="button" className={viewMode === "mobile" ? "active" : ""} onClick={() => setViewMode("mobile")}>모바일</button>
+          <button type="button" className={viewMode === "desktop" ? "active" : ""} onClick={() => setViewMode("desktop")}>PC</button>
+        </div>
       </div>
       <div className="admin-live-preview-image">
         <img
