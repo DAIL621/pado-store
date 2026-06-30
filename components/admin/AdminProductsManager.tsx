@@ -202,6 +202,12 @@ export function AdminProductsManager() {
     await loadProducts();
   };
 
+  const resetFilters = () => {
+    setQuery("");
+    setStatusFilter("all");
+    setTestFilter("all");
+  };
+
   return (
     <>
       <div className="admin-toolbar">
@@ -262,6 +268,17 @@ export function AdminProductsManager() {
               </tr>
             </thead>
             <tbody>
+              {!filtered.length && (
+                <tr>
+                  <td colSpan={9} className="admin-empty-filter-cell">
+                    <div className="admin-empty-filter">
+                      <strong>조건에 맞는 상품이 없습니다.</strong>
+                      <span>검색어 또는 상태/검증상품 필터를 조정해보세요.</span>
+                      <button type="button" onClick={resetFilters}>필터 초기화</button>
+                    </div>
+                  </td>
+                </tr>
+              )}
               {filtered.map((product) => {
                 const status = getStatus(product);
                 const detailScore = getDetailScore(product);

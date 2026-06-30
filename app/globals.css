@@ -226,3 +226,7 @@
 /* Admin save validation */
 .admin-validation-panel{margin:0 18px 14px;padding:13px;border:1px solid #dbe9e7;border-radius:11px;background:#f7fbfa}.admin-validation-panel strong{display:block;color:var(--teal);font-size:13px;margin-bottom:7px}.admin-validation-panel ul{display:grid;gap:6px;margin:0;padding-left:18px;color:#697d80;font-size:11px;line-height:1.45}.admin-validation-panel li::marker{color:var(--coral)}.admin-validation-panel p{margin:0;color:#587276;font-size:12px;font-weight:850}
 @media(max-width:520px){.admin-validation-panel{margin-inline:12px;padding:12px}.admin-validation-panel ul{font-size:10.5px}}
+
+/* Admin list empty state */
+.admin-empty-filter{display:grid;justify-items:center;gap:8px;padding:34px 16px;border:1px dashed #dbe9e7;border-radius:12px;background:#f7fbfa;text-align:center}.admin-empty-filter strong{color:var(--teal);font-size:14px}.admin-empty-filter span{color:var(--muted);font-size:12px}.admin-empty-filter button{border:1px solid var(--teal);border-radius:999px;background:#fff;color:var(--teal);padding:8px 12px;font-size:11px;font-weight:900}
+@media(max-width:700px){.product-admin-table td.admin-empty-filter-cell{display:block}.product-admin-table td.admin-empty-filter-cell:before{content:""}.admin-empty-filter{padding:28px 12px}.admin-empty-filter button{width:100%;min-height:38px}}
