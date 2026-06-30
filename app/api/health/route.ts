@@ -12,6 +12,8 @@ export function GET() {
       tossSecretKey: Boolean(process.env.TOSS_PAYMENTS_SECRET_KEY),
       kakaoClientId: Boolean(process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID),
       siteUrl: Boolean(process.env.NEXT_PUBLIC_SITE_URL),
+      productImageStorage: process.env.PADO_PRODUCT_IMAGE_STORAGE || "local",
+      supabaseProductImageBucket: process.env.PADO_PRODUCT_IMAGE_STORAGE === "supabase" ? Boolean(process.env.SUPABASE_PRODUCT_IMAGE_BUCKET) : "not-required",
       devAdminLoginDisabled: process.env.DEV_ADMIN_LOGIN_ENABLED !== "true"
     }
   });

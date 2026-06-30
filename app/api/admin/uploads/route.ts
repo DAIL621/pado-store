@@ -1,9 +1,6 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/admin-api";
-
-const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+import { allowedAdminImageTypes, maxAdminImageSize, uploadAdminProductImage } from "@/lib/admin/image-storage";
 
 export async function POST(request: Request) {
   const admin = await requireAdminApi();
@@ -16,27 +13,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "업로드할 이미지 파일을 선택해주세요." }, { status: 400 });
   }
 
-  if (!allowedTypes.has(file.type)) {
+  if (!allowedAdminImageTypes.has(file.type)) {
     return NextResponse.json({ ok: false, message: "jpg, png, webp, gif 이미지만 업로드할 수 있습니다." }, { status: 400 });
   }
 
-  if (file.size > 5 * 1024 * 1024) {
+  if (file.size > maxAdminImageSize) {
     return NextResponse.json({ ok: false, message: "이미지는 5MB 이하로 업로드해주세요." }, { status: 400 });
   }
 
-  const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "webp";
-  const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
-  const uploadPath = path.join(uploadDir, filename);
+  try {
+    const uploaded = await uploadAdminProductImage(file);
 
-  await mkdir(uploadDir, { recursive: true });
-  const bytes = Buffer.from(await file.arrayBuffer());
-  await writeFile(uploadPath, bytes);
-
-  return NextResponse.json({
-    ok: true,
-    url: `/uploads/products/${filename}`,
-    size: file.size,
-    type: file.type
-  });
+    return NextResponse.json({
+      ok: true,
+      url: uploaded.url,
+      storage: uploaded.storage,
+      size: file.size,
+      type: file.type
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: error instanceof Error ? error.message : "이미지 업로드에 실패했습니다."
+      },
+      { status: 500 }
+    );
+  }
 }
