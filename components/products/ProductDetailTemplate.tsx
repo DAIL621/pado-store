@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getVisibleProductDetailSections, hasVisibleProductDetailContent } from "@/lib/products/detail-sections";
 import type { ProductDetail } from "@/lib/products/detail";
 
 type Props = {
@@ -7,28 +8,20 @@ type Props = {
 };
 
 export function ProductDetailTemplate({ productName, detail }: Props) {
-  const heroImages = detail?.heroImages ?? [];
-  const benefits = detail?.benefits ?? [];
-  const journey = detail?.journey ?? [];
-  const packaging = detail?.packaging ?? [];
-  const recipes = detail?.recipes ?? [];
-  const components = detail?.components ?? [];
-  const faq = detail?.faq ?? [];
-  const videos = detail?.videos ?? [];
-  const certificates = detail?.certificates ?? [];
-  const extraSections = detail?.extraSections ?? [];
-  const hasContent = Boolean(
-    heroImages.length ||
-      benefits.length ||
-      journey.length ||
-      packaging.length ||
-      recipes.length ||
-      components.length ||
-      faq.length ||
-      videos.length ||
-      certificates.length ||
-      extraSections.length
-  );
+  const sections = getVisibleProductDetailSections(detail);
+  const {
+    heroImages,
+    benefits,
+    journey,
+    packaging,
+    recipes,
+    components,
+    faq,
+    videos,
+    certificates,
+    extraSections
+  } = sections;
+  const hasContent = hasVisibleProductDetailContent(sections);
 
   if (!hasContent) return null;
 

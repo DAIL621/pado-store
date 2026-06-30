@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatPrice, type ProductOption } from "@/data/products";
+import { getVisibleProductDetailSections } from "@/lib/products/detail-sections";
 import type { ProductDetail } from "@/lib/products/detail";
 
 type PreviewForm = {
@@ -23,13 +24,8 @@ export function ProductDetailPreview({ form, options, detail }: Props) {
   const [viewMode, setViewMode] = useState<"mobile" | "desktop">("mobile");
   const price = Number(form.basePrice) || 0;
   const fallbackImage = form.imageUrl || "/images/products/wando-abalone.webp";
-  const mainImage = detail.heroImages.find((image) => image.url)?.url || fallbackImage;
-  const heroImages = detail.heroImages.filter((image) => image.url);
-  const benefits = detail.benefits.filter(Boolean);
-  const journey = detail.journey.filter((step) => step.description || step.image);
-  const packaging = detail.packaging.filter(Boolean);
-  const components = detail.components.filter(Boolean);
-  const faq = detail.faq.filter((item) => item.question || item.answer);
+  const { heroImages, benefits, journey, packaging, components, faq } = getVisibleProductDetailSections(detail);
+  const mainImage = heroImages[0]?.url || fallbackImage;
   const completedSections = [
     heroImages.length,
     benefits.length,
