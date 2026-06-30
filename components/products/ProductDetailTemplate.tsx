@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { formatPrice, type Product } from "@/data/products";
 import { getVisibleProductDetailSections, hasVisibleProductDetailContent } from "@/lib/products/detail-sections";
+import { buildProductDetailTemplateModel, type DetailTemplateInfoCard } from "@/lib/products/detail-template-engine";
 
 type Props = {
   product: Product;
@@ -14,21 +15,9 @@ type SectionTitleProps = {
   description?: string;
 };
 
-type InfoCardProps = {
-  label: string;
-  title: string;
-  body?: string;
-};
-
 export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
-  const sections = getVisibleProductDetailSections(product.detail);
+  const { sections, heroImages, featureItems, overviewItems, packagingImage } = buildProductDetailTemplateModel(product);
   const hasAutoContent = hasVisibleProductDetailContent(sections);
-  const heroImages = sections.heroImages.length
-    ? sections.heroImages
-    : [{ label: "대표사진", url: product.image, description: product.subtitle }];
-  const featureItems = sections.benefits.length ? sections.benefits.slice(0, 5) : product.highlights.slice(0, 5);
-  const overviewItems = buildOverviewItems(product, sections.components);
-  const packagingImage = heroImages.find((image) => /포장|박스|package/i.test(image.label))?.url;
 
   return (
     <section className="detail-master" aria-label={`${product.name} 상품 상세`}>
@@ -123,7 +112,7 @@ function FeatureSection({ productName, features }: { productName: string; featur
   );
 }
 
-function OverviewSection({ items }: { items: InfoCardProps[] }) {
+function OverviewSection({ items }: { items: DetailTemplateInfoCard[] }) {
   return (
     <section className="shell detail-master-block" id="detail-master-overview">
       <SectionTitle
@@ -294,7 +283,7 @@ function SectionTitle({ eyebrow, title, description }: SectionTitleProps) {
   );
 }
 
-function InfoCard({ label, title, body }: InfoCardProps) {
+function InfoCard({ label, title, body }: DetailTemplateInfoCard) {
   return (
     <article className="detail-master-info-card">
       <span>{label}</span>
@@ -336,20 +325,4 @@ function TimelineCard({
       {step.description && <p>{step.description}</p>}
     </article>
   );
-}
-
-function buildOverviewItems(product: Product, components: string[]): InfoCardProps[] {
-  const firstOption = product.options[0]?.label;
-  return [
-    { label: "산지", title: product.origin, body: product.originInfo.body },
-    { label: "원산지", title: product.originInfo.title, body: product.originInfo.body },
-    { label: "배송", title: product.shippingInfo.title, body: product.shippingInfo.body },
-    {
-      label: "보관",
-      title: "수령 즉시 냉장 보관",
-      body: "가능한 빠르게 섭취하고, 장기 보관 시 상품별 안내에 맞춰 보관해주세요."
-    },
-    firstOption ? { label: "대표 옵션", title: firstOption, body: "옵션별 가격과 재고는 구매 영역에서 확인할 수 있습니다." } : null,
-    components.length ? { label: "구성", title: components.slice(0, 2).join(" · "), body: components.length > 2 ? `외 ${components.length - 2}개 구성` : undefined } : null
-  ].filter(Boolean) as InfoCardProps[];
 }
