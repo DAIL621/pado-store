@@ -10,6 +10,7 @@
     "verify:admin-edit": "node scripts/verify-admin-product-edit.mjs",
     "verify:admin-upload": "node scripts/verify-admin-upload.mjs",
     "verify:admin": "pnpm run verify:detail-json && pnpm run verify:admin-edit && pnpm run verify:admin-upload",
+    "verify:detail-template": "node scripts/verify-detail-template-sections.mjs",
     "lint": "next lint"
   },
   "dependencies": {

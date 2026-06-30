@@ -1,202 +1,355 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
+import { formatPrice, type Product } from "@/data/products";
 import { getVisibleProductDetailSections, hasVisibleProductDetailContent } from "@/lib/products/detail-sections";
-import type { ProductDetail } from "@/lib/products/detail";
 
 type Props = {
-  productName: string;
-  detail?: ProductDetail;
+  product: Product;
+  purchaseSlot: ReactNode;
 };
 
-export function ProductDetailTemplate({ productName, detail }: Props) {
-  const sections = getVisibleProductDetailSections(detail);
-  const {
-    heroImages,
-    benefits,
-    journey,
-    packaging,
-    recipes,
-    components,
-    faq,
-    videos,
-    certificates,
-    extraSections
-  } = sections;
-  const hasContent = hasVisibleProductDetailContent(sections);
+type SectionTitleProps = {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+};
 
-  if (!hasContent) return null;
+type InfoCardProps = {
+  label: string;
+  title: string;
+  body?: string;
+};
+
+export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
+  const sections = getVisibleProductDetailSections(product.detail);
+  const hasAutoContent = hasVisibleProductDetailContent(sections);
+  const heroImages = sections.heroImages.length
+    ? sections.heroImages
+    : [{ label: "대표사진", url: product.image, description: product.subtitle }];
+  const featureItems = sections.benefits.length ? sections.benefits.slice(0, 5) : product.highlights.slice(0, 5);
+  const overviewItems = buildOverviewItems(product, sections.components);
+  const packagingImage = heroImages.find((image) => /포장|박스|package/i.test(image.label))?.url;
 
   return (
-    <section className="section detail-auto-section">
-      <div className="shell">
-        <div className="section-heading detail-auto-heading">
-          <div>
-            <span className="eyebrow">PADO DETAIL</span>
-            <h2>{productName}를 더 자세히 확인하세요</h2>
-          </div>
-          <p>사진, 산지 정보, 포장 방식, 조리법까지 구매 전 꼭 필요한 정보를 한 번에 정리했습니다.</p>
-        </div>
+    <section className="detail-master" aria-label={`${product.name} 상품 상세`}>
+      <HeroSection product={product} heroImage={heroImages[0]?.url || product.image} purchaseSlot={purchaseSlot} />
 
-        <nav className="detail-auto-nav" aria-label="상품 상세 섹션 바로가기">
-          {heroImages.length > 0 && <a href="#detail-gallery">사진</a>}
-          {benefits.length > 0 && <a href="#detail-benefits">장점</a>}
-          {journey.length > 0 && <a href="#detail-journey">산지 여정</a>}
-          {packaging.length > 0 && <a href="#detail-packaging">포장/배송</a>}
-          {recipes.length > 0 && <a href="#detail-recipes">먹는 방법</a>}
-          {components.length > 0 && <a href="#detail-components">구성품</a>}
-          {faq.length > 0 && <a href="#detail-faq">FAQ</a>}
-          {videos.length > 0 && <a href="#detail-videos">영상</a>}
-          {certificates.length > 0 && <a href="#detail-certificates">인증서</a>}
-          {extraSections.length > 0 && <a href="#detail-extra">추가정보</a>}
+      {featureItems.length > 0 && (
+        <FeatureSection productName={product.name} features={featureItems} />
+      )}
+
+      {overviewItems.length > 0 && <OverviewSection items={overviewItems} />}
+
+      {sections.journey.length > 0 && <TimelineSection steps={sections.journey} productName={product.name} />}
+
+      {sections.benefits.length > 0 && <AdvantageSection productName={product.name} benefits={sections.benefits} />}
+
+      {heroImages.length > 0 && <GallerySection images={heroImages} productName={product.name} />}
+
+      {sections.recipes.length > 0 && <CookingSection recipes={sections.recipes} productName={product.name} />}
+
+      {sections.components.length > 0 && <PackageSection title="구성품" items={sections.components} tone="components" />}
+
+      {sections.packaging.length > 0 && (
+        <PackageSection title="포장 및 배송" items={sections.packaging} image={packagingImage} tone="shipping" />
+      )}
+
+      {sections.faq.length > 0 && <FAQSection faq={sections.faq} />}
+
+      {(sections.videos.length > 0 || sections.certificates.length > 0 || sections.extraSections.length > 0) && (
+        <ExtraSection
+          videos={sections.videos}
+          certificates={sections.certificates}
+          extraSections={sections.extraSections}
+        />
+      )}
+
+      {hasAutoContent && (
+        <nav className="detail-master-nav" aria-label="상품 상세 섹션 바로가기">
+          {sections.journey.length > 0 && <a href="#detail-master-timeline">산지 여정</a>}
+          {heroImages.length > 0 && <a href="#detail-master-gallery">사진</a>}
+          {sections.recipes.length > 0 && <a href="#detail-master-cooking">먹는 방법</a>}
+          {sections.packaging.length > 0 && <a href="#detail-master-shipping">포장/배송</a>}
+          {sections.faq.length > 0 && <a href="#detail-master-faq">FAQ</a>}
         </nav>
+      )}
+    </section>
+  );
+}
 
-        {heroImages.length > 0 && (
-          <div className="detail-auto-gallery detail-auto-gallery-featured" id="detail-gallery">
-            {heroImages.map((image) => (
-              <figure key={`${image.label}-${image.url}`}>
-                <div>
-                  <Image src={image.url} alt={`${productName} ${image.label}`} fill sizes="(max-width: 700px) 100vw, 33vw" />
-                </div>
-                <figcaption>
-                  <strong>{image.label}</strong>
-                  {image.description && <span>{image.description}</span>}
-                </figcaption>
-              </figure>
+function HeroSection({ product, heroImage, purchaseSlot }: { product: Product; heroImage: string; purchaseSlot: ReactNode }) {
+  return (
+    <section className="shell detail-master-hero">
+      <div className="detail-master-hero-media">
+        <Image src={heroImage} alt={product.name} fill priority sizes="(max-width: 800px) 100vw, 50vw" />
+        {product.badge && <span>{product.badge}</span>}
+      </div>
+      <div className="detail-master-hero-copy">
+        <span className="origin">{product.origin}</span>
+        <h1>{product.name}</h1>
+        <p>{product.subtitle}</p>
+        <div className="detail-master-price">
+          <del>{formatPrice(product.normalPrice)}</del>
+          <em>{product.discountRate}%</em>
+          <strong>{formatPrice(product.price)}~</strong>
+        </div>
+        {product.highlights.length > 0 && (
+          <ul className="detail-master-proof">
+            {product.highlights.slice(0, 4).map((item) => (
+              <li key={item}>{item}</li>
             ))}
-          </div>
+          </ul>
         )}
-
-        {benefits.length > 0 && (
-          <div className="detail-auto-block" id="detail-benefits">
-            <h3>왜 파도스토리 {productName}인가?</h3>
-            <ul className="detail-auto-benefits">
-              {benefits.map((benefit) => (
-                <li key={benefit}>{benefit}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {journey.length > 0 && (
-          <div className="detail-auto-block" id="detail-journey">
-            <h3>산지에서 식탁까지</h3>
-            <div className="detail-auto-journey">
-              {journey.map((step, index) => (
-                <article key={`${step.key}-${index}`}>
-                  {step.image && (
-                    <div>
-                      <Image src={step.image} alt={`${productName} ${step.title}`} fill sizes="(max-width: 700px) 100vw, 20vw" />
-                    </div>
-                  )}
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <h4>{step.title}</h4>
-                  {step.description && <p>{step.description}</p>}
-                </article>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {packaging.length > 0 && (
-          <div className="detail-auto-block" id="detail-packaging">
-            <h3>신선함을 지키는 포장</h3>
-            <ul className="detail-auto-list">
-              {packaging.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {recipes.length > 0 && (
-          <div className="detail-auto-block" id="detail-recipes">
-            <h3>맛있게 먹는 방법</h3>
-            <div className="detail-auto-recipes">
-              {recipes.map((recipe, index) => (
-                <article key={`${recipe.title}-${index}`}>
-                  {recipe.image && (
-                    <div>
-                      <Image src={recipe.image} alt={recipe.title} fill sizes="(max-width: 700px) 100vw, 33vw" />
-                    </div>
-                  )}
-                  <h4>{recipe.title}</h4>
-                  <p>{recipe.description}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {components.length > 0 && (
-          <div className="detail-auto-block" id="detail-components">
-            <h3>구성품</h3>
-            <ul className="detail-auto-list">
-              {components.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {faq.length > 0 && (
-          <div className="detail-auto-block" id="detail-faq">
-            <h3>FAQ</h3>
-            <div className="detail-auto-faq">
-              {faq.map((item, index) => (
-                <details key={`${item.question}-${index}`}>
-                  <summary>{item.question}</summary>
-                  <p>{item.answer}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {videos.length > 0 && (
-          <div className="detail-auto-block" id="detail-videos">
-            <h3>상품 영상</h3>
-            <ul className="detail-auto-list">
-              {videos.map((video) => (
-                <li key={`${video.title}-${video.url}`}>
-                  {video.title}
-                  {video.url && <a href={video.url} target="_blank"> 영상 보기</a>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {certificates.length > 0 && (
-          <div className="detail-auto-block" id="detail-certificates">
-            <h3>인증서 / 증빙자료</h3>
-            <div className="detail-auto-gallery">
-              {certificates.map((certificate) => (
-                <figure key={`${certificate.title}-${certificate.image}`}>
-                  {certificate.image && (
-                    <div>
-                      <Image src={certificate.image} alt={certificate.title} fill sizes="(max-width: 700px) 100vw, 33vw" />
-                    </div>
-                  )}
-                  <figcaption>
-                    <strong>{certificate.title}</strong>
-                    {certificate.description && <span>{certificate.description}</span>}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {extraSections.length > 0 && (
-          <div className="detail-auto-block" id="detail-extra">
-            <h3>추가 상세 정보</h3>
-            <ul className="detail-auto-list">
-              {extraSections.map((section, index) => (
-                <li key={`${section.type}-${section.title}-${index}`}>{section.title || section.type}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {purchaseSlot}
       </div>
     </section>
   );
+}
+
+function FeatureSection({ productName, features }: { productName: string; features: string[] }) {
+  return (
+    <section className="shell detail-master-block" id="detail-master-features">
+      <SectionTitle
+        eyebrow="WHY PADO"
+        title={`왜 파도스토리 ${productName}인가?`}
+        description="신선함, 신뢰, 포장, 출고 기준을 구매 전에 바로 확인할 수 있게 정리했습니다."
+      />
+      <div className="detail-master-feature-grid">
+        {features.map((feature, index) => (
+          <FeatureCard key={`${feature}-${index}`} index={index} title={feature} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function OverviewSection({ items }: { items: InfoCardProps[] }) {
+  return (
+    <section className="shell detail-master-block" id="detail-master-overview">
+      <SectionTitle
+        eyebrow="AT A GLANCE"
+        title="상품 한눈에 보기"
+        description="주문 전 가장 많이 확인하는 정보를 짧고 명확하게 모았습니다."
+      />
+      <div className="detail-master-overview">
+        {items.map((item) => (
+          <InfoCard key={`${item.label}-${item.title}`} {...item} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TimelineSection({ steps, productName }: { steps: ReturnType<typeof getVisibleProductDetailSections>["journey"]; productName: string }) {
+  return (
+    <section className="shell detail-master-block" id="detail-master-timeline">
+      <SectionTitle
+        eyebrow="FROM SEA TO TABLE"
+        title="산지에서 식탁까지"
+        description="상품별 입력 데이터만으로 산지, 선별, 포장, 배송 흐름을 자동 구성합니다."
+      />
+      <div className="detail-master-timeline">
+        {steps.map((step, index) => (
+          <TimelineCard key={`${step.key}-${index}`} step={step} index={index} productName={productName} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AdvantageSection({ productName, benefits }: { productName: string; benefits: string[] }) {
+  return (
+    <section className="shell detail-master-block" id="detail-master-advantages">
+      <SectionTitle eyebrow="BENEFIT" title={`${productName} 핵심 장점`} />
+      <div className="detail-master-advantage-grid">
+        {benefits.slice(0, 5).map((benefit, index) => (
+          <article className="detail-master-advantage-card fade-up" key={`${benefit}-${index}`}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{benefit}</strong>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function GallerySection({ images, productName }: { images: ReturnType<typeof getVisibleProductDetailSections>["heroImages"]; productName: string }) {
+  return (
+    <section className="shell detail-master-block" id="detail-master-gallery">
+      <SectionTitle
+        eyebrow="GALLERY"
+        title="대표사진 Gallery"
+        description="모바일에서는 가로 스와이프처럼 넘겨 보며 상품의 상태와 구성, 포장을 확인할 수 있습니다."
+      />
+      <div className="detail-master-gallery" aria-label={`${productName} 대표사진`}>
+        {images.map((image, index) => (
+          <figure key={`${image.label}-${image.url}-${index}`}>
+            <div>
+              <Image src={image.url} alt={`${productName} ${image.label}`} fill sizes="(max-width: 700px) 86vw, 33vw" />
+            </div>
+            <figcaption>
+              <strong>{image.label}</strong>
+              {image.description && <span>{image.description}</span>}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CookingSection({ recipes, productName }: { recipes: ReturnType<typeof getVisibleProductDetailSections>["recipes"]; productName: string }) {
+  return (
+    <section className="shell detail-master-block" id="detail-master-cooking">
+      <SectionTitle eyebrow="HOW TO ENJOY" title="맛있게 먹는 방법" />
+      <div className="detail-master-cooking">
+        {recipes.map((recipe, index) => (
+          <article key={`${recipe.title}-${index}`}>
+            {recipe.image && (
+              <div>
+                <Image src={recipe.image} alt={`${productName} ${recipe.title}`} fill sizes="(max-width: 700px) 86vw, 33vw" />
+              </div>
+            )}
+            <strong>{recipe.title}</strong>
+            <p>{recipe.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PackageSection({ title, items, image, tone }: { title: string; items: string[]; image?: string; tone: "components" | "shipping" }) {
+  return (
+    <section className="shell detail-master-block" id={tone === "shipping" ? "detail-master-shipping" : "detail-master-components"}>
+      <SectionTitle eyebrow={tone === "shipping" ? "PACKING" : "PACKAGE"} title={title} />
+      <div className={`detail-master-package ${image ? "has-image" : ""}`}>
+        {image && (
+          <div className="detail-master-package-image">
+            <Image src={image} alt={title} fill sizes="(max-width: 700px) 100vw, 36vw" />
+          </div>
+        )}
+        <ul>
+          {items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function FAQSection({ faq }: { faq: ReturnType<typeof getVisibleProductDetailSections>["faq"] }) {
+  return (
+    <section className="shell detail-master-block" id="detail-master-faq">
+      <SectionTitle eyebrow="FAQ" title="자주 묻는 질문" />
+      <div className="detail-master-faq">
+        {faq.map((item, index) => (
+          <details key={`${item.question}-${index}`}>
+            <summary>{item.question}</summary>
+            <p>{item.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ExtraSection({
+  videos,
+  certificates,
+  extraSections
+}: {
+  videos: ReturnType<typeof getVisibleProductDetailSections>["videos"];
+  certificates: ReturnType<typeof getVisibleProductDetailSections>["certificates"];
+  extraSections: ReturnType<typeof getVisibleProductDetailSections>["extraSections"];
+}) {
+  return (
+    <section className="shell detail-master-block" id="detail-master-extra">
+      <SectionTitle eyebrow="MORE INFO" title="추가 상세 정보" />
+      <div className="detail-master-extra">
+        {videos.map((video) => (
+          <a key={`${video.title}-${video.url}`} href={video.url} target="_blank">
+            {video.title || "상품 영상 보기"}
+          </a>
+        ))}
+        {certificates.map((certificate) => (
+          <span key={`${certificate.title}-${certificate.image}`}>{certificate.title || "인증서"}</span>
+        ))}
+        {extraSections.map((section, index) => (
+          <span key={`${section.type}-${section.title}-${index}`}>{section.title || section.type}</span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SectionTitle({ eyebrow, title, description }: SectionTitleProps) {
+  return (
+    <div className="detail-master-title">
+      {eyebrow && <span>{eyebrow}</span>}
+      <h2>{title}</h2>
+      {description && <p>{description}</p>}
+    </div>
+  );
+}
+
+function InfoCard({ label, title, body }: InfoCardProps) {
+  return (
+    <article className="detail-master-info-card">
+      <span>{label}</span>
+      <strong>{title}</strong>
+      {body && <p>{body}</p>}
+    </article>
+  );
+}
+
+function FeatureCard({ index, title }: { index: number; title: string }) {
+  const icons = ["산", "선", "냉", "출", "품"];
+  return (
+    <article className="detail-master-feature-card fade-up">
+      <span>{icons[index] ?? "✓"}</span>
+      <strong>{title}</strong>
+      <p>구매 전 확인해야 할 핵심 기준을 상품별 데이터로 자동 표시합니다.</p>
+    </article>
+  );
+}
+
+function TimelineCard({
+  step,
+  index,
+  productName
+}: {
+  step: ReturnType<typeof getVisibleProductDetailSections>["journey"][number];
+  index: number;
+  productName: string;
+}) {
+  return (
+    <article className="detail-master-timeline-card fade-up">
+      {step.image && (
+        <div>
+          <Image src={step.image} alt={`${productName} ${step.title}`} fill sizes="(max-width: 700px) 86vw, 20vw" />
+        </div>
+      )}
+      <span>{String(index + 1).padStart(2, "0")}</span>
+      <strong>{step.title}</strong>
+      {step.description && <p>{step.description}</p>}
+    </article>
+  );
+}
+
+function buildOverviewItems(product: Product, components: string[]): InfoCardProps[] {
+  const firstOption = product.options[0]?.label;
+  return [
+    { label: "산지", title: product.origin, body: product.originInfo.body },
+    { label: "원산지", title: product.originInfo.title, body: product.originInfo.body },
+    { label: "배송", title: product.shippingInfo.title, body: product.shippingInfo.body },
+    {
+      label: "보관",
+      title: "수령 즉시 냉장 보관",
+      body: "가능한 빠르게 섭취하고, 장기 보관 시 상품별 안내에 맞춰 보관해주세요."
+    },
+    firstOption ? { label: "대표 옵션", title: firstOption, body: "옵션별 가격과 재고는 구매 영역에서 확인할 수 있습니다." } : null,
+    components.length ? { label: "구성", title: components.slice(0, 2).join(" · "), body: components.length > 2 ? `외 ${components.length - 2}개 구성` : undefined } : null
+  ].filter(Boolean) as InfoCardProps[];
 }
