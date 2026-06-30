@@ -54,9 +54,9 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   const handleHeroDrop = (event: DragEvent<HTMLDivElement>, index: number) => {
     event.preventDefault();
     setDragOverHeroIndex(null);
-    const file = event.dataTransfer.files?.[0];
-    if (file) {
-      uploadHeroFile(index, file);
+    const files = Array.from(event.dataTransfer.files ?? []).filter((file) => file.type.startsWith("image/"));
+    if (files.length) {
+      uploadHeroFiles(index, files);
       return;
     }
     const fromIndex = Number(event.dataTransfer.getData("text/plain"));
@@ -64,17 +64,27 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   };
 
   const uploadHeroFile = async (index: number, file: File) => {
-    const previewUrl = URL.createObjectURL(file);
-    updateHeroFields(index, {
-      url: previewUrl,
-      description: value.heroImages[index]?.description || file.name.replace(/\.[^.]+$/, "")
-    });
-    uploadImageFile(`hero-${index}`, file, (url) => {
-      updateHeroFields(index, {
-        url,
-        description: value.heroImages[index]?.description || file.name.replace(/\.[^.]+$/, "")
+    await uploadHeroFiles(index, [file]);
+  };
+
+  const uploadHeroFiles = async (startIndex: number, files: File[]) => {
+    let nextImages = [...value.heroImages];
+    for (const [offset, file] of files.entries()) {
+      const targetIndex = startIndex + offset;
+      if (targetIndex >= value.heroImages.length) break;
+      const description = nextImages[targetIndex]?.description || file.name.replace(/\.[^.]+$/, "");
+      nextImages = nextImages.map((image, imageIndex) =>
+        imageIndex === targetIndex ? { ...image, url: URL.createObjectURL(file), description } : image
+      );
+      onChange({ ...value, heroImages: nextImages });
+
+      await uploadImageFile(`hero-${targetIndex}`, file, (url) => {
+        nextImages = nextImages.map((image, imageIndex) =>
+          imageIndex === targetIndex ? { ...image, url, description } : image
+        );
+        onChange({ ...value, heroImages: nextImages });
       });
-    });
+    }
   };
 
   const uploadJourneyFile = async (index: number, file: File) => {
@@ -194,7 +204,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
 
       <details open>
         <summary>상세페이지 대표사진 6장</summary>
-        <p className="admin-detail-help">카드를 드래그하거나 위/아래 버튼으로 상세페이지 사진 노출 순서를 조정할 수 있습니다.</p>
+        <p className="admin-detail-help">카드를 드래그하거나 위/아래 버튼으로 순서를 조정할 수 있습니다. 여러 이미지를 한 번에 드롭하면 현재 카드부터 순서대로 채워집니다.</p>
         {uploadMessage && <p className="admin-detail-upload-message" role="status">{uploadMessage}</p>}
         <div className="admin-detail-grid">
           {value.heroImages.map((image, index) => (
