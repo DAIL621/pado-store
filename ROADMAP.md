@@ -183,3 +183,21 @@
 3. 실제 판매 상품별 이미지/상세 설명 입력
 4. 상품 상세 고객 화면 최종 디자인 고도화
 5. 관리자 상품 목록 카테고리/등록일 필터 고도화
+
+## 2026-06-30 상세페이지 MASTER 템플릿 v1.0
+
+### 완료
+
+- 완도 활전복 기준이지만 모든 상품에 재사용 가능한 MASTER 상세페이지 템플릿 1차 적용
+- 상품 기본 데이터와 `detail_json`을 조합하는 Template Engine 분리
+- 모바일 우선 Hero / 구매 CTA / Feature / Overview / Gallery / FAQ 구조 구현
+- 데이터 없는 섹션 자동 숨김 처리 검증
+- `StickyPurchaseBar` 컴포넌트 분리
+
+### 다음 단계
+
+1. 실제 상품별 대표사진 6장 입력
+2. 산지 여정/조리법/포장 사진 실데이터 적용
+3. 풍부한 `detail_json` 상품 기준으로 Timeline/Cooking/Package 화면 재검증
+4. 상세페이지 Lighthouse Mobile 점검
+5. 상품 상세 하단 추천상품 로직 고도화

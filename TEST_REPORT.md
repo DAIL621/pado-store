@@ -569,3 +569,24 @@
 
 - 운영 이미지 저장은 코드상 Supabase Storage 모드를 지원하지만, 실제 운영 전 `PADO_PRODUCT_IMAGE_STORAGE=supabase`와 `SUPABASE_PRODUCT_IMAGE_BUCKET` 환경변수 및 버킷 정책 확인이 필요하다.
 - Playwright 캡처는 로컬 개발용 관리자 로그인 쿠키 기준으로 확인했다. 실제 운영 관리자 로그인은 Kakao/Supabase 설정 완료 후 별도 검증이 필요하다.
+
+## 2026-06-30 상세페이지 MASTER 템플릿 v1.0 검증
+
+### 검증 범위
+
+- `ProductDetailTemplate` MASTER 구조 전환
+- 기존 구매 CTA / 옵션 선택 기능 유지
+- `detail_json` 기반 Hero, Feature, Overview, Timeline, Gallery, Cooking, Package, FAQ 섹션 자동 렌더링
+- 데이터가 없는 섹션 자동 숨김 처리
+- Empty / partial / full detail 데이터 케이스
+- Desktop / iPhone / Android 폭 캡처
+- 관리자 등록/수정 E2E와 상세페이지 자동 생성 영향 여부
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:admin`: 성공
+- `pnpm run verify:detail-template`: 성공
+- 상품 상세 Desktop 캡처: 성공
+- 상품 상세 iPhone 캡처: 성공
+- 상품 상세 Android 캡처: 성공

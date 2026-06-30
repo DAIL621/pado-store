@@ -518,3 +518,23 @@
 - `pnpm run verify:admin-edit` 성공
 - `pnpm run verify:admin-upload` 성공
 - Playwright/Edge 캡처: 관리자 상품등록/상품목록 Desktop, iPhone 폭 확인
+
+## 2026-06-30 상세페이지 MASTER 템플릿 v1.0 1차
+
+### 완료 작업
+
+- 모든 상품이 공통으로 사용할 `ProductDetailTemplate` MASTER 구조로 개편
+- 기존 상세 상단 Hero와 구매 CTA를 템플릿 내부 HeroSection으로 통합
+- `HeroSection`, `FeatureSection`, `OverviewSection`, `TimelineSection`, `GallerySection`, `CookingSection`, `PackageSection`, `FAQSection`, `StickyPurchaseBar` 구조로 컴포넌트화
+- 상품 데이터에서 템플릿 렌더링 모델을 만드는 `detail-template-engine` 분리
+- 데이터 없는 섹션은 자동 숨김 처리 유지
+- 상품 설명 기반 공통 Story Intro 섹션 추가
+- 모바일 Swipe형 Gallery, 카드형 Feature/Overview/Package/FAQ 디자인 적용
+- Empty/partial/full detail 데이터 검증 스크립트 추가
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:admin` 성공
+- `pnpm run verify:detail-template` 성공
+- Playwright/Edge 캡처: 상품 상세 Desktop, iPhone, Android 폭 확인
