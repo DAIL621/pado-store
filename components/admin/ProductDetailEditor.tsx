@@ -17,6 +17,8 @@ type Props = {
 
 export function ProductDetailEditor({ value, onChange }: Props) {
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
+  const [uploadCompleteTarget, setUploadCompleteTarget] = useState<string | null>(null);
+  const [dragOverHeroIndex, setDragOverHeroIndex] = useState<number | null>(null);
   const [uploadMessage, setUploadMessage] = useState("");
 
   const update = <K extends keyof ProductDetail>(key: K, nextValue: ProductDetail[K]) => {
@@ -51,6 +53,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
 
   const handleHeroDrop = (event: DragEvent<HTMLDivElement>, index: number) => {
     event.preventDefault();
+    setDragOverHeroIndex(null);
     const file = event.dataTransfer.files?.[0];
     if (file) {
       uploadHeroFile(index, file);
@@ -61,6 +64,11 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   };
 
   const uploadHeroFile = async (index: number, file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    updateHeroFields(index, {
+      url: previewUrl,
+      description: value.heroImages[index]?.description || file.name.replace(/\.[^.]+$/, "")
+    });
     uploadImageFile(`hero-${index}`, file, (url) => {
       updateHeroFields(index, {
         url,
@@ -79,6 +87,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
 
   const uploadImageFile = async (target: string, file: File, onUploaded: (url: string) => void) => {
     setUploadingTarget(target);
+    setUploadCompleteTarget(null);
     setUploadMessage("");
     try {
       const formData = new FormData();
@@ -93,7 +102,9 @@ export function ProductDetailEditor({ value, onChange }: Props) {
         return;
       }
       onUploaded(result.url);
+      setUploadCompleteTarget(target);
       setUploadMessage("이미지가 업로드되었습니다.");
+      window.setTimeout(() => setUploadCompleteTarget((current) => (current === target ? null : current)), 2200);
     } catch {
       setUploadMessage("이미지 업로드 중 오류가 발생했습니다.");
     } finally {
@@ -191,6 +202,8 @@ export function ProductDetailEditor({ value, onChange }: Props) {
               className="admin-detail-card draggable"
               draggable
               key={`${image.label}-${index}`}
+              onDragEnter={() => setDragOverHeroIndex(index)}
+              onDragLeave={() => setDragOverHeroIndex((current) => (current === index ? null : current))}
               onDragOver={(event) => event.preventDefault()}
               onDragStart={(event) => handleHeroDragStart(event, index)}
               onDrop={(event) => handleHeroDrop(event, index)}
@@ -198,16 +211,18 @@ export function ProductDetailEditor({ value, onChange }: Props) {
               <div className="admin-detail-card-head">
                 <b>{index + 1}. {image.label}</b>
                 <span>
+                  {index === 0 && <em className="admin-main-photo-badge">대표사진</em>}
                   <button type="button" onClick={() => moveHero(index, index - 1)} disabled={index === 0}>위</button>
                   <button type="button" onClick={() => moveHero(index, index + 1)} disabled={index === value.heroImages.length - 1}>아래</button>
                 </span>
               </div>
-              <div className={`admin-image-upload-box ${image.url ? "has-image" : ""}`}>
+              <div className={`admin-image-upload-box ${image.url ? "has-image" : ""} ${dragOverHeroIndex === index ? "drag-over" : ""}`}>
                 {image.url ? (
                   <img src={image.url} alt={`${image.label} 미리보기`} />
                 ) : (
                   <span>이미지를 드롭하거나 클릭해 업로드</span>
                 )}
+                {uploadCompleteTarget === `hero-${index}` && <strong className="admin-upload-check" aria-label="업로드 완료">✓</strong>}
                 <input
                   type="file"
                   accept="image/*"
@@ -219,7 +234,12 @@ export function ProductDetailEditor({ value, onChange }: Props) {
                   }}
                 />
               </div>
-              {uploadingTarget === `hero-${index}` && <small className="admin-upload-progress">업로드 중...</small>}
+              {uploadingTarget === `hero-${index}` && (
+                <small className="admin-upload-progress">
+                  업로드 중...
+                  <span><i /></span>
+                </small>
+              )}
               <label>
                 사진 역할
                 <input value={image.label} onChange={(event) => updateHero(index, "label", event.target.value)} placeholder="예: 대표사진" />
@@ -232,7 +252,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
                 사진 설명
                 <input value={image.description ?? ""} onChange={(event) => updateHero(index, "description", event.target.value)} placeholder="상세페이지 보조 설명" />
               </label>
-              <button type="button" onClick={() => updateHero(index, "url", "")} disabled={!image.url}>이미지 삭제</button>
+              <button type="button" className="admin-delete-image-button" onClick={() => updateHero(index, "url", "")} disabled={!image.url}>이미지 삭제</button>
             </div>
           ))}
         </div>

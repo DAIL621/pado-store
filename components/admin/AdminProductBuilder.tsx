@@ -166,6 +166,22 @@ export function AdminProductBuilder({
     return Math.round((checks.filter(Boolean).length / checks.length) * 100);
   }, [detailJson, form, options]);
 
+  const progressItems = useMemo(() => {
+    const heroCount = detailJson.heroImages.filter((image) => image.url).length;
+    const benefitCount = detailJson.benefits.filter(Boolean).length;
+    const faqCount = detailJson.faq.filter((item) => item.question || item.answer).length;
+    const journeyCount = detailJson.journey.filter((step) => step.description || step.image).length;
+
+    return [
+      { label: "기본정보", value: form.name && form.origin && form.category && form.subtitle && form.description ? "완료" : "입력 필요", done: Boolean(form.name && form.origin && form.category && form.subtitle && form.description) },
+      { label: "옵션", value: options.some((option) => option.name && option.stock) ? "완료" : "입력 필요", done: options.some((option) => option.name && option.stock) },
+      { label: "대표사진", value: `${heroCount}/6`, done: heroCount > 0 },
+      { label: "상품장점", value: `${benefitCount}/5`, done: benefitCount >= 3 },
+      { label: "여정", value: `${journeyCount}/5`, done: journeyCount >= 3 },
+      { label: "FAQ", value: `${faqCount}/5`, done: faqCount > 0 }
+    ];
+  }, [detailJson, form, options]);
+
   const inputRef = (node: HTMLInputElement | HTMLTextAreaElement | null) => {
     if (node && !node.value && node.required && !firstInvalidRef.current) firstInvalidRef.current = node;
   };
@@ -229,6 +245,14 @@ export function AdminProductBuilder({
         <div>
           <span>상품등록 진행률</span>
           <strong>{progress}%</strong>
+        </div>
+        <div className="admin-progress-checks" aria-label="상품등록 세부 진행률">
+          {progressItems.map((item) => (
+            <span key={item.label} className={item.done ? "done" : ""}>
+              <b>{item.label}</b>
+              {item.done ? "✓" : item.value}
+            </span>
+          ))}
         </div>
         <progress value={progress} max={100} aria-label="상품등록 진행률" />
       </div>
