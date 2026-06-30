@@ -20,11 +20,16 @@ type SectionTitleProps = {
 };
 
 export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
-  const { sections, heroImages, featureItems, overviewItems, trustSignals, packagingImage } = buildProductDetailTemplateModel(product);
+  const { template, sections, heroImages, featureItems, overviewItems, trustSignals, packagingImage } = buildProductDetailTemplateModel(product);
   const hasAutoContent = hasVisibleProductDetailContent(sections);
 
   return (
-    <section className="detail-master" aria-label={`${product.name} 상품 상세`}>
+    <section
+      className="detail-master"
+      aria-label={`${product.name} 상품 상세`}
+      data-template-id={template.id}
+      data-template-schema={template.schemaVersion}
+    >
       <HeroSection product={product} heroImage={heroImages[0]?.url || product.image} purchaseSlot={purchaseSlot} />
 
       <TrustSignalSection signals={trustSignals} />

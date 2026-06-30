@@ -1,6 +1,8 @@
 import type { Product } from "@/data/products";
 import { getVisibleProductDetailSections } from "@/lib/products/detail-sections";
 
+export const PRODUCT_DETAIL_TEMPLATE_ID = "pado-master-v1";
+
 export type DetailTemplateInfoCard = {
   label: string;
   title: string;
@@ -24,6 +26,10 @@ export function buildProductDetailTemplateModel(product: Product) {
   const packagingImage = heroImages.find((image) => /포장|박스|package/i.test(image.label))?.url;
 
   return {
+    template: {
+      id: PRODUCT_DETAIL_TEMPLATE_ID,
+      schemaVersion: product.detail?.schemaVersion ?? 1
+    },
     sections,
     heroImages,
     featureItems,
