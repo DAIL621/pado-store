@@ -35,16 +35,26 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
   return (
     <section className="section detail-auto-section">
       <div className="shell">
-        <div className="section-heading">
+        <div className="section-heading detail-auto-heading">
           <div>
             <span className="eyebrow">PADO DETAIL</span>
-            <h2>관리자가 입력한 상세 정보</h2>
+            <h2>{productName}를 더 자세히 확인하세요</h2>
           </div>
-          <p>상품별 입력 데이터로 자동 구성되는 상세페이지 영역입니다.</p>
+          <p>사진, 산지 정보, 포장 방식, 조리법까지 구매 전 꼭 필요한 정보를 한 번에 정리했습니다.</p>
         </div>
 
+        <nav className="detail-auto-nav" aria-label="상품 상세 섹션 바로가기">
+          {heroImages.length > 0 && <a href="#detail-gallery">사진</a>}
+          {benefits.length > 0 && <a href="#detail-benefits">장점</a>}
+          {journey.length > 0 && <a href="#detail-journey">산지 여정</a>}
+          {packaging.length > 0 && <a href="#detail-packaging">포장/배송</a>}
+          {recipes.length > 0 && <a href="#detail-recipes">먹는 방법</a>}
+          {components.length > 0 && <a href="#detail-components">구성품</a>}
+          {faq.length > 0 && <a href="#detail-faq">FAQ</a>}
+        </nav>
+
         {heroImages.length > 0 && (
-          <div className="detail-auto-gallery">
+          <div className="detail-auto-gallery detail-auto-gallery-featured" id="detail-gallery">
             {heroImages.map((image) => (
               <figure key={`${image.label}-${image.url}`}>
                 <div>
@@ -60,7 +70,7 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
         )}
 
         {benefits.length > 0 && (
-          <div className="detail-auto-block">
+          <div className="detail-auto-block" id="detail-benefits">
             <h3>왜 파도스토리 {productName}인가?</h3>
             <ul className="detail-auto-benefits">
               {benefits.map((benefit) => (
@@ -71,7 +81,7 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
         )}
 
         {journey.length > 0 && (
-          <div className="detail-auto-block">
+          <div className="detail-auto-block" id="detail-journey">
             <h3>산지에서 식탁까지</h3>
             <div className="detail-auto-journey">
               {journey.map((step, index) => (
@@ -91,7 +101,7 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
         )}
 
         {packaging.length > 0 && (
-          <div className="detail-auto-block">
+          <div className="detail-auto-block" id="detail-packaging">
             <h3>신선함을 지키는 포장</h3>
             <ul className="detail-auto-list">
               {packaging.map((item) => (
@@ -102,7 +112,7 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
         )}
 
         {recipes.length > 0 && (
-          <div className="detail-auto-block">
+          <div className="detail-auto-block" id="detail-recipes">
             <h3>맛있게 먹는 방법</h3>
             <div className="detail-auto-recipes">
               {recipes.map((recipe, index) => (
@@ -121,7 +131,7 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
         )}
 
         {components.length > 0 && (
-          <div className="detail-auto-block">
+          <div className="detail-auto-block" id="detail-components">
             <h3>구성품</h3>
             <ul className="detail-auto-list">
               {components.map((item) => (
@@ -132,7 +142,7 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
         )}
 
         {faq.length > 0 && (
-          <div className="detail-auto-block">
+          <div className="detail-auto-block" id="detail-faq">
             <h3>FAQ</h3>
             <div className="detail-auto-faq">
               {faq.map((item, index) => (
