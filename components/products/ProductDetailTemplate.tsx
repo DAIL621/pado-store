@@ -44,6 +44,9 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
           {recipes.length > 0 && <a href="#detail-recipes">먹는 방법</a>}
           {components.length > 0 && <a href="#detail-components">구성품</a>}
           {faq.length > 0 && <a href="#detail-faq">FAQ</a>}
+          {videos.length > 0 && <a href="#detail-videos">영상</a>}
+          {certificates.length > 0 && <a href="#detail-certificates">인증서</a>}
+          {extraSections.length > 0 && <a href="#detail-extra">추가정보</a>}
         </nav>
 
         {heroImages.length > 0 && (
@@ -149,7 +152,7 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
         )}
 
         {videos.length > 0 && (
-          <div className="detail-auto-block">
+          <div className="detail-auto-block" id="detail-videos">
             <h3>상품 영상</h3>
             <ul className="detail-auto-list">
               {videos.map((video) => (
@@ -163,7 +166,7 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
         )}
 
         {certificates.length > 0 && (
-          <div className="detail-auto-block">
+          <div className="detail-auto-block" id="detail-certificates">
             <h3>인증서 / 증빙자료</h3>
             <div className="detail-auto-gallery">
               {certificates.map((certificate) => (
@@ -184,7 +187,7 @@ export function ProductDetailTemplate({ productName, detail }: Props) {
         )}
 
         {extraSections.length > 0 && (
-          <div className="detail-auto-block">
+          <div className="detail-auto-block" id="detail-extra">
             <h3>추가 상세 정보</h3>
             <ul className="detail-auto-list">
               {extraSections.map((section, index) => (
