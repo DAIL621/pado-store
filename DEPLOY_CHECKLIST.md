@@ -11,6 +11,8 @@
 - [ ] `NEXT_PUBLIC_KAKAO_CLIENT_ID`
 - [ ] `DEV_ADMIN_LOGIN_ENABLED=false`
 - [ ] `DEV_ADMIN_PASSWORD` is not exposed or reused from local testing
+- [ ] `PADO_PRODUCT_IMAGE_STORAGE=supabase` when admin uploads should use Supabase Storage
+- [ ] `SUPABASE_PRODUCT_IMAGE_BUCKET` when `PADO_PRODUCT_IMAGE_STORAGE=supabase`
 
 ## 2. Supabase
 
@@ -53,6 +55,7 @@
 - [ ] `/sitemap.xml` is reachable
 - [ ] `/icon.svg` is reachable
 - [ ] Product images render from `/public/images`
+- [ ] Admin uploaded product images render from persistent Storage URLs in production
 
 ## 7. Production Smoke Test
 
@@ -72,6 +75,8 @@
 - [ ] MyPage order history
 - [ ] MyPage CJ tracking link opens with invoice number when available
 - [ ] Admin product management
+- [ ] Admin product image upload
+- [ ] Admin product detail presets and live preview
 - [ ] Admin product option removal no longer leaves stale extra options
 - [ ] Admin order management
 - [ ] Admin delivery management
@@ -94,3 +99,15 @@
 - [ ] 운영 이미지 업로드 저장소 결정: Supabase Storage / S3 / Cloudflare R2 중 선택
 - [ ] 운영 업로드 저장소 연결 후 관리자 대표사진 업로드 재검증
 - [ ] 기존 `detail_json` 이미지 URL이 영구 저장소 URL인지 확인
+
+## 2026-06-30 관리자 상품등록 배포 전 추가 체크
+
+- [x] `pnpm run verify:admin-edit` 스크립트 추가 및 로컬 통과
+- [x] `pnpm run verify:admin-upload` 스크립트 추가 및 로컬 통과
+- [x] 관리자 상품 목록 운영/검증상품 필터 추가
+- [x] 상품 유형 프리셋 추가
+- [x] 저장 전 품질 체크 패널 추가
+- [x] 관리자 상품등록/상품목록 Desktop, iPhone 폭 캡처 확인
+- [ ] Supabase Storage bucket 생성 및 정책 확인
+- [ ] Vercel Production 환경변수에 Storage 설정 등록
+- [ ] 운영 배포 URL에서 관리자 이미지 업로드 재검증

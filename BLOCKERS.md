@@ -73,3 +73,11 @@ alter table products add column if not exists detail_json jsonb not null default
 - 로컬 검증 중 업로드 파일을 정리하면 기존 `detail_json.heroImages` URL이 깨질 수 있음을 확인했다. 관리자 Preview에는 fallback을 적용했지만, 운영 상세페이지 안정성을 위해 영구 이미지 저장소 전환이 필요하다.
 - 실제 운영 전 Supabase Storage, S3, Cloudflare R2 중 하나를 이미지 저장소로 결정해야 한다.
 - 이 항목은 외부 콘솔/스토리지 권한이 필요한 작업이며, 현재 관리자 UI 개발 진행을 막지는 않는다.
+
+## 2026-06-30 Supabase Storage 운영 전환 확인 필요
+
+- 코드 기준 `PADO_PRODUCT_IMAGE_STORAGE=supabase` 설정 시 `/api/admin/uploads`가 Supabase Storage에 업로드하도록 1차 구현했다.
+- 운영 전 Vercel 환경변수에 `PADO_PRODUCT_IMAGE_STORAGE=supabase`와 `SUPABASE_PRODUCT_IMAGE_BUCKET` 등록이 필요하다.
+- Supabase Dashboard에서 상품 이미지용 Storage bucket 생성, public URL 정책 또는 접근 정책 확인이 필요하다.
+- 운영 버킷 적용 후 `pnpm run verify:admin-upload` 또는 동일 흐름으로 실제 Storage URL 반환 여부를 재검증해야 한다.
+- Vercel Dashboard 최신 커밋 자동 배포 성공 여부는 외부 콘솔 확인이 필요하다.

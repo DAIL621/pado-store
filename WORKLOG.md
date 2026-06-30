@@ -491,3 +491,28 @@
 
 - `pnpm run build` 성공
 - `pnpm run verify:detail-json` 성공
+
+## 2026-06-30 관리자 상품등록 시스템 고도화 2차
+
+### 완료 작업
+
+- Supabase Storage 전환 준비용 이미지 저장 어댑터 추가
+- `/api/admin/uploads`가 로컬/Supabase Storage 모드를 반환하도록 개선
+- 관리자 상품 수정 저장 E2E 검증 스크립트 추가
+- 상세페이지 자동 생성 고객 화면 섹션 디자인 1차 고도화
+- 관리자 상품 목록에 운영상품/검증상품 필터와 검증상품 일괄 숨김 UX 추가
+- 상품 유형 프리셋(활수산물, 조개/굴, 밀키트, 선물세트) 추가
+- 이미지 업로드 실패/느린 업로드/빈 이미지 안내 UX 개선
+- 관리자 상세페이지 Preview에 모바일/PC 보기 전환과 섹션 완성도 표시 추가
+- `ProductDetailTemplate`와 관리자 Preview의 상세 섹션 필터링 로직 공통화
+- 등록/수정 저장 전 품질 체크 패널 추가
+- 상품 목록 검색/필터 결과 빈 상태와 필터 초기화 버튼 추가
+- 업로드 API 검증 스크립트 `pnpm run verify:admin-upload` 추가
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
+- `pnpm run verify:admin-edit` 성공
+- `pnpm run verify:admin-upload` 성공
+- Playwright/Edge 캡처: 관리자 상품등록/상품목록 Desktop, iPhone 폭 확인

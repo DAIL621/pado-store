@@ -541,3 +541,29 @@
 
 - `pnpm run build`: 성공
 - `pnpm run verify:detail-json`: 성공
+
+## 2026-06-30 관리자 상품등록 시스템 고도화 2차 검증
+
+### 검증 범위
+
+- Supabase Storage 전환 준비용 이미지 업로드 어댑터
+- 관리자 상품 등록 E2E: 생성, 이미지 업로드, `detail_json` 저장, 상세페이지 표시, 테스트 상품 soft delete
+- 관리자 상품 수정 E2E: 기존 상품 수정, 옵션 교체, `detail_json` 갱신, 상세페이지 반영, 테스트 상품 soft delete
+- 업로드 API: 이미지가 아닌 파일 거부, 정상 GIF 업로드, 로컬 업로드 파일 정리
+- 관리자 상품 목록: 운영/검증상품 필터, 검증상품 표식, 빈 상태 UI
+- 관리자 상품등록 UI: 상품 유형 프리셋, 저장 전 품질 체크, Preview 모바일/PC 보기 전환
+- 고객 상품 상세 자동 생성 영역: 섹션 필터링 공통화 후 렌더링 유지
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run verify:admin-edit`: 성공
+- `pnpm run verify:admin-upload`: 성공
+- 관리자 상품 등록 화면 Desktop 캡처: 성공
+- 관리자 상품 목록 iPhone 폭 캡처: 성공
+
+### 발견 사항
+
+- 운영 이미지 저장은 코드상 Supabase Storage 모드를 지원하지만, 실제 운영 전 `PADO_PRODUCT_IMAGE_STORAGE=supabase`와 `SUPABASE_PRODUCT_IMAGE_BUCKET` 환경변수 및 버킷 정책 확인이 필요하다.
+- Playwright 캡처는 로컬 개발용 관리자 로그인 쿠키 기준으로 확인했다. 실제 운영 관리자 로그인은 Kakao/Supabase 설정 완료 후 별도 검증이 필요하다.
