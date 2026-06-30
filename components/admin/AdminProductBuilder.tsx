@@ -4,6 +4,7 @@ import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "
 import { ProductDetailEditor } from "@/components/admin/ProductDetailEditor";
 import { ProductDetailPreview } from "@/components/admin/ProductDetailPreview";
 import { generateProductDescription, generateProductDetailDraft } from "@/lib/admin/ai-product-drafts";
+import { PRODUCT_DETAIL_PRESET_OPTIONS, buildProductDetailPreset, type ProductPresetId } from "@/lib/admin/product-detail-presets";
 import { createProductDetailFormValue, type ProductDetail } from "@/lib/products/detail";
 
 export type AdminProductFormState = {
@@ -231,6 +232,38 @@ export function AdminProductBuilder({
     setMessage("상품명과 산지를 기준으로 상세페이지 초안을 채웠습니다.");
   };
 
+  const applyPreset = (presetId: ProductPresetId) => {
+    const preset = buildProductDetailPreset(presetId, {
+      name: form.name || "신규 상품",
+      origin: form.origin || "산지"
+    });
+
+    setForm((current) => ({
+      ...current,
+      category: current.category || preset.form.category,
+      badge: current.badge || preset.form.badge,
+      subtitle: current.subtitle || preset.form.subtitle,
+      description: current.description || preset.form.description,
+      highlights: preset.form.highlights
+    }));
+    setOptions((current) => {
+      const hasCustomOption = current.some((option) => option.name.trim() && option.name !== "기본 옵션");
+      return hasCustomOption ? current : preset.options;
+    });
+    setDetailJson((current) => ({
+      ...current,
+      benefits: preset.detail.benefits,
+      journey: preset.detail.journey,
+      packaging: preset.detail.packaging,
+      recipes: preset.detail.recipes,
+      components: current.components.some(Boolean) ? current.components : preset.detail.components,
+      faq: preset.detail.faq
+    }));
+    setMessage(`${preset.label} 프리셋을 적용했습니다. 상품명, 산지, 사진은 유지됩니다.`);
+    setToastMessage(`${preset.label} 프리셋 적용 완료`);
+    window.setTimeout(() => setToastMessage(""), 2200);
+  };
+
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     firstInvalidRef.current = null;
@@ -297,7 +330,9 @@ export function AdminProductBuilder({
           {draftStatus && <small className="admin-draft-status">{draftStatus}</small>}
           {createdUrl && <a className="admin-message-link" href={createdUrl} target="_blank">방금 저장한 상품 보기 →</a>}
         </div>
-        <button type="button" className="button outline" onClick={fillDraft}>초안 자동 채우기</button>
+        <div className="admin-builder-actions">
+          <button type="button" className="button outline" onClick={fillDraft}>초안 자동 채우기</button>
+        </div>
 
         {toastMessage && <div className="admin-toast" role="status">{toastMessage}</div>}
 
@@ -305,6 +340,20 @@ export function AdminProductBuilder({
           <div className="admin-product-builder-main">
             <details className="admin-form-section" open>
               <summary>① 기본정보</summary>
+              <div className="admin-preset-box">
+                <div>
+                  <strong>상품 유형 프리셋</strong>
+                  <span>자주 쓰는 상세 구성과 FAQ를 한 번에 채웁니다.</span>
+                </div>
+                <div className="admin-preset-grid">
+                  {PRODUCT_DETAIL_PRESET_OPTIONS.map((preset) => (
+                    <button type="button" key={preset.id} onClick={() => applyPreset(preset.id)}>
+                      <b>{preset.label}</b>
+                      <small>{preset.description}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="admin-form section-grid">
                 <label>
                   상품명 <em>필수</em>
