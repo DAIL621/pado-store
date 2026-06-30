@@ -32,6 +32,7 @@ type AdminProduct = {
 
 type ProductStatus = "selling" | "soldout" | "hidden";
 type StatusFilter = "all" | ProductStatus;
+type TestFilter = "all" | "production" | "test";
 
 const getTotalStock = (product: AdminProduct) =>
   (product.product_options ?? []).reduce((total, option) => total + (Number(option.stock) || 0), 0);
@@ -71,6 +72,13 @@ const statusLabel: Record<ProductStatus, string> = {
   hidden: "숨김"
 };
 
+const verificationProductPattern = /(verification|admin-edit|detail-auto|ops-db-test|stock-check|test|테스트|검증)/i;
+
+const isVerificationProduct = (product: AdminProduct) =>
+  [product.slug, product.name, product.origin, product.category]
+    .filter(Boolean)
+    .some((value) => verificationProductPattern.test(String(value)));
+
 const toOptionForms = (product: AdminProduct): AdminProductOptionForm[] =>
   (product.product_options?.length ? product.product_options : [{ id: "", name: "기본 옵션", price_delta: 0, stock: 0 }]).map((option) => ({
     name: option.name,
@@ -82,8 +90,10 @@ export function AdminProductsManager() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [testFilter, setTestFilter] = useState<TestFilter>("all");
   const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [message, setMessage] = useState("상품 목록을 불러오는 중입니다...");
+  const [bulkHiding, setBulkHiding] = useState(false);
 
   const loadProducts = async () => {
     const response = await fetch("/api/admin/products", { cache: "no-store" });
@@ -101,26 +111,39 @@ export function AdminProductsManager() {
   }, []);
 
   const counts = useMemo(() => {
-    const base = { all: products.length, selling: 0, soldout: 0, hidden: 0 };
+    const base = { all: products.length, selling: 0, soldout: 0, hidden: 0, test: 0, production: 0 };
     products.forEach((product) => {
       base[getStatus(product)] += 1;
+      if (isVerificationProduct(product)) {
+        base.test += 1;
+      } else {
+        base.production += 1;
+      }
     });
     return base;
   }, [products]);
+
+  const visibleVerificationProducts = useMemo(
+    () => products.filter((product) => isVerificationProduct(product) && getStatus(product) !== "hidden"),
+    [products]
+  );
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     return products.filter((product) => {
       const status = getStatus(product);
       const matchesStatus = statusFilter === "all" || status === statusFilter;
+      const verificationProduct = isVerificationProduct(product);
+      const matchesTestFilter =
+        testFilter === "all" || (testFilter === "test" ? verificationProduct : !verificationProduct);
       const matchesKeyword =
         !keyword ||
         [product.name, product.slug, product.origin, product.category]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(keyword));
-      return matchesStatus && matchesKeyword;
+      return matchesStatus && matchesTestFilter && matchesKeyword;
     });
-  }, [products, query, statusFilter]);
+  }, [products, query, statusFilter, testFilter]);
 
   const updateProductState = async (product: AdminProduct, body: Record<string, unknown>, doneMessage: string) => {
     const response = await fetch(`/api/admin/products/${product.id}`, {
@@ -158,6 +181,27 @@ export function AdminProductsManager() {
     await loadProducts();
   };
 
+  const hideVerificationProducts = async () => {
+    if (!visibleVerificationProducts.length || bulkHiding) return;
+    if (!window.confirm(`검증용 상품 ${visibleVerificationProducts.length}개를 숨김 처리할까요? 운영 상품은 제외됩니다.`)) return;
+
+    setBulkHiding(true);
+    let failedCount = 0;
+
+    for (const product of visibleVerificationProducts) {
+      const response = await fetch(`/api/admin/products/${product.id}`, { method: "DELETE" });
+      if (!response.ok) failedCount += 1;
+    }
+
+    setBulkHiding(false);
+    setMessage(
+      failedCount
+        ? `검증 상품 숨김 처리 중 ${failedCount}개가 실패했습니다. 실패 상품은 다시 확인해주세요.`
+        : `검증 상품 ${visibleVerificationProducts.length}개를 숨김 처리했습니다.`
+    );
+    await loadProducts();
+  };
+
   return (
     <>
       <div className="admin-toolbar">
@@ -175,6 +219,25 @@ export function AdminProductsManager() {
             {label}
           </button>
         ))}
+      </div>
+      <div className="admin-filter-tabs admin-filter-tabs-secondary">
+        {[
+          ["all", `전체 보기 ${counts.all}`],
+          ["production", `운영상품 ${counts.production}`],
+          ["test", `검증상품 ${counts.test}`]
+        ].map(([value, label]) => (
+          <button type="button" key={value} className={testFilter === value ? "active" : ""} onClick={() => setTestFilter(value as TestFilter)}>
+            {label}
+          </button>
+        ))}
+        <button
+          type="button"
+          className="danger-lite"
+          onClick={hideVerificationProducts}
+          disabled={!visibleVerificationProducts.length || bulkHiding}
+        >
+          {bulkHiding ? "검증 상품 숨김 중..." : `검증 상품 숨김 ${visibleVerificationProducts.length}`}
+        </button>
       </div>
       <p className="admin-note">{message}</p>
 
@@ -202,10 +265,12 @@ export function AdminProductsManager() {
               {filtered.map((product) => {
                 const status = getStatus(product);
                 const detailScore = getDetailScore(product);
+                const verificationProduct = isVerificationProduct(product);
                 return (
                   <tr key={product.id}>
                     <td>
                       <strong>{product.name}</strong>
+                      {verificationProduct && <span className="test-product-badge">검증</span>}
                       <br />
                       <small>{product.slug}</small>
                     </td>
