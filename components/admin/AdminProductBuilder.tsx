@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ProductDetailEditor } from "@/components/admin/ProductDetailEditor";
 import { ProductDetailPreview } from "@/components/admin/ProductDetailPreview";
 import { generateProductDescription, generateProductDetailDraft } from "@/lib/admin/ai-product-drafts";
@@ -88,6 +88,7 @@ export function AdminProductBuilder({
   const [createdUrl, setCreatedUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [draftStatus, setDraftStatus] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
   const [draftReady, setDraftReady] = useState(!draftStorageKey);
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
 
@@ -186,6 +187,27 @@ export function AdminProductBuilder({
     if (node && !node.value && node.required && !firstInvalidRef.current) firstInvalidRef.current = node;
   };
 
+  const fieldClass = (value: string) => (value.trim() ? "" : "is-empty");
+
+  const focusNextField = (event: KeyboardEvent<HTMLFormElement>) => {
+    if (event.key !== "Enter" || event.shiftKey || event.ctrlKey || event.metaKey) return;
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLSelectElement)) return;
+    if (target.type === "file" || target.type === "button" || target.type === "submit") return;
+
+    const fields = Array.from(
+      event.currentTarget.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+        "input:not([type='hidden']):not([disabled]), textarea:not([disabled]), select:not([disabled])"
+      )
+    ).filter((field) => field.offsetParent !== null);
+    const index = fields.indexOf(target);
+    const next = fields[index + 1];
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+    if (next instanceof HTMLInputElement) next.select();
+  };
+
   const fillDraft = () => {
     const seed = {
       name: form.name || "신규 상품",
@@ -212,6 +234,15 @@ export function AdminProductBuilder({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     firstInvalidRef.current = null;
+    const formElement = event.currentTarget;
+    if (!formElement.checkValidity()) {
+      setMessage("필수 입력 항목을 확인해주세요.");
+      formElement.reportValidity();
+      const invalidField = formElement.querySelector<HTMLInputElement | HTMLTextAreaElement>("input:invalid, textarea:invalid");
+      invalidField?.scrollIntoView({ behavior: "smooth", block: "center" });
+      invalidField?.focus();
+      return;
+    }
     setSaving(true);
     setCreatedUrl("");
     setMessage("저장하는 중입니다...");
@@ -235,6 +266,8 @@ export function AdminProductBuilder({
     if (draftStorageKey) window.localStorage.removeItem(draftStorageKey);
     setCreatedUrl(result.productUrl ?? "");
     setMessage(result.message ?? successMessage);
+    setToastMessage(result.message ?? successMessage);
+    window.setTimeout(() => setToastMessage(""), 2800);
     setSaving(false);
     await onSuccess?.(result);
   };
@@ -266,14 +299,16 @@ export function AdminProductBuilder({
         </div>
         <button type="button" className="button outline" onClick={fillDraft}>초안 자동 채우기</button>
 
-        <form className="admin-product-builder" onSubmit={submit}>
+        {toastMessage && <div className="admin-toast" role="status">{toastMessage}</div>}
+
+        <form className="admin-product-builder" onSubmit={submit} onKeyDown={focusNextField}>
           <div className="admin-product-builder-main">
             <details className="admin-form-section" open>
               <summary>① 기본정보</summary>
               <div className="admin-form section-grid">
                 <label>
                   상품명 <em>필수</em>
-                  <input ref={inputRef} value={form.name} onChange={(event) => update("name", event.target.value)} required placeholder="예: 완도 활전복" />
+                  <input ref={inputRef} className={fieldClass(form.name)} value={form.name} onChange={(event) => update("name", event.target.value)} required placeholder="예: 완도 활전복" />
                 </label>
                 <label>
                   URL 이름(slug)
@@ -281,11 +316,11 @@ export function AdminProductBuilder({
                 </label>
                 <label>
                   산지 <em>필수</em>
-                  <input ref={inputRef} value={form.origin} onChange={(event) => update("origin", event.target.value)} required placeholder="예: 완도" />
+                  <input ref={inputRef} className={fieldClass(form.origin)} value={form.origin} onChange={(event) => update("origin", event.target.value)} required placeholder="예: 완도" />
                 </label>
                 <label>
                   카테고리 <em>필수</em>
-                  <input ref={inputRef} value={form.category} onChange={(event) => update("category", event.target.value)} required placeholder="예: 전복·조개" />
+                  <input ref={inputRef} className={fieldClass(form.category)} value={form.category} onChange={(event) => update("category", event.target.value)} required placeholder="예: 전복·조개" />
                 </label>
                 <label>
                   대표 배지
@@ -297,11 +332,11 @@ export function AdminProductBuilder({
                 </label>
                 <label className="wide">
                   한 줄 설명 <em>필수</em>
-                  <input ref={inputRef} value={form.subtitle} onChange={(event) => update("subtitle", event.target.value)} required placeholder="상품 카드와 상세 상단에 보이는 짧은 문구" />
+                  <input ref={inputRef} className={fieldClass(form.subtitle)} value={form.subtitle} onChange={(event) => update("subtitle", event.target.value)} required placeholder="상품 카드와 상세 상단에 보이는 짧은 문구" />
                 </label>
                 <label className="wide">
                   기본 상세 설명 <em>필수</em>
-                  <textarea ref={inputRef} value={form.description} onChange={(event) => update("description", event.target.value)} required rows={4} />
+                  <textarea ref={inputRef} className={fieldClass(form.description)} value={form.description} onChange={(event) => update("description", event.target.value)} required rows={4} />
                 </label>
                 <label className="wide">
                   카드 핵심 문구
@@ -315,7 +350,7 @@ export function AdminProductBuilder({
               <div className="admin-form section-grid">
                 <label>
                   기본 판매가 <em>필수</em>
-                  <input ref={inputRef} type="number" value={form.basePrice} onChange={(event) => update("basePrice", event.target.value)} required placeholder="39900" />
+                  <input ref={inputRef} className={fieldClass(form.basePrice)} type="number" value={form.basePrice} onChange={(event) => update("basePrice", event.target.value)} required placeholder="39900" />
                 </label>
               </div>
               <div className="option-editor">
