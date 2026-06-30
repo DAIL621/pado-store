@@ -23,6 +23,10 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
     <section className="detail-master" aria-label={`${product.name} 상품 상세`}>
       <HeroSection product={product} heroImage={heroImages[0]?.url || product.image} purchaseSlot={purchaseSlot} />
 
+      {product.description && (
+        <StoryIntroSection product={product} image={heroImages[1]?.url || heroImages[0]?.url || product.image} />
+      )}
+
       {featureItems.length > 0 && (
         <FeatureSection productName={product.name} features={featureItems} />
       )}
@@ -62,6 +66,21 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
           {sections.faq.length > 0 && <a href="#detail-master-faq">FAQ</a>}
         </nav>
       )}
+    </section>
+  );
+}
+
+function StoryIntroSection({ product, image }: { product: Product; image: string }) {
+  return (
+    <section className="shell detail-master-story">
+      <div>
+        <span>FRESH FIRST</span>
+        <h2>사진보다 먼저, 기준을 확인합니다</h2>
+        <p>{product.description}</p>
+      </div>
+      <div>
+        <Image src={image} alt={`${product.name} 상품 소개`} fill sizes="(max-width: 700px) 100vw, 42vw" />
+      </div>
     </section>
   );
 }
