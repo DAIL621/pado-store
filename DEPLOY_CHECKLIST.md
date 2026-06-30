@@ -93,3 +93,4 @@
 - [x] 검증 후 `DEV_ADMIN_LOGIN_ENABLED=false` 복구 확인
 - [ ] 운영 이미지 업로드 저장소 결정: Supabase Storage / S3 / Cloudflare R2 중 선택
 - [ ] 운영 업로드 저장소 연결 후 관리자 대표사진 업로드 재검증
+- [ ] 기존 `detail_json` 이미지 URL이 영구 저장소 URL인지 확인

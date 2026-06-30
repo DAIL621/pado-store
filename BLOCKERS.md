@@ -70,5 +70,6 @@ alter table products add column if not exists detail_json jsonb not null default
 - 관리자 대표사진 업로드 UX와 로컬 개발용 `/api/admin/uploads` 저장 API는 구현했다.
 - 현재 로컬에서는 `public/uploads/products`에 파일을 저장해 즉시 미리보기와 상세페이지 검증이 가능하다.
 - Vercel 운영 환경에서는 로컬 파일 시스템 저장이 영구 저장소로 적합하지 않다.
+- 로컬 검증 중 업로드 파일을 정리하면 기존 `detail_json.heroImages` URL이 깨질 수 있음을 확인했다. 관리자 Preview에는 fallback을 적용했지만, 운영 상세페이지 안정성을 위해 영구 이미지 저장소 전환이 필요하다.
 - 실제 운영 전 Supabase Storage, S3, Cloudflare R2 중 하나를 이미지 저장소로 결정해야 한다.
 - 이 항목은 외부 콘솔/스토리지 권한이 필요한 작업이며, 현재 관리자 UI 개발 진행을 막지는 않는다.
