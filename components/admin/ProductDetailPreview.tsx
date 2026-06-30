@@ -20,7 +20,8 @@ type Props = {
 
 export function ProductDetailPreview({ form, options, detail }: Props) {
   const price = Number(form.basePrice) || 0;
-  const mainImage = detail.heroImages.find((image) => image.url)?.url || form.imageUrl || "/images/products/wando-abalone.webp";
+  const fallbackImage = form.imageUrl || "/images/products/wando-abalone.webp";
+  const mainImage = detail.heroImages.find((image) => image.url)?.url || fallbackImage;
   const heroImages = detail.heroImages.filter((image) => image.url);
   const benefits = detail.benefits.filter(Boolean);
   const journey = detail.journey.filter((step) => step.description || step.image);
@@ -35,14 +36,30 @@ export function ProductDetailPreview({ form, options, detail }: Props) {
         <strong>{form.name || "상품명을 입력하세요"}</strong>
       </div>
       <div className="admin-live-preview-image">
-        <img src={mainImage} alt="대표 이미지 미리보기" />
+        <img
+          src={mainImage}
+          alt="대표 이미지 미리보기"
+          onError={(event) => {
+            if (event.currentTarget.dataset.fallbackApplied) return;
+            event.currentTarget.dataset.fallbackApplied = "true";
+            event.currentTarget.src = fallbackImage;
+          }}
+        />
         {form.badge && <em>{form.badge}</em>}
       </div>
       {heroImages.length > 1 && (
         <div className="admin-live-preview-thumbs" aria-label="대표사진 슬라이더 미리보기">
           {heroImages.slice(0, 6).map((image, index) => (
             <span key={`${image.url}-${index}`} className={index === 0 ? "active" : ""}>
-              <img src={image.url} alt={`${image.label} 썸네일`} />
+              <img
+                src={image.url}
+                alt={`${image.label} 썸네일`}
+                onError={(event) => {
+                  if (event.currentTarget.dataset.fallbackApplied) return;
+                  event.currentTarget.dataset.fallbackApplied = "true";
+                  event.currentTarget.src = fallbackImage;
+                }}
+              />
             </span>
           ))}
         </div>

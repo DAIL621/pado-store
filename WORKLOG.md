@@ -388,6 +388,18 @@
 - `pnpm run build` 성공
 - `pnpm run verify:detail-json` 성공
 
+## 2026-06-30 관리자 Preview 이미지 fallback 보강
+
+### 완료 작업
+
+- 삭제되었거나 접근 불가한 대표사진 URL이 있을 때 Preview 대표 이미지가 깨지지 않도록 fallback 처리
+- 썸네일 이미지도 fallback 이미지로 대체되도록 보강
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
+
 ## 2026-06-29 관리자 모달 레이아웃 안정화
 
 ### 완료 작업

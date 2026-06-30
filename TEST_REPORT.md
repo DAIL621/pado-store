@@ -418,6 +418,20 @@
 
 - `pnpm run build`: 성공
 - `pnpm run verify:detail-json`: 성공
+
+## 2026-06-30 관리자 Preview 이미지 fallback 검증
+
+### 검증 범위
+
+- 삭제된 업로드 이미지 URL이 Preview에 포함된 경우
+- 대표 이미지 fallback
+- 썸네일 이미지 fallback
+- 기존 상품등록/상세 자동 생성 영향 여부
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-json`: 성공
 - 이미지 업로드: 성공
 - 상품 등록: 성공
 - 상세페이지 자동 표시: 성공
