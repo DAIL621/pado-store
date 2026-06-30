@@ -8,6 +8,7 @@
     "start": "next start",
     "verify:detail-json": "node scripts/verify-detail-json-flow.mjs",
     "verify:admin-edit": "node scripts/verify-admin-product-edit.mjs",
+    "verify:admin-upload": "node scripts/verify-admin-upload.mjs",
     "lint": "next lint"
   },
   "dependencies": {

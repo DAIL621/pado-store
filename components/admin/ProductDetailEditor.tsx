@@ -15,7 +15,7 @@ type Props = {
   onChange: (value: ProductDetail) => void;
 };
 
-const MAX_UPLOAD_SIZE = 8 * 1024 * 1024;
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 export function ProductDetailEditor({ value, onChange }: Props) {
@@ -121,7 +121,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
     }
     if (file.size > MAX_UPLOAD_SIZE) {
       setUploadMessageTone("error");
-      setUploadMessage("이미지 용량이 너무 큽니다. 8MB 이하 파일로 다시 업로드해주세요.");
+      setUploadMessage("이미지 용량이 너무 큽니다. 5MB 이하 파일로 다시 업로드해주세요.");
       return false;
     }
 
@@ -272,7 +272,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
                 ) : (
                   <span>
                     이미지를 드롭하거나 클릭해 업로드
-                    <small>JPG · PNG · WebP · GIF / 최대 8MB</small>
+                    <small>JPG · PNG · WebP · GIF / 최대 5MB</small>
                   </span>
                 )}
                 {uploadCompleteTarget === `hero-${index}` && <strong className="admin-upload-check" aria-label="업로드 완료">✓</strong>}
