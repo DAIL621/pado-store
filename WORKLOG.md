@@ -531,6 +531,11 @@
 - 상품 설명 기반 공통 Story Intro 섹션 추가
 - 모바일 Swipe형 Gallery, 카드형 Feature/Overview/Package/FAQ 디자인 적용
 - Empty/partial/full detail 데이터 검증 스크립트 추가
+- Hero 아래 공통 구매 신뢰 바 추가: 산지, 배송, 옵션 재고, 할인 정보를 상품 데이터에서 자동 구성
+- 템플릿 엔진에 `pado-master-v1` 메타데이터 추가 및 상세페이지 루트에 data attribute 노출
+- 상세 대표사진이 없는 경우 Gallery 섹션을 숨기고 Hero만 기본 상품 이미지를 사용하도록 개선
+- `verify:detail-json`이 MASTER 템플릿 메타, 신뢰 바, 주요 섹션 렌더링까지 확인하도록 보강
+- 신뢰 바 카드 hover/touch 피드백 추가
 
 ### 검증
 
@@ -538,3 +543,4 @@
 - `pnpm run verify:admin` 성공
 - `pnpm run verify:detail-template` 성공
 - Playwright/Edge 캡처: 상품 상세 Desktop, iPhone, Android 폭 확인
+- Playwright/Edge 캡처: 신뢰 바 적용 후 Desktop, iPhone, Android 폭 재확인

@@ -62,6 +62,9 @@
 - [ ] PC Chrome home/products/product detail
 - [ ] iPhone Safari home/products/product detail/cart/checkout
 - [ ] Android Chrome home/products/product detail/cart/checkout
+- [ ] Product detail MASTER template sections render from `detail_json`
+- [ ] Product detail trust signals render correctly on mobile
+- [ ] Product detail gallery hides naturally when no detail images exist
 - [ ] Kakao login
 - [ ] Product option selection
 - [ ] Product detail prevents adding more than remaining stock after cart quantity

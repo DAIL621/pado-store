@@ -578,6 +578,9 @@
 - 기존 구매 CTA / 옵션 선택 기능 유지
 - `detail_json` 기반 Hero, Feature, Overview, Timeline, Gallery, Cooking, Package, FAQ 섹션 자동 렌더링
 - 데이터가 없는 섹션 자동 숨김 처리
+- 상세 대표사진이 없는 경우 Gallery 숨김 처리
+- 공통 구매 신뢰 바 렌더링
+- `pado-master-v1` 템플릿 메타 렌더링
 - Empty / partial / full detail 데이터 케이스
 - Desktop / iPhone / Android 폭 캡처
 - 관리자 등록/수정 E2E와 상세페이지 자동 생성 영향 여부
@@ -587,6 +590,7 @@
 - `pnpm run build`: 성공
 - `pnpm run verify:admin`: 성공
 - `pnpm run verify:detail-template`: 성공
+- `pnpm run verify:detail-json`: 성공, MASTER 템플릿 메타/신뢰 바/주요 섹션 assertion 포함
 - 상품 상세 Desktop 캡처: 성공
 - 상품 상세 iPhone 캡처: 성공
 - 상품 상세 Android 캡처: 성공

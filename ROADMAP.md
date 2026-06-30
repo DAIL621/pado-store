@@ -193,6 +193,9 @@
 - 모바일 우선 Hero / 구매 CTA / Feature / Overview / Gallery / FAQ 구조 구현
 - 데이터 없는 섹션 자동 숨김 처리 검증
 - `StickyPurchaseBar` 컴포넌트 분리
+- 상품 데이터 기반 공통 구매 신뢰 바 적용
+- `pado-master-v1` 템플릿 메타 추적 구조 추가
+- 상세 대표사진 미입력 상품의 Gallery empty-state 개선
 
 ### 다음 단계
 
