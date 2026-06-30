@@ -149,7 +149,11 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       onUploaded(result.url);
       setUploadCompleteTarget(target);
       setUploadMessageTone("success");
-      setUploadMessage("이미지가 업로드되었습니다.");
+      setUploadMessage(
+        result.storage === "supabase"
+          ? "이미지가 Supabase Storage에 업로드되었습니다."
+          : "이미지가 업로드되었습니다. 현재는 로컬 개발 저장소를 사용 중입니다."
+      );
       window.setTimeout(() => setUploadCompleteTarget((current) => (current === target ? null : current)), 2200);
       return true;
     } catch {
