@@ -22,6 +22,7 @@ type SectionTitleProps = {
 export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
   const { template, sections, heroImages, featureItems, overviewItems, trustSignals, packagingImage } = buildProductDetailTemplateModel(product);
   const hasAutoContent = hasVisibleProductDetailContent(sections);
+  const galleryImages = sections.heroImages;
 
   return (
     <section
@@ -48,7 +49,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
       {sections.benefits.length > 0 && <AdvantageSection productName={product.name} benefits={sections.benefits} />}
 
-      {heroImages.length > 0 && <GallerySection images={heroImages} productName={product.name} />}
+      {galleryImages.length > 0 && <GallerySection images={galleryImages} productName={product.name} />}
 
       {sections.recipes.length > 0 && <CookingSection recipes={sections.recipes} productName={product.name} />}
 
@@ -71,7 +72,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
       {hasAutoContent && (
         <nav className="detail-master-nav" aria-label="상품 상세 섹션 바로가기">
           {sections.journey.length > 0 && <a href="#detail-master-timeline">산지 여정</a>}
-          {heroImages.length > 0 && <a href="#detail-master-gallery">사진</a>}
+          {galleryImages.length > 0 && <a href="#detail-master-gallery">사진</a>}
           {sections.recipes.length > 0 && <a href="#detail-master-cooking">먹는 방법</a>}
           {sections.packaging.length > 0 && <a href="#detail-master-shipping">포장/배송</a>}
           {sections.faq.length > 0 && <a href="#detail-master-faq">FAQ</a>}
