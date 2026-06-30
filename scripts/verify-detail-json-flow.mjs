@@ -142,6 +142,7 @@ const detail = await request(`/products/${slug}`);
 const detailHtml = await detail.text();
 assert(detail.status === 200, `detail page failed: ${detail.status}`);
 assert(detailHtml.includes("detail-master-hero"), "master detail hero was not rendered");
+assert(detailHtml.includes("detail-master-trust"), "trust signal section was not rendered");
 assert(detailHtml.includes("detail-master-features"), "feature section was not rendered");
 assert(detailHtml.includes("detail-master-overview"), "overview section was not rendered");
 assert(detailHtml.includes("detail-master-timeline"), "timeline section was not rendered");

@@ -237,6 +237,11 @@
 @media(max-width:800px){.detail-master-story{grid-template-columns:1fr;padding:22px;border-radius:20px}.detail-master-story>div:last-child{min-height:220px;order:-1}}
 @media(max-width:600px){.detail-master-story{width:calc(100% - 28px);margin-top:6px;padding:16px}.detail-master-story h2{font-size:24px}.detail-master-story p{font-size:13px}.detail-master-story>div:last-child{min-height:190px;border-radius:15px}}
 
+/* Product detail master trust signals */
+.detail-master-trust{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:-42px;margin-bottom:26px;position:relative;z-index:2}.detail-master-trust article{min-height:118px;border:1px solid #dbe9e7;border-radius:18px;background:rgba(255,255,255,.94);box-shadow:0 18px 44px rgba(7,48,53,.08);padding:18px;backdrop-filter:blur(12px)}.detail-master-trust span{display:block;color:var(--coral);font-size:10px;font-weight:950;letter-spacing:.12em;margin-bottom:8px}.detail-master-trust strong{display:block;color:#153f43;font-size:16px;line-height:1.35;word-break:keep-all}.detail-master-trust p{margin:8px 0 0;color:#6a7d7f;font-size:12px;line-height:1.55}
+@media(max-width:980px){.detail-master-trust{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:-22px}.detail-master-trust article{min-height:104px}}
+@media(max-width:600px){.detail-master-trust{width:calc(100% - 28px);grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px;margin-bottom:18px}.detail-master-trust article{min-height:98px;border-radius:15px;padding:14px}.detail-master-trust strong{font-size:14px}.detail-master-trust p{font-size:11px}}
+
 /* Admin list empty state */
 .admin-empty-filter{display:grid;justify-items:center;gap:8px;padding:34px 16px;border:1px dashed #dbe9e7;border-radius:12px;background:#f7fbfa;text-align:center}.admin-empty-filter strong{color:var(--teal);font-size:14px}.admin-empty-filter span{color:var(--muted);font-size:12px}.admin-empty-filter button{border:1px solid var(--teal);border-radius:999px;background:#fff;color:var(--teal);padding:8px 12px;font-size:11px;font-weight:900}
 @media(max-width:700px){.product-admin-table td.admin-empty-filter-cell{display:block}.product-admin-table td.admin-empty-filter-cell:before{content:""}.admin-empty-filter{padding:28px 12px}.admin-empty-filter button{width:100%;min-height:38px}}

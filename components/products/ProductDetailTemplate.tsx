@@ -2,7 +2,11 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { formatPrice, type Product } from "@/data/products";
 import { getVisibleProductDetailSections, hasVisibleProductDetailContent } from "@/lib/products/detail-sections";
-import { buildProductDetailTemplateModel, type DetailTemplateInfoCard } from "@/lib/products/detail-template-engine";
+import {
+  buildProductDetailTemplateModel,
+  type DetailTemplateInfoCard,
+  type DetailTemplateTrustSignal
+} from "@/lib/products/detail-template-engine";
 
 type Props = {
   product: Product;
@@ -16,12 +20,14 @@ type SectionTitleProps = {
 };
 
 export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
-  const { sections, heroImages, featureItems, overviewItems, packagingImage } = buildProductDetailTemplateModel(product);
+  const { sections, heroImages, featureItems, overviewItems, trustSignals, packagingImage } = buildProductDetailTemplateModel(product);
   const hasAutoContent = hasVisibleProductDetailContent(sections);
 
   return (
     <section className="detail-master" aria-label={`${product.name} 상품 상세`}>
       <HeroSection product={product} heroImage={heroImages[0]?.url || product.image} purchaseSlot={purchaseSlot} />
+
+      <TrustSignalSection signals={trustSignals} />
 
       {product.description && (
         <StoryIntroSection product={product} image={heroImages[1]?.url || heroImages[0]?.url || product.image} />
@@ -66,6 +72,22 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
           {sections.faq.length > 0 && <a href="#detail-master-faq">FAQ</a>}
         </nav>
       )}
+    </section>
+  );
+}
+
+function TrustSignalSection({ signals }: { signals: DetailTemplateTrustSignal[] }) {
+  if (signals.length === 0) return null;
+
+  return (
+    <section className="shell detail-master-trust" aria-label="구매 전 확인 정보">
+      {signals.map((signal) => (
+        <article key={`${signal.label}-${signal.title}`}>
+          <span>{signal.label}</span>
+          <strong>{signal.title}</strong>
+          <p>{signal.body}</p>
+        </article>
+      ))}
     </section>
   );
 }
