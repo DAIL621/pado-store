@@ -184,6 +184,27 @@ export function AdminProductBuilder({
     ];
   }, [detailJson, form, options]);
 
+  const validationWarnings = useMemo(() => {
+    const warnings: string[] = [];
+    const heroCount = detailJson.heroImages.filter((image) => image.url).length;
+    const benefitCount = detailJson.benefits.filter(Boolean).length;
+    const journeyCount = detailJson.journey.filter((step) => step.description || step.image).length;
+    const componentCount = detailJson.components.filter(Boolean).length;
+    const faqCount = detailJson.faq.filter((item) => item.question || item.answer).length;
+    const totalStock = options.reduce((total, option) => total + (Number(option.stock) || 0), 0);
+
+    if (form.slug && !/^[a-z0-9가-힣-]+$/i.test(form.slug.trim())) warnings.push("URL 이름(slug)은 문자, 숫자, 한글, 하이픈만 권장합니다.");
+    if (heroCount === 0) warnings.push("대표사진이 없으면 상세페이지 상단 이미지가 기본 이미지로 표시됩니다.");
+    if (heroCount > 0 && heroCount < 3) warnings.push("대표사진은 3장 이상이면 구매 전환에 더 유리합니다.");
+    if (benefitCount < 3) warnings.push("상품 장점은 최소 3개 이상 입력하는 것을 권장합니다.");
+    if (journeyCount < 3) warnings.push("산지 여정이 부족하면 상세페이지 신뢰 정보가 약해집니다.");
+    if (componentCount === 0) warnings.push("구성품을 입력하면 고객 문의를 줄일 수 있습니다.");
+    if (faqCount === 0) warnings.push("FAQ가 없으면 출고/보관 문의가 늘어날 수 있습니다.");
+    if (totalStock === 0) warnings.push("옵션 재고가 0개이면 고객 화면에서 품절 상태로 보일 수 있습니다.");
+
+    return warnings;
+  }, [detailJson, form.slug, options]);
+
   const inputRef = (node: HTMLInputElement | HTMLTextAreaElement | null) => {
     if (node && !node.value && node.required && !firstInvalidRef.current) firstInvalidRef.current = node;
   };
@@ -425,6 +446,18 @@ export function AdminProductBuilder({
 
             <details className="admin-form-section" open>
               <summary>⑩ 저장</summary>
+              <div className="admin-validation-panel" role="status">
+                <strong>{validationWarnings.length ? "저장 전 확인" : "운영 등록 준비 완료"}</strong>
+                {validationWarnings.length ? (
+                  <ul>
+                    {validationWarnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>필수 정보와 상세페이지 핵심 항목이 균형 있게 입력되었습니다.</p>
+                )}
+              </div>
               <div className="admin-save-panel">
                 <p>필수 정보와 상세페이지 자동 생성 정보를 확인한 뒤 저장합니다.</p>
                 <button type="submit" className="button teal" disabled={saving}>{saving ? savingLabel : submitLabel}</button>
