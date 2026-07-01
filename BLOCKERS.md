@@ -86,3 +86,14 @@ alter table products add column if not exists detail_json jsonb not null default
 - 신규 BLOCKER 없음.
 - Supabase 운영 DB 저장 검증은 외부 네트워크 권한으로 수행 완료했다.
 - 개발 환경에서 `127.0.0.1` 접속 시 Next dev 리소스가 차단되던 문제는 `next.config.ts`의 `allowedDevOrigins`로 해결했다.
+## 2026-07-01 외부 권한/운영 콘솔 확인 필요
+
+- Vercel Dashboard에서 최신 커밋 자동 배포 완료 여부 확인 필요.
+- Production `NEXT_PUBLIC_SITE_URL` 값이 실제 배포 URL로 등록되어 있는지 확인 필요.
+- Supabase Storage 운영 bucket 생성 및 공개 URL 정책 확인 필요.
+- Vercel Production 환경변수에 `PADO_PRODUCT_IMAGE_STORAGE=supabase`, `SUPABASE_PRODUCT_IMAGE_BUCKET` 등록 필요.
+- Kakao Redirect URI와 Supabase Redirect URL을 실제 Production URL 기준으로 최종 확인 필요.
+- Toss Payments 성공/실패 URL을 실제 Production URL 기준으로 최종 확인 필요.
+- 실제 iPhone Safari / Android Chrome에서 상품 상세, 장바구니, 주문서, 마이페이지 흐름 최종 확인 필요.
+
+위 항목은 외부 콘솔 또는 실기기 접근이 필요한 확인 작업이며, 내부 코드 개선 작업의 종료 사유가 아닙니다.

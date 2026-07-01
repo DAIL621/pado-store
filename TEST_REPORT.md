@@ -653,3 +653,42 @@
 - `127.0.0.1` 개발 접속에서 Next dev HMR 리소스가 차단되어 클라이언트 이벤트가 붙지 않는 문제를 `allowedDevOrigins`로 수정했다.
 - 개발용 관리자 로그인 후 redirect origin이 `localhost`로 바뀌어 쿠키 도메인이 어긋나는 문제를 referer origin 기준 redirect로 수정했다.
 - 저장 버튼 클릭 시 브라우저 기본 제출로 빠질 수 있는 흐름을 명시적 클릭 저장 핸들러로 보강했다.
+## 2026-07-01 운영 시스템 및 상세페이지 엔진 고도화 검증
+### 검증 범위
+
+- 상품 상세페이지 SEO 자동 생성
+  - metadata title/description
+  - canonical
+  - Product JSON-LD
+  - BreadcrumbList JSON-LD
+  - sitemap 상품 URL 포함
+  - robots 관리자/API/dev-login 차단
+- 관리자 상품목록 운영 필터
+  - 완성도 필터
+  - 최근 등록순
+  - 완성도 낮은순/높은순
+  - 재고 적은순
+  - 가격 높은순
+- 관리자 상품등록/수정 Preview
+  - 고객 신뢰 요소 표시
+  - 옵션/재고/섹션 요약 표시
+- MASTER 상세페이지 템플릿
+  - 하단 최종 구매 CTA 표시
+  - 구매 영역 앵커 이동
+- 관리자 상품 품질 점수
+  - 가격/재고 준비도
+  - SEO 준비도
+  - 운영 경고 문구
+- 대표사진 업로드 UX
+  - 복사한 이미지 붙여넣기 업로드 핸들러
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-template`: 성공
+- `pnpm run verify:admin-static`: 성공
+
+### 비고
+
+- Playwright/Supabase 운영 DB 저장 검증은 기존 E2E 스크립트로 가능하지만 외부 네트워크와 개발 서버가 필요한 검증입니다.
+- 이번 묶음에서는 외부 권한 없이 검증 가능한 정적/빌드 회귀 검증을 추가했습니다.

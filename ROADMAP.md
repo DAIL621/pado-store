@@ -204,3 +204,27 @@
 3. 풍부한 `detail_json` 상품 기준으로 Timeline/Cooking/Package 화면 재검증
 4. 상세페이지 Lighthouse Mobile 점검
 5. 상품 상세 하단 추천상품 로직 고도화
+## 2026-07-01 Phase 1 운영 시스템 진행 현황
+
+### 완료
+
+- 상품 상세페이지 SEO 자동 생성 1차
+  - title/description/canonical/OG/Twitter/Product JSON-LD/Breadcrumb JSON-LD
+- sitemap/robots 회귀 검증 추가
+- 관리자 상품목록 운영 필터 개선
+  - 완성도 필터
+  - 운영/검증상품 필터 유지
+  - 완성도/재고/가격 기준 정렬
+- 관리자 Preview 신뢰 요소 및 재고 요약 보강
+- MASTER 상세페이지 하단 최종 구매 CTA 추가
+- 상품 품질 점수에 가격/재고/SEO 준비도 반영
+- 대표사진 붙여넣기 업로드 UX 추가
+- 외부 권한 없이 실행 가능한 관리자 정적 회귀 검증 추가
+
+### 다음 우선순위
+
+1. 실제 판매 상품 이미지와 상세 설명 입력
+2. Supabase Storage 운영 bucket 설정 후 이미지 업로드 실운영 검증
+3. Playwright 기반 관리자 상품 수정/저장/상세 반영 전체 재검증
+4. 상세페이지 추천상품 로직 고도화
+5. 모바일 상세페이지 Lighthouse 및 실기기 확인

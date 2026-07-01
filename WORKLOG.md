@@ -637,3 +637,40 @@
 - `pnpm run verify:detail-json` 성공
 - `pnpm run verify:admin` 성공
 - Playwright 관리자 상품 등록 버튼 E2E 성공
+## 2026-07-01 운영 시스템 및 상세페이지 엔진 고도화
+### 완료 작업
+
+- 상품 상세페이지 SEO 자동 생성 범위를 확장했습니다.
+  - 상품명, 산지, 설명 기반 metadata title/description 생성
+  - canonical URL 생성
+  - Product JSON-LD 생성
+  - BreadcrumbList JSON-LD 생성
+  - sitemap 상품 URL/robots 비공개 경로 회귀 검증 추가
+- 관리자 상품목록 운영 필터를 개선했습니다.
+  - 상세페이지 완성도 필터 추가
+  - 최근 등록순, 완성도 낮은순, 완성도 높은순, 재고 적은순, 가격 높은순 정렬 추가
+- 관리자 상세페이지 Preview를 개선했습니다.
+  - 산지 선별, 당일 출고, 냉장 포장 신뢰 요소 표시
+  - 옵션 수, 재고 수, 완성 섹션 요약 표시
+  - 구매 CTA 문구를 실제 고객 화면에 가깝게 수정
+- MASTER 상세페이지 템플릿에 하단 최종 구매 CTA를 추가했습니다.
+  - 산지, 옵션 수, 구매 가능 재고를 다시 확인
+  - 구매 영역으로 이동하는 CTA 연결
+- 관리자 상품 품질 점수를 확장했습니다.
+  - 가격/재고 준비도 추가
+  - SEO 준비도 추가
+  - 짧은 설명, 배지, 가격 미입력 경고 보강
+- 대표사진 업로드 UX를 개선했습니다.
+  - 복사한 이미지를 붙여넣으면 첫 빈 대표사진 칸부터 업로드
+  - 도움말 문구에 드롭/붙여넣기 사용법 반영
+- 관리자 정적 회귀 검증을 추가했습니다.
+  - 상품목록 필터/정렬
+  - 붙여넣기 이미지 업로드
+  - 품질 점수 가격/재고/SEO 항목
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-template` 성공
+- `pnpm run verify:admin-static` 성공
+- GitHub push 완료
