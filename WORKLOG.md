@@ -559,6 +559,17 @@
 - `pnpm run build` 성공
 - `pnpm run verify:admin` 성공
 - 실제 로컬 HTTP 검증: `/dev-admin-login` 200, 로그인 303, `pado_dev_admin` 쿠키 생성, `/admin`, `/admin/products`, `/admin/new` 200 확인
+## 2026-07-01 관리자 프리셋 자동 검증 추가
+### 완료 작업
+
+- `scripts/verify-admin-presets.mjs`를 추가해 관리자 상품등록 화면 프리셋 7종 표시와 클릭 동작을 자동 검증하도록 했다.
+- `pnpm run verify:admin-presets`를 추가하고 `verify:admin` 전체 검증 묶음에 포함했다.
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:admin-presets` 성공
+
 ## 2026-07-01 관리자 상품 프리셋 확장
 ### 완료 작업
 
