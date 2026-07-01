@@ -33,6 +33,8 @@ type AdminProduct = {
 type ProductStatus = "selling" | "soldout" | "hidden";
 type StatusFilter = "all" | ProductStatus;
 type TestFilter = "all" | "production" | "test";
+type QualityFilter = "all" | "low" | "ready";
+type SortMode = "recent" | "quality-low" | "quality-high" | "stock-low" | "price-high";
 
 const getTotalStock = (product: AdminProduct) =>
   (product.product_options ?? []).reduce((total, option) => total + (Number(option.stock) || 0), 0);
@@ -91,6 +93,8 @@ export function AdminProductsManager() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [testFilter, setTestFilter] = useState<TestFilter>("all");
+  const [qualityFilter, setQualityFilter] = useState<QualityFilter>("all");
+  const [sortMode, setSortMode] = useState<SortMode>("recent");
   const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [message, setMessage] = useState("상품 목록을 불러오는 중입니다...");
   const [bulkHiding, setBulkHiding] = useState(false);
@@ -130,20 +134,32 @@ export function AdminProductsManager() {
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
-    return products.filter((product) => {
+    const nextProducts = products.filter((product) => {
       const status = getStatus(product);
+      const detailScore = getDetailScore(product);
       const matchesStatus = statusFilter === "all" || status === statusFilter;
       const verificationProduct = isVerificationProduct(product);
       const matchesTestFilter =
         testFilter === "all" || (testFilter === "test" ? verificationProduct : !verificationProduct);
+      const matchesQuality =
+        qualityFilter === "all" ||
+        (qualityFilter === "low" ? detailScore < 80 : detailScore >= 80);
       const matchesKeyword =
         !keyword ||
         [product.name, product.slug, product.origin, product.category]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(keyword));
-      return matchesStatus && matchesTestFilter && matchesKeyword;
+      return matchesStatus && matchesTestFilter && matchesQuality && matchesKeyword;
     });
-  }, [products, query, statusFilter, testFilter]);
+
+    return [...nextProducts].sort((a, b) => {
+      if (sortMode === "quality-low") return getDetailScore(a) - getDetailScore(b);
+      if (sortMode === "quality-high") return getDetailScore(b) - getDetailScore(a);
+      if (sortMode === "stock-low") return getTotalStock(a) - getTotalStock(b);
+      if (sortMode === "price-high") return b.base_price - a.base_price;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [products, qualityFilter, query, sortMode, statusFilter, testFilter]);
 
   const updateProductState = async (product: AdminProduct, body: Record<string, unknown>, doneMessage: string) => {
     const response = await fetch(`/api/admin/products/${product.id}`, {
@@ -206,12 +222,32 @@ export function AdminProductsManager() {
     setQuery("");
     setStatusFilter("all");
     setTestFilter("all");
+    setQualityFilter("all");
+    setSortMode("recent");
   };
 
   return (
     <>
       <div className="admin-toolbar">
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="상품명, 산지, 카테고리 검색" />
+        <label>
+          완성도
+          <select value={qualityFilter} onChange={(event) => setQualityFilter(event.target.value as QualityFilter)}>
+            <option value="all">전체</option>
+            <option value="low">보강 필요</option>
+            <option value="ready">운영 준비</option>
+          </select>
+        </label>
+        <label>
+          정렬
+          <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
+            <option value="recent">최근 등록순</option>
+            <option value="quality-low">완성도 낮은순</option>
+            <option value="quality-high">완성도 높은순</option>
+            <option value="stock-low">재고 적은순</option>
+            <option value="price-high">가격 높은순</option>
+          </select>
+        </label>
         <a className="button teal" href="/admin/new">+ 상품 등록</a>
       </div>
       <div className="admin-filter-tabs">
@@ -250,7 +286,7 @@ export function AdminProductsManager() {
       <div className="admin-panel">
         <div>
           <h2>상품 목록</h2>
-          <span className="admin-message">검색 결과 {filtered.length}개</span>
+          <span className="admin-message">검색 결과 {filtered.length}개 · {sortMode === "quality-low" ? "상세 보강 우선" : "운영 관리 기준"}</span>
         </div>
         <div className="table-wrap">
           <table className="product-admin-table">
