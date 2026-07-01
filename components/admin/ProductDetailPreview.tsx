@@ -26,6 +26,8 @@ export function ProductDetailPreview({ form, options, detail }: Props) {
   const fallbackImage = form.imageUrl || "/images/products/wando-abalone.webp";
   const { heroImages, benefits, journey, packaging, components, faq } = getVisibleProductDetailSections(detail);
   const mainImage = heroImages[0]?.url || fallbackImage;
+  const validOptions = options.filter((option) => option.label);
+  const totalStock = validOptions.reduce((sum, option) => sum + Number(option.stock ?? 0), 0);
   const completedSections = [
     heroImages.length,
     benefits.length,
@@ -82,12 +84,22 @@ export function ProductDetailPreview({ form, options, detail }: Props) {
         <h3>{form.name || "상품명 미입력"}</h3>
         <p>{form.subtitle || "상품 한 줄 설명이 여기에 표시됩니다."}</p>
         <strong>{price ? `${formatPrice(price)}~` : "가격 미입력"}</strong>
-        <button type="button" className="admin-preview-cta">구매하기 CTA</button>
+        <div className="admin-preview-assurance" aria-label="고객 신뢰 요소 미리보기">
+          <span>{form.origin || "산지"} 선별</span>
+          <span>평일 1시 이전 당일 출고</span>
+          <span>냉장 신선 포장</span>
+        </div>
+        <div className="admin-preview-summary">
+          <span>옵션 {validOptions.length}개</span>
+          <span>{totalStock > 0 ? `재고 ${totalStock}개` : "재고 확인 필요"}</span>
+          <span>섹션 {completedSections}/6</span>
+        </div>
+        <button type="button" className="admin-preview-cta">옵션 선택하고 구매하기</button>
       </div>
       <div className="admin-live-preview-section">
         <b>옵션</b>
-        {options.filter((option) => option.label).length ? (
-          options.filter((option) => option.label).map((option, index) => (
+        {validOptions.length ? (
+          validOptions.map((option, index) => (
             <span key={`${option.label}-${index}`}>{option.label} · 재고 {option.stock ?? 0}</span>
           ))
         ) : (
