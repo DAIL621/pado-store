@@ -1,6 +1,6 @@
 "use client";
 
-import type { DragEvent } from "react";
+import type { ClipboardEvent, DragEvent } from "react";
 import { useState } from "react";
 import {
   DEFAULT_PACKAGING,
@@ -70,6 +70,17 @@ export function ProductDetailEditor({ value, onChange }: Props) {
     }
     const fromIndex = Number(event.dataTransfer.getData("text/plain"));
     if (Number.isInteger(fromIndex)) moveHero(fromIndex, index);
+  };
+
+  const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
+    const files = Array.from(event.clipboardData.files ?? []).filter((file) => file.type.startsWith("image/"));
+    if (!files.length) return;
+    event.preventDefault();
+    const firstEmptyIndex = value.heroImages.findIndex((image) => !image.url.trim());
+    const startIndex = firstEmptyIndex >= 0 ? firstEmptyIndex : 0;
+    setUploadMessageTone("info");
+    setUploadMessage(`붙여넣은 이미지 ${files.length}개를 대표사진에 업로드합니다.`);
+    uploadHeroFiles(startIndex, files);
   };
 
   const uploadHeroFile = async (index: number, file: File) => {
@@ -231,7 +242,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   const completedJourneyCount = value.journey.filter((step) => step.description.trim() || step.image.trim()).length;
 
   return (
-    <div className="wide admin-detail-editor">
+    <div className="wide admin-detail-editor" onPaste={handlePaste}>
       <div className="admin-detail-editor-head">
         <div>
           <strong>상세페이지 자동 생성 정보</strong>
@@ -248,7 +259,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
 
       <details open>
         <summary>상세페이지 대표사진 6장</summary>
-        <p className="admin-detail-help">카드를 드래그하거나 위/아래 버튼으로 순서를 조정할 수 있습니다. 여러 이미지를 한 번에 드롭하면 현재 카드부터 순서대로 채워집니다.</p>
+        <p className="admin-detail-help">카드를 드래그하거나 위/아래 버튼으로 순서를 조정할 수 있습니다. 여러 이미지를 한 번에 드롭하거나 복사한 이미지를 붙여넣으면 빈 칸부터 채워집니다.</p>
         {uploadMessage && <p className={`admin-detail-upload-message ${uploadMessageTone}`} role="status">{uploadMessage}</p>}
         <div className="admin-detail-grid">
           {value.heroImages.map((image, index) => (
