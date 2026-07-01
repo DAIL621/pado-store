@@ -142,7 +142,10 @@ export function ProductPurchase({ product }: { product: Product }) {
         <button type="button" className="button outline" disabled={!canAddSelected} onClick={add}>{added ? "장바구니에 담았습니다" : "장바구니 담기"}</button>
         <button type="button" className="button teal" disabled={!canAddSelected} onClick={buyNow}>바로 구매하기</button>
       </div>
-      <small>신선식품 특성상 산지 조업 상황에 따라 출고 일정이 조정될 수 있습니다.</small>
+      <div className="purchase-assurance" aria-label="구매 전 안내">
+        <span>결제 전 장바구니에서 옵션과 수량을 다시 확인할 수 있습니다.</span>
+        <span>신선식품 특성상 산지 조업 상황에 따라 출고 일정이 조정될 수 있습니다.</span>
+      </div>
     </div>
   );
 }

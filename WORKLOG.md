@@ -559,6 +559,18 @@
 - `pnpm run build` 성공
 - `pnpm run verify:admin` 성공
 - 실제 로컬 HTTP 검증: `/dev-admin-login` 200, 로그인 303, `pado_dev_admin` 쿠키 생성, `/admin`, `/admin/products`, `/admin/new` 200 확인
+## 2026-07-01 상세페이지 구매 CTA 문구 개선
+### 완료 작업
+
+- 모바일 하단 구매 바에 총 구매 가능 재고를 표시하도록 개선했다.
+- 하단 CTA 문구를 `옵션 선택하기`로 짧고 명확하게 정리했다.
+- 구매 박스 하단에 결제 전 옵션/수량 재확인 안내와 산지 상황에 따른 출고 안내를 분리 표시했다.
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-template` 성공
+
 ## 2026-07-01 상세페이지 MASTER Template v2 구매 신뢰 바
 ### 완료 작업
 
