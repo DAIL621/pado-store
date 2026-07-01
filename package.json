@@ -12,7 +12,8 @@
     "verify:admin-presets": "node scripts/verify-admin-presets.mjs",
     "verify:admin-new-click": "node scripts/verify-admin-new-click.mjs",
     "verify:admin": "pnpm run verify:detail-json && pnpm run verify:admin-edit && pnpm run verify:admin-upload && pnpm run verify:admin-presets && pnpm run verify:admin-new-click",
-    "verify:detail-template": "node scripts/verify-detail-template-sections.mjs",
+    "verify:product-seo": "node scripts/verify-product-seo.mjs",
+    "verify:detail-template": "node scripts/verify-detail-template-sections.mjs && pnpm run verify:product-seo",
     "lint": "next lint"
   },
   "dependencies": {

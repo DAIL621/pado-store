@@ -5,9 +5,72 @@ import { ProductPurchase } from "@/components/products/ProductPurchase";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductDetailTemplate } from "@/components/products/ProductDetailTemplate";
 import { StickyPurchaseBar } from "@/components/products/StickyPurchaseBar";
+import type { Product } from "@/data/products";
 import { getProductBySlug, getProducts } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pado-story.vercel.app";
+
+function absoluteUrl(path: string) {
+  if (/^https?:\/\//.test(path)) return path;
+  return new URL(path.startsWith("/") ? path : `/${path}`, siteUrl).toString();
+}
+
+function buildSeoDescription(product: Product) {
+  const summary = [product.subtitle, product.description, `${product.origin} 산지 기준으로 선별해 신선 포장합니다.`]
+    .filter(Boolean)
+    .join(" ");
+  return summary.length > 155 ? `${summary.slice(0, 152).trim()}...` : summary;
+}
+
+function buildProductJsonLd(product: Product) {
+  const totalStock = product.options.reduce((sum, option) => sum + Number(option.stock ?? 0), 0);
+  const imageUrls = Array.from(new Set([product.image, ...product.detailImages].filter(Boolean))).map(absoluteUrl);
+  const productUrl = absoluteUrl(`/products/${product.slug}`);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: buildSeoDescription(product),
+    image: imageUrls,
+    brand: { "@type": "Brand", name: "파도스토리" },
+    category: product.category,
+    sku: product.slug,
+    areaServed: "KR",
+    itemCondition: "https://schema.org/NewCondition",
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: "KRW",
+      price: product.price,
+      availability: totalStock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      seller: { "@type": "Organization", name: "파도스토리" }
+    }
+  };
+}
+
+function buildBreadcrumbJsonLd(product: Product) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "홈", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "전체 상품", item: absoluteUrl("/products") },
+      { "@type": "ListItem", position: 3, name: product.name, item: absoluteUrl(`/products/${product.slug}`) }
+    ]
+  };
+}
+
+function JsonLdScript({ data }: { data: Record<string, unknown> }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
+    />
+  );
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -17,18 +80,26 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return { title: "상품을 찾을 수 없습니다" };
   }
 
+  const description = buildSeoDescription(product);
+  const productPath = `/products/${product.slug}`;
+  const title = `${product.name} | ${product.origin} 산지직송 수산물`;
+
   return {
-    title: product.name,
-    description: product.subtitle,
+    title,
+    description,
+    alternates: {
+      canonical: productPath
+    },
     openGraph: {
-      title: `${product.name} | 파도스토리`,
-      description: product.subtitle,
+      title: `${title} | 파도스토리`,
+      description,
+      url: productPath,
       images: [{ url: product.image, width: 1200, height: 630, alt: product.name }]
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.name} | 파도스토리`,
-      description: product.subtitle,
+      title: `${title} | 파도스토리`,
+      description,
       images: [product.image]
     }
   };
@@ -44,6 +115,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     .slice(0, 3);
   return (
     <div className="detail-page">
+      <JsonLdScript data={buildProductJsonLd(product)} />
+      <JsonLdScript data={buildBreadcrumbJsonLd(product)} />
+
       <div className="shell breadcrumb">
         <Link href="/">홈</Link>
         <span>/</span>
