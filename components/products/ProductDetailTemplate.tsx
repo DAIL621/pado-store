@@ -136,9 +136,32 @@ function HeroSection({ product, heroImage, purchaseSlot }: { product: Product; h
             ))}
           </ul>
         )}
+        <HeroCommerceBar product={product} />
         {purchaseSlot}
       </div>
     </section>
+  );
+}
+
+function HeroCommerceBar({ product }: { product: Product }) {
+  const totalStock = product.options.reduce((sum, option) => sum + Number(option.stock ?? 0), 0);
+  const stockCopy = totalStock > 0 ? `구매 가능 ${totalStock}개` : "현재 품절";
+  const items = [
+    { label: "출고", value: "평일 13시 전 당일" },
+    { label: "배송", value: "전국 냉장배송" },
+    { label: "산지", value: product.origin },
+    { label: "재고", value: stockCopy }
+  ];
+
+  return (
+    <div className="detail-master-commerce-bar" aria-label="구매 핵심 정보">
+      {items.map((item) => (
+        <div key={item.label}>
+          <span>{item.label}</span>
+          <strong>{item.value}</strong>
+        </div>
+      ))}
+    </div>
   );
 }
 

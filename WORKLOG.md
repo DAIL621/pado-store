@@ -559,6 +559,18 @@
 - `pnpm run build` 성공
 - `pnpm run verify:admin` 성공
 - 실제 로컬 HTTP 검증: `/dev-admin-login` 200, 로그인 303, `pado_dev_admin` 쿠키 생성, `/admin`, `/admin/products`, `/admin/new` 200 확인
+## 2026-07-01 상세페이지 MASTER Template v2 구매 신뢰 바
+### 완료 작업
+
+- 상품 상세 Hero 영역에 구매 핵심 정보 바를 추가했다.
+- 표시 항목: 출고, 배송, 산지, 재고.
+- 모바일에서는 2열 카드로 압축해 구매 박스 위에서 빠르게 확인되도록 조정했다.
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-template` 성공
+
 ## 2026-07-01 관리자 프리셋 자동 검증 추가
 ### 완료 작업
 
