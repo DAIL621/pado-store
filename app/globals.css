@@ -225,6 +225,7 @@
 
 /* Admin save validation */
 .admin-validation-panel{margin:0 18px 14px;padding:13px;border:1px solid #dbe9e7;border-radius:11px;background:#f7fbfa}.admin-validation-panel strong{display:block;color:var(--teal);font-size:13px;margin-bottom:7px}.admin-validation-panel ul{display:grid;gap:6px;margin:0;padding-left:18px;color:#697d80;font-size:11px;line-height:1.45}.admin-validation-panel li::marker{color:var(--coral)}.admin-validation-panel p{margin:0;color:#587276;font-size:12px;font-weight:850}
+.admin-validation-panel.blocking{border-color:#ffd2be;background:#fff8f5}.admin-validation-panel.blocking strong{color:#bd512f}.admin-validation-panel.blocking p,.admin-validation-panel.blocking li{color:#9f4024}
 @media(max-width:520px){.admin-validation-panel{margin-inline:12px;padding:12px}.admin-validation-panel ul{font-size:10.5px}}
 
 /* Product detail master template */

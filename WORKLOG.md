@@ -559,3 +559,22 @@
 - `pnpm run build` 성공
 - `pnpm run verify:admin` 성공
 - 실제 로컬 HTTP 검증: `/dev-admin-login` 200, 로그인 303, `pado_dev_admin` 쿠키 생성, `/admin`, `/admin/products`, `/admin/new` 200 확인
+## 2026-07-01 관리자 상품 등록 버튼 무반응 수정
+### 완료 작업
+
+- `/admin/new` 상품 등록 버튼 클릭 시 브라우저 기본 GET 제출로 빠지지 않도록 저장 버튼 클릭 핸들러와 `noValidate` 기반 submit 흐름을 보강했다.
+- 저장 시점의 실제 DOM `FormData`를 읽어 필수값 검증을 수행하도록 수정했다.
+- 필수값 부족 시 `등록 차단: ...` 메시지, Toast, 부족한 섹션 자동 펼침/스크롤/포커스 이동을 추가했다.
+- 경고와 차단 조건을 저장 패널에서 분리해 표시했다.
+- 저장 중에는 버튼에 `저장 중...` 상태를 표시하고, API 실패 시 화면에 실패 사유를 노출하도록 정리했다.
+- 저장 성공 후 Toast를 표시하고 `/admin/products`로 이동하도록 등록 화면 성공 흐름을 보강했다.
+- 개발용 관리자 로그인 redirect가 `localhost`로 바뀌어 쿠키 도메인이 어긋나던 문제를 `referer` origin 기준 redirect로 수정했다.
+- Next dev 환경에서 `127.0.0.1` 접속 시 HMR/dev 리소스가 차단되어 클라이언트 이벤트가 붙지 않던 문제를 `allowedDevOrigins`로 해결했다.
+- 실제 브라우저에서 빈 입력 차단과 정상 상품 생성/목록 이동/테스트 상품 soft delete를 검증하는 `verify:admin-new-click` 스크립트를 추가했다.
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
+- `pnpm run verify:admin` 성공
+- Playwright 관리자 상품 등록 버튼 E2E 성공

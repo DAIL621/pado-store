@@ -9,7 +9,8 @@
     "verify:detail-json": "node scripts/verify-detail-json-flow.mjs",
     "verify:admin-edit": "node scripts/verify-admin-product-edit.mjs",
     "verify:admin-upload": "node scripts/verify-admin-upload.mjs",
-    "verify:admin": "pnpm run verify:detail-json && pnpm run verify:admin-edit && pnpm run verify:admin-upload",
+    "verify:admin-new-click": "node scripts/verify-admin-new-click.mjs",
+    "verify:admin": "pnpm run verify:detail-json && pnpm run verify:admin-edit && pnpm run verify:admin-upload && pnpm run verify:admin-new-click",
     "verify:detail-template": "node scripts/verify-detail-template-sections.mjs",
     "lint": "next lint"
   },

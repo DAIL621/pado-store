@@ -614,3 +614,29 @@
 - 로그인 성공 위치: `/admin/products`
 - `/admin/products` 카카오 로그인 fallback: 없음
 - `/admin/new` 카카오 로그인 fallback: 없음
+## 2026-07-01 관리자 상품 등록 버튼 클릭 E2E 검증
+### 검증 범위
+
+- `/dev-admin-login` 개발용 관리자 로그인
+- `/admin/new` 빈 입력 상태에서 `상품 등록하기` 클릭
+- 필수값 부족 시 `등록 차단` 메시지와 부족 항목 표시
+- 필수값 입력 후 실제 저장 API 호출
+- 저장 중/성공 흐름과 `/admin/products` 이동
+- 생성 상품 조회 후 테스트 상품 soft delete
+- `detail_json` 저장 및 상세페이지 자동 표시 회귀 검증
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run verify:admin`: 성공
+- `verify:admin-new-click`: 성공
+- 빈 입력 차단 메시지: `등록 차단: 상품명을 입력해주세요.`
+- 저장 성공 후 `/admin/products` 이동: 성공
+- 브라우저 console error: 없음
+
+### 발견 및 수정
+
+- `127.0.0.1` 개발 접속에서 Next dev HMR 리소스가 차단되어 클라이언트 이벤트가 붙지 않는 문제를 `allowedDevOrigins`로 수정했다.
+- 개발용 관리자 로그인 후 redirect origin이 `localhost`로 바뀌어 쿠키 도메인이 어긋나는 문제를 referer origin 기준 redirect로 수정했다.
+- 저장 버튼 클릭 시 브라우저 기본 제출로 빠질 수 있는 흐름을 명시적 클릭 저장 핸들러로 보강했다.

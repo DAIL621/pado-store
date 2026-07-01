@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent, MouseEvent } from "react";
 import { ProductDetailEditor } from "@/components/admin/ProductDetailEditor";
 import { ProductDetailPreview } from "@/components/admin/ProductDetailPreview";
 import { generateProductDescription, generateProductDetailDraft } from "@/lib/admin/ai-product-drafts";
@@ -37,6 +38,49 @@ type SubmitResult = {
   message?: string;
   productUrl?: string;
 };
+
+type ValidationIssue = {
+  label: string;
+  message: string;
+  section: "basic" | "options" | "detail";
+};
+
+function validateProductPayload(payload: Pick<AdminProductBuilderPayload, "form" | "options">): ValidationIssue[] {
+  const { form, options } = payload;
+  const issues: ValidationIssue[] = [];
+  const requiredFields: Array<[keyof AdminProductFormState, string]> = [
+    ["name", "상품명"],
+    ["origin", "산지"],
+    ["category", "카테고리"],
+    ["subtitle", "한 줄 설명"],
+    ["description", "기본 상세 설명"],
+    ["basePrice", "기본 판매가"]
+  ];
+
+  for (const [field, label] of requiredFields) {
+    if (!form[field].trim()) issues.push({ label, message: `${label}을 입력해주세요.`, section: field === "basePrice" ? "options" : "basic" });
+  }
+
+  const basePrice = Number(form.basePrice);
+  if (form.basePrice.trim() && (!Number.isFinite(basePrice) || basePrice < 0)) {
+    issues.push({ label: "기본 판매가", message: "기본 판매가는 0원 이상의 숫자로 입력해주세요.", section: "options" });
+  }
+
+  const validOptions = options.filter((option) => option.name.trim());
+  if (!validOptions.length) {
+    issues.push({ label: "상품 옵션", message: "최소 1개 이상의 옵션명을 입력해주세요.", section: "options" });
+  }
+
+  options.forEach((option, index) => {
+    if (!option.name.trim()) issues.push({ label: `옵션 ${index + 1}`, message: `옵션 ${index + 1}의 옵션명을 입력해주세요.`, section: "options" });
+    const priceDelta = Number(option.priceDelta);
+    const stock = Number(option.stock);
+    if (!Number.isFinite(priceDelta)) issues.push({ label: `옵션 ${index + 1} 추가금액`, message: `옵션 ${index + 1}의 추가금액은 숫자로 입력해주세요.`, section: "options" });
+    if (!Number.isFinite(stock) || stock < 0) issues.push({ label: `옵션 ${index + 1} 재고`, message: `옵션 ${index + 1}의 재고는 0개 이상의 숫자로 입력해주세요.`, section: "options" });
+  });
+
+  return issues;
+}
 
 type Props = {
   title: string;
@@ -205,6 +249,8 @@ export function AdminProductBuilder({
     return warnings;
   }, [detailJson, form.slug, options]);
 
+  const blockingIssues = useMemo<ValidationIssue[]>(() => validateProductPayload({ form, options }), [form, options]);
+
   const inputRef = (node: HTMLInputElement | HTMLTextAreaElement | null) => {
     if (node && !node.value && node.required && !firstInvalidRef.current) firstInvalidRef.current = node;
   };
@@ -285,15 +331,38 @@ export function AdminProductBuilder({
     window.setTimeout(() => setToastMessage(""), 2200);
   };
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const saveProduct = async (formElement: HTMLFormElement) => {
+    if (saving) return;
     firstInvalidRef.current = null;
-    const formElement = event.currentTarget;
-    if (!formElement.checkValidity()) {
-      setMessage("필수 입력 항목을 확인해주세요.");
-      formElement.reportValidity();
-      const invalidField = formElement.querySelector<HTMLInputElement | HTMLTextAreaElement>("input:invalid, textarea:invalid");
-      invalidField?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const formData = new FormData(formElement);
+    const submittedForm: AdminProductFormState = {
+      name: String(formData.get("name") ?? form.name).trim(),
+      slug: String(formData.get("slug") ?? form.slug).trim(),
+      origin: String(formData.get("origin") ?? form.origin).trim(),
+      category: String(formData.get("category") ?? form.category).trim(),
+      subtitle: String(formData.get("subtitle") ?? form.subtitle).trim(),
+      description: String(formData.get("description") ?? form.description).trim(),
+      basePrice: String(formData.get("basePrice") ?? form.basePrice).trim(),
+      imageUrl: String(formData.get("imageUrl") ?? form.imageUrl).trim(),
+      badge: String(formData.get("badge") ?? form.badge).trim(),
+      highlights: String(formData.get("highlights") ?? form.highlights).trim()
+    };
+    const submittedOptions = options.map((option, index) => ({
+      name: String(formData.get(`options.${index}.name`) ?? option.name).trim(),
+      priceDelta: String(formData.get(`options.${index}.priceDelta`) ?? option.priceDelta).trim(),
+      stock: String(formData.get(`options.${index}.stock`) ?? option.stock).trim()
+    }));
+    const submitBlockingIssues = validateProductPayload({ form: submittedForm, options: submittedOptions });
+
+    if (submitBlockingIssues.length > 0) {
+      const firstIssue = submitBlockingIssues[0];
+      setMessage(`등록 차단: ${firstIssue.message}`);
+      setToastMessage("필수 입력 항목이 부족합니다.");
+      window.setTimeout(() => setToastMessage(""), 2600);
+      const section = formElement.querySelector<HTMLElement>(`[data-admin-section="${firstIssue.section}"]`);
+      section?.setAttribute("open", "");
+      section?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const invalidField = section?.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>("input.is-empty, textarea.is-empty, input:invalid, textarea:invalid, select:invalid");
       invalidField?.focus();
       return;
     }
@@ -301,10 +370,20 @@ export function AdminProductBuilder({
     setCreatedUrl("");
     setMessage("저장하는 중입니다...");
 
-    const result = await onSubmit({ form, options, detailJson });
+    let result: SubmitResult;
+    try {
+      result = await onSubmit({ form: submittedForm, options: submittedOptions, detailJson });
+    } catch (error) {
+      result = {
+        ok: false,
+        message: error instanceof Error ? error.message : "네트워크 또는 브라우저 오류로 저장에 실패했습니다."
+      };
+    }
 
     if (!result.ok) {
-      setMessage(result.message ?? "저장에 실패했습니다.");
+      setMessage(`저장 실패: ${result.message ?? "저장에 실패했습니다."}`);
+      setToastMessage("저장 실패");
+      window.setTimeout(() => setToastMessage(""), 2600);
       setSaving(false);
       const invalidField = firstInvalidRef.current as (HTMLInputElement | HTMLTextAreaElement | null);
       invalidField?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -326,9 +405,24 @@ export function AdminProductBuilder({
     await onSuccess?.(result);
   };
 
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await saveProduct(event.currentTarget);
+  };
+
+  const clickSave = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    const formElement = event.currentTarget.form;
+    if (!formElement) {
+      setMessage("저장 실패: 상품 등록 폼을 찾지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.");
+      return;
+    }
+    await saveProduct(formElement);
+  };
+
   return (
     <>
-      <div className="admin-product-progress">
+    <div className="admin-product-progress">
         <div>
           <span>상품등록 진행률</span>
           <strong>{progress}%</strong>
@@ -357,9 +451,9 @@ export function AdminProductBuilder({
 
         {toastMessage && <div className="admin-toast" role="status">{toastMessage}</div>}
 
-        <form className="admin-product-builder" onSubmit={submit} onKeyDown={focusNextField}>
+        <form className="admin-product-builder" onSubmit={submit} onKeyDown={focusNextField} noValidate>
           <div className="admin-product-builder-main">
-            <details className="admin-form-section" open>
+            <details className="admin-form-section" data-admin-section="basic" open>
               <summary>① 기본정보</summary>
               <div className="admin-preset-box">
                 <div>
@@ -378,49 +472,49 @@ export function AdminProductBuilder({
               <div className="admin-form section-grid">
                 <label>
                   상품명 <em>필수</em>
-                  <input ref={inputRef} className={fieldClass(form.name)} value={form.name} onChange={(event) => update("name", event.target.value)} required placeholder="예: 완도 활전복" />
+                  <input name="name" ref={inputRef} className={fieldClass(form.name)} value={form.name} onChange={(event) => update("name", event.target.value)} required placeholder="예: 완도 활전복" />
                 </label>
                 <label>
                   URL 이름(slug)
-                  <input value={form.slug} onChange={(event) => update("slug", event.target.value)} placeholder="예: wando-live-abalone" />
+                  <input name="slug" value={form.slug} onChange={(event) => update("slug", event.target.value)} placeholder="예: wando-live-abalone" />
                 </label>
                 <label>
                   산지 <em>필수</em>
-                  <input ref={inputRef} className={fieldClass(form.origin)} value={form.origin} onChange={(event) => update("origin", event.target.value)} required placeholder="예: 완도" />
+                  <input name="origin" ref={inputRef} className={fieldClass(form.origin)} value={form.origin} onChange={(event) => update("origin", event.target.value)} required placeholder="예: 완도" />
                 </label>
                 <label>
                   카테고리 <em>필수</em>
-                  <input ref={inputRef} className={fieldClass(form.category)} value={form.category} onChange={(event) => update("category", event.target.value)} required placeholder="예: 전복·조개" />
+                  <input name="category" ref={inputRef} className={fieldClass(form.category)} value={form.category} onChange={(event) => update("category", event.target.value)} required placeholder="예: 전복·조개" />
                 </label>
                 <label>
                   대표 배지
-                  <input value={form.badge} onChange={(event) => update("badge", event.target.value)} placeholder="BEST, 제철, 추천" />
+                  <input name="badge" value={form.badge} onChange={(event) => update("badge", event.target.value)} placeholder="BEST, 제철, 추천" />
                 </label>
                 <label>
                   대표 이미지 경로
-                  <input value={form.imageUrl} onChange={(event) => update("imageUrl", event.target.value)} placeholder="/images/products/sample.webp" />
+                  <input name="imageUrl" value={form.imageUrl} onChange={(event) => update("imageUrl", event.target.value)} placeholder="/images/products/sample.webp" />
                 </label>
                 <label className="wide">
                   한 줄 설명 <em>필수</em>
-                  <input ref={inputRef} className={fieldClass(form.subtitle)} value={form.subtitle} onChange={(event) => update("subtitle", event.target.value)} required placeholder="상품 카드와 상세 상단에 보이는 짧은 문구" />
+                  <input name="subtitle" ref={inputRef} className={fieldClass(form.subtitle)} value={form.subtitle} onChange={(event) => update("subtitle", event.target.value)} required placeholder="상품 카드와 상세 상단에 보이는 짧은 문구" />
                 </label>
                 <label className="wide">
                   기본 상세 설명 <em>필수</em>
-                  <textarea ref={inputRef} className={fieldClass(form.description)} value={form.description} onChange={(event) => update("description", event.target.value)} required rows={4} />
+                  <textarea name="description" ref={inputRef} className={fieldClass(form.description)} value={form.description} onChange={(event) => update("description", event.target.value)} required rows={4} />
                 </label>
                 <label className="wide">
                   카드 핵심 문구
-                  <input value={form.highlights} onChange={(event) => update("highlights", event.target.value)} placeholder="쉼표로 구분" />
+                  <input name="highlights" value={form.highlights} onChange={(event) => update("highlights", event.target.value)} placeholder="쉼표로 구분" />
                 </label>
               </div>
             </details>
 
-            <details className="admin-form-section" open>
+            <details className="admin-form-section" data-admin-section="options" open>
               <summary>② 가격 / 옵션</summary>
               <div className="admin-form section-grid">
                 <label>
                   기본 판매가 <em>필수</em>
-                  <input ref={inputRef} className={fieldClass(form.basePrice)} type="number" value={form.basePrice} onChange={(event) => update("basePrice", event.target.value)} required placeholder="39900" />
+                  <input name="basePrice" ref={inputRef} className={fieldClass(form.basePrice)} type="number" value={form.basePrice} onChange={(event) => update("basePrice", event.target.value)} required placeholder="39900" />
                 </label>
               </div>
               <div className="option-editor">
@@ -433,22 +527,33 @@ export function AdminProductBuilder({
                 </div>
                 {options.map((option, index) => (
                   <div className="option-row" key={index}>
-                    <label>옵션명<input value={option.name} onChange={(event) => updateOption(index, "name", event.target.value)} required placeholder="예: 1kg" /></label>
-                    <label>추가금액<input type="number" value={option.priceDelta} onChange={(event) => updateOption(index, "priceDelta", event.target.value)} required /></label>
-                    <label>재고<input type="number" value={option.stock} onChange={(event) => updateOption(index, "stock", event.target.value)} required min="0" /></label>
+                    <label>옵션명<input name={`options.${index}.name`} className={fieldClass(option.name)} value={option.name} onChange={(event) => updateOption(index, "name", event.target.value)} required placeholder="예: 1kg" /></label>
+                    <label>추가금액<input name={`options.${index}.priceDelta`} className={fieldClass(option.priceDelta)} type="number" value={option.priceDelta} onChange={(event) => updateOption(index, "priceDelta", event.target.value)} required /></label>
+                    <label>재고<input name={`options.${index}.stock`} className={fieldClass(option.stock)} type="number" value={option.stock} onChange={(event) => updateOption(index, "stock", event.target.value)} required min="0" /></label>
                     <button type="button" className="remove-option" onClick={() => removeOption(index)} disabled={options.length === 1}>삭제</button>
                   </div>
                 ))}
               </div>
             </details>
 
-            <ProductDetailEditor value={detailJson} onChange={setDetailJson} />
+            <div data-admin-section="detail">
+              <ProductDetailEditor value={detailJson} onChange={setDetailJson} />
+            </div>
 
             <details className="admin-form-section" open>
               <summary>⑩ 저장</summary>
-              <div className="admin-validation-panel" role="status">
-                <strong>{validationWarnings.length ? "저장 전 확인" : "운영 등록 준비 완료"}</strong>
-                {validationWarnings.length ? (
+              <div className={`admin-validation-panel ${blockingIssues.length ? "blocking" : ""}`} role="status">
+                <strong>{blockingIssues.length ? "등록 차단" : validationWarnings.length ? "저장 전 경고" : "운영 등록 준비 완료"}</strong>
+                {blockingIssues.length ? (
+                  <>
+                    <p>아래 항목은 저장 전에 반드시 입력해야 합니다.</p>
+                    <ul>
+                      {blockingIssues.map((issue) => (
+                        <li key={`${issue.section}-${issue.label}`}>{issue.message}</li>
+                      ))}
+                    </ul>
+                  </>
+                ) : validationWarnings.length ? (
                   <ul>
                     {validationWarnings.map((warning) => (
                       <li key={warning}>{warning}</li>
@@ -460,7 +565,7 @@ export function AdminProductBuilder({
               </div>
               <div className="admin-save-panel">
                 <p>필수 정보와 상세페이지 자동 생성 정보를 확인한 뒤 저장합니다.</p>
-                <button type="submit" className="button teal" disabled={saving}>{saving ? savingLabel : submitLabel}</button>
+                <button type="submit" className="button teal" disabled={saving} onClick={clickSave}>{saving ? savingLabel : submitLabel}</button>
               </div>
             </details>
           </div>

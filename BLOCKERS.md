@@ -81,3 +81,8 @@ alter table products add column if not exists detail_json jsonb not null default
 - Supabase Dashboard에서 상품 이미지용 Storage bucket 생성, public URL 정책 또는 접근 정책 확인이 필요하다.
 - 운영 버킷 적용 후 `pnpm run verify:admin-upload` 또는 동일 흐름으로 실제 Storage URL 반환 여부를 재검증해야 한다.
 - Vercel Dashboard 최신 커밋 자동 배포 성공 여부는 외부 콘솔 확인이 필요하다.
+## 2026-07-01 관리자 상품 등록 버튼 검증
+
+- 신규 BLOCKER 없음.
+- Supabase 운영 DB 저장 검증은 외부 네트워크 권한으로 수행 완료했다.
+- 개발 환경에서 `127.0.0.1` 접속 시 Next dev 리소스가 차단되던 문제는 `next.config.ts`의 `allowedDevOrigins`로 해결했다.

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { AdminLayout, type AdminUser } from "@/components/admin/AdminLayout";
 import {
   AdminProductBuilder,
@@ -9,13 +10,15 @@ import {
 } from "@/components/admin/AdminProductBuilder";
 
 export function AdminProductForm({ admin }: { admin: AdminUser }) {
+  const router = useRouter();
+
   const createProduct = async ({ form, options, detailJson }: AdminProductBuilderPayload) => {
     const response = await fetch("/api/admin/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, options, detailJson })
     });
-    const result = await response.json();
+    const result = await response.json().catch(() => ({ message: "상품 등록 API 응답을 읽지 못했습니다." }));
 
     return {
       ok: response.ok,
@@ -37,6 +40,9 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
         resetAfterSuccess
         draftStorageKey="pado-admin-product-create-draft"
         onSubmit={createProduct}
+        onSuccess={() => {
+          window.setTimeout(() => router.push("/admin/products"), 650);
+        }}
       />
     </AdminLayout>
   );

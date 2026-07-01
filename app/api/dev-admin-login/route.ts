@@ -16,6 +16,8 @@ export async function POST(request: Request) {
 
   const nextPath = String(formData.get("next") ?? "/admin/products");
   const safeNextPath = nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/admin/products";
-  const response = NextResponse.redirect(new URL(safeNextPath, request.url), { status: 303 });
+  const referer = request.headers.get("referer");
+  const redirectOrigin = referer ? new URL(referer).origin : new URL(request.url).origin;
+  const response = NextResponse.redirect(new URL(safeNextPath, redirectOrigin), { status: 303 });
   return setDevAdminSessionCookie(response);
 }
