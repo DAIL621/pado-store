@@ -69,6 +69,8 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
         />
       )}
 
+      <FinalCtaSection product={product} />
+
       {hasAutoContent && (
         <nav className="detail-master-nav" aria-label="상품 상세 섹션 바로가기">
           {sections.journey.length > 0 && <a href="#detail-master-timeline">산지 여정</a>}
@@ -339,6 +341,28 @@ function ExtraSection({
           <span key={`${section.type}-${section.title}-${index}`}>{section.title || section.type}</span>
         ))}
       </div>
+    </section>
+  );
+}
+
+function FinalCtaSection({ product }: { product: Product }) {
+  const totalStock = product.options.reduce((sum, option) => sum + Number(option.stock ?? 0), 0);
+  const isSoldOut = totalStock <= 0;
+  const optionCopy = product.options.length ? `${product.options.length}개 옵션` : "옵션 확인";
+
+  return (
+    <section className="shell detail-master-final-cta" aria-label="구매 전 마지막 확인">
+      <div>
+        <span>READY TO ORDER</span>
+        <h2>{product.name}, 지금 주문 전 마지막으로 확인하세요</h2>
+        <p>
+          {product.origin} 산지 기준, {optionCopy}, {isSoldOut ? "현재 품절 상태" : `현재 구매 가능 ${totalStock}개`}입니다.
+          옵션과 수량은 구매 영역에서 한 번 더 확인할 수 있습니다.
+        </p>
+      </div>
+      <a href="#purchase-box" className={isSoldOut ? "disabled" : ""}>
+        {isSoldOut ? "재입고 안내 확인" : "옵션 선택하러 가기"}
+      </a>
     </section>
   );
 }
