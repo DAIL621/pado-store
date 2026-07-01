@@ -236,8 +236,12 @@ export function AdminProductBuilder({
     const componentCount = detailJson.components.filter(Boolean).length;
     const faqCount = detailJson.faq.filter((item) => item.question || item.answer).length;
     const totalStock = options.reduce((total, option) => total + (Number(option.stock) || 0), 0);
+    const basePrice = Number(form.basePrice);
 
     if (form.slug && !/^[a-z0-9가-힣-]+$/i.test(form.slug.trim())) warnings.push("URL 이름(slug)은 문자, 숫자, 한글, 하이픈만 권장합니다.");
+    if (form.subtitle && form.subtitle.trim().length < 18) warnings.push("한 줄 설명은 18자 이상이면 검색/공유 화면에서 상품 매력이 더 잘 전달됩니다.");
+    if (!form.badge.trim()) warnings.push("대표 배지를 입력하면 상품 목록에서 시선이 더 잘 갑니다. 예: BEST, 제철, 추천");
+    if (!Number.isFinite(basePrice) || basePrice <= 0) warnings.push("기본 판매가는 0원보다 큰 금액을 권장합니다.");
     if (heroCount === 0) warnings.push("대표사진이 없으면 상세페이지 상단 이미지가 기본 이미지로 표시됩니다.");
     if (heroCount > 0 && heroCount < 3) warnings.push("대표사진은 3장 이상이면 구매 전환에 더 유리합니다.");
     if (benefitCount < 3) warnings.push("상품 장점은 최소 3개 이상 입력하는 것을 권장합니다.");
@@ -247,7 +251,7 @@ export function AdminProductBuilder({
     if (totalStock === 0) warnings.push("옵션 재고가 0개이면 고객 화면에서 품절 상태로 보일 수 있습니다.");
 
     return warnings;
-  }, [detailJson, form.slug, options]);
+  }, [detailJson, form.badge, form.basePrice, form.slug, form.subtitle, options]);
 
   const qualityItems = useMemo(() => {
     const heroCount = detailJson.heroImages.filter((image) => image.url).length;
@@ -257,6 +261,9 @@ export function AdminProductBuilder({
     const recipeCount = detailJson.recipes.filter((recipe) => recipe.title || recipe.description || recipe.image).length;
     const componentCount = detailJson.components.filter(Boolean).length;
     const faqCount = detailJson.faq.filter((item) => item.question || item.answer).length;
+    const totalStock = options.reduce((total, option) => total + (Number(option.stock) || 0), 0);
+    const hasSellableOption = options.some((option) => option.name.trim() && Number(option.stock) > 0);
+    const basePrice = Number(form.basePrice);
 
     return [
       { label: "대표사진", value: `${heroCount}/6`, done: heroCount >= 3, weight: 18, hint: "사진 3장 이상이면 상품 신뢰도가 좋아집니다." },
@@ -266,9 +273,11 @@ export function AdminProductBuilder({
       { label: "먹는 방법", value: `${recipeCount}`, done: recipeCount >= 1, weight: 10, hint: "조리/섭취 방법 1개 이상을 권장합니다." },
       { label: "구성품", value: `${componentCount}`, done: componentCount >= 1, weight: 10, hint: "고객이 받는 구성품을 명확히 적어주세요." },
       { label: "FAQ", value: `${faqCount}`, done: faqCount >= 1, weight: 10, hint: "출고/보관/교환 질문을 미리 줄일 수 있습니다." },
-      { label: "기본 정보", value: form.name && form.origin && form.subtitle && form.description ? "완료" : "부족", done: Boolean(form.name && form.origin && form.subtitle && form.description), weight: 10, hint: "상품명, 산지, 설명은 필수입니다." }
+      { label: "기본 정보", value: form.name && form.origin && form.subtitle && form.description ? "완료" : "부족", done: Boolean(form.name && form.origin && form.subtitle && form.description), weight: 10, hint: "상품명, 산지, 설명은 필수입니다." },
+      { label: "가격/재고", value: totalStock > 0 ? `${totalStock}개` : "품절", done: Number.isFinite(basePrice) && basePrice > 0 && hasSellableOption, weight: 10, hint: "판매가와 구매 가능한 옵션 재고가 있어야 바로 판매할 수 있습니다." },
+      { label: "SEO", value: form.slug && form.subtitle.length >= 18 ? "준비" : "보강", done: Boolean(form.name && form.origin && form.slug && form.subtitle.length >= 18), weight: 8, hint: "상품명, 산지, URL, 한 줄 설명이 검색/공유 정보로 자동 사용됩니다." }
     ];
-  }, [detailJson, form.description, form.name, form.origin, form.subtitle]);
+  }, [detailJson, form.basePrice, form.description, form.name, form.origin, form.slug, form.subtitle, options]);
 
   const qualityScore = useMemo(() => {
     const totalWeight = qualityItems.reduce((sum, item) => sum + item.weight, 0);
