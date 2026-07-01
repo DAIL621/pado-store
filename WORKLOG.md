@@ -559,6 +559,18 @@
 - `pnpm run build` 성공
 - `pnpm run verify:admin` 성공
 - 실제 로컬 HTTP 검증: `/dev-admin-login` 200, 로그인 303, `pado_dev_admin` 쿠키 생성, `/admin`, `/admin/products`, `/admin/new` 200 확인
+## 2026-07-01 관리자 상품 등록 품질 점수 추가
+### 완료 작업
+
+- 상품 등록 저장 영역에 상세페이지 품질 점수를 추가했다.
+- 대표사진, 상품 장점, 산지 여정, 포장/배송, 먹는 방법, 구성품, FAQ, 기본 정보의 준비 상태를 작은 체크 카드로 표시했다.
+- 모바일에서 품질 항목이 2열로 정리되도록 CSS를 보강했다.
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:admin-new-click` 성공
+
 ## 2026-07-01 관리자 상품 등록 버튼 무반응 수정
 ### 완료 작업
 

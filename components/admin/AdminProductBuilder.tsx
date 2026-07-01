@@ -249,6 +249,33 @@ export function AdminProductBuilder({
     return warnings;
   }, [detailJson, form.slug, options]);
 
+  const qualityItems = useMemo(() => {
+    const heroCount = detailJson.heroImages.filter((image) => image.url).length;
+    const benefitCount = detailJson.benefits.filter(Boolean).length;
+    const journeyCount = detailJson.journey.filter((step) => step.description || step.image).length;
+    const packagingCount = detailJson.packaging.filter(Boolean).length;
+    const recipeCount = detailJson.recipes.filter((recipe) => recipe.title || recipe.description || recipe.image).length;
+    const componentCount = detailJson.components.filter(Boolean).length;
+    const faqCount = detailJson.faq.filter((item) => item.question || item.answer).length;
+
+    return [
+      { label: "대표사진", value: `${heroCount}/6`, done: heroCount >= 3, weight: 18, hint: "사진 3장 이상이면 상품 신뢰도가 좋아집니다." },
+      { label: "상품 장점", value: `${benefitCount}/5`, done: benefitCount >= 3, weight: 15, hint: "핵심 장점은 최소 3개를 권장합니다." },
+      { label: "산지 여정", value: `${journeyCount}/5`, done: journeyCount >= 3, weight: 15, hint: "산지/선별/포장 흐름을 채우면 상세페이지가 더 믿음직합니다." },
+      { label: "포장/배송", value: `${packagingCount}`, done: packagingCount >= 3, weight: 12, hint: "배송 안내는 고객 문의를 줄여줍니다." },
+      { label: "먹는 방법", value: `${recipeCount}`, done: recipeCount >= 1, weight: 10, hint: "조리/섭취 방법 1개 이상을 권장합니다." },
+      { label: "구성품", value: `${componentCount}`, done: componentCount >= 1, weight: 10, hint: "고객이 받는 구성품을 명확히 적어주세요." },
+      { label: "FAQ", value: `${faqCount}`, done: faqCount >= 1, weight: 10, hint: "출고/보관/교환 질문을 미리 줄일 수 있습니다." },
+      { label: "기본 정보", value: form.name && form.origin && form.subtitle && form.description ? "완료" : "부족", done: Boolean(form.name && form.origin && form.subtitle && form.description), weight: 10, hint: "상품명, 산지, 설명은 필수입니다." }
+    ];
+  }, [detailJson, form.description, form.name, form.origin, form.subtitle]);
+
+  const qualityScore = useMemo(() => {
+    const totalWeight = qualityItems.reduce((sum, item) => sum + item.weight, 0);
+    const earnedWeight = qualityItems.reduce((sum, item) => sum + (item.done ? item.weight : 0), 0);
+    return Math.round((earnedWeight / totalWeight) * 100);
+  }, [qualityItems]);
+
   const blockingIssues = useMemo<ValidationIssue[]>(() => validateProductPayload({ form, options }), [form, options]);
 
   const inputRef = (node: HTMLInputElement | HTMLTextAreaElement | null) => {
@@ -542,6 +569,23 @@ export function AdminProductBuilder({
 
             <details className="admin-form-section" open>
               <summary>⑩ 저장</summary>
+              <div className="admin-quality-panel" role="status" aria-label="상세페이지 품질 점수">
+                <div className="admin-quality-score">
+                  <span>상세페이지 품질</span>
+                  <strong>{qualityScore}%</strong>
+                </div>
+                <div className="admin-quality-meter" aria-hidden="true">
+                  <span style={{ width: `${qualityScore}%` }} />
+                </div>
+                <div className="admin-quality-grid">
+                  {qualityItems.map((item) => (
+                    <span key={item.label} className={item.done ? "done" : ""} title={item.hint}>
+                      <b>{item.label}</b>
+                      <em>{item.value}</em>
+                    </span>
+                  ))}
+                </div>
+              </div>
               <div className={`admin-validation-panel ${blockingIssues.length ? "blocking" : ""}`} role="status">
                 <strong>{blockingIssues.length ? "등록 차단" : validationWarnings.length ? "저장 전 경고" : "운영 등록 준비 완료"}</strong>
                 {blockingIssues.length ? (
