@@ -873,3 +873,20 @@
 - `pnpm run build`: 성공
 - `pnpm run verify:admin-new-click`: 성공
 - `pnpm run verify:admin`: 성공
+## 2026-07-02 MASTER 상세페이지 템플릿 v2 검증
+
+### 검증 범위
+
+- MASTER template ID `pado-master-v2` 렌더링
+- 상품군 자동 판정 모델 빌드
+- 상품군별 신뢰 문구/추천 활용 문구 렌더링
+- 신규 섹션: 이런 분께 좋아요, 리뷰 준비중, 파도스토리 약속
+- detail_json 기반 상품 상세 자동 생성 유지
+- 관리자 Preview 실제 상세 템플릿 렌더링 유지
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-template`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run verify:admin`: 성공

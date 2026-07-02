@@ -152,7 +152,7 @@ assert(createResult.product?.detail_json?.heroImages?.length === 6, "heroImages 
 const detail = await request(`/products/${slug}`);
 const detailHtml = await detail.text();
 assert(detail.status === 200, `detail page failed: ${detail.status}`);
-assert(detailHtml.includes('data-template-id="pado-master-v1"'), "master template metadata was not rendered");
+assert(detailHtml.includes('data-template-id="pado-master-v2"'), "master template metadata was not rendered");
 assert(detailHtml.includes("detail-master-hero"), "master detail hero was not rendered");
 assert(detailHtml.includes("detail-master-trust"), "trust signal section was not rendered");
 assert(detailHtml.includes("detail-master-features"), "feature section was not rendered");

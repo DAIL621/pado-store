@@ -799,3 +799,18 @@
 - `pnpm run verify:admin-new-click` 성공
 - `pnpm run verify:admin` 성공
 - 관리자 등록 Preview 렌더링 및 실제 등록 플로우 콘솔 오류 없음 확인
+## 2026-07-02 MASTER 상세페이지 템플릿 v2 1차 고도화
+### 완료 작업
+
+- `detail-template-engine`을 `pado-master-v2` 기준으로 정리했습니다.
+- 상품명/slug/category를 기준으로 전복, 장어, 생선, 조개류, 밀키트, 선물세트, 기본형 템플릿 타입을 자동 판정하도록 구현했습니다.
+- 상품군별 promise, 활용 추천, 산지 검증 문구를 자동 생성해 상세페이지 신뢰 요소에 반영했습니다.
+- 상세페이지에 `이런 분께 좋아요`, `리뷰 준비중`, `파도스토리 약속` 섹션을 추가했습니다.
+- 신규 섹션을 모바일 우선으로 볼 수 있도록 CSS를 보강했습니다.
+- `verify-detail-json-flow`의 MASTER template ID 검증을 v2 기준으로 갱신했습니다.
+
+### 검증
+- `pnpm run build` 성공
+- `pnpm run verify:detail-template` 성공
+- `pnpm run verify:detail-json` 성공
+- `pnpm run verify:admin` 성공

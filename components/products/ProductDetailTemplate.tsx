@@ -30,13 +30,14 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
       aria-label={`${product.name} 상품 상세`}
       data-template-id={template.id}
       data-template-schema={template.schemaVersion}
+      data-template-kind={template.kind}
     >
       <HeroSection product={product} heroImage={heroImages[0]?.url || product.image} purchaseSlot={purchaseSlot} />
 
       <TrustSignalSection signals={trustSignals} />
 
       {product.description && (
-        <StoryIntroSection product={product} image={heroImages[1]?.url || heroImages[0]?.url || product.image} />
+        <StoryIntroSection product={product} image={heroImages[1]?.url || heroImages[0]?.url || product.image} promise={template.copy.promise} />
       )}
 
       {featureItems.length > 0 && (
@@ -44,6 +45,8 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
       )}
 
       {overviewItems.length > 0 && <OverviewSection items={overviewItems} />}
+
+      <ProductFitSection product={product} eyebrow={template.copy.eyebrow} usage={template.copy.usage} promise={template.copy.promise} />
 
       {sections.journey.length > 0 && <TimelineSection steps={sections.journey} productName={product.name} />}
 
@@ -60,6 +63,10 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
       )}
 
       {sections.faq.length > 0 && <FAQSection faq={sections.faq} />}
+
+      <ReviewReadySection />
+
+      <BrandPromiseSection />
 
       {(sections.videos.length > 0 || sections.certificates.length > 0 || sections.extraSections.length > 0) && (
         <ExtraSection
@@ -100,16 +107,42 @@ function TrustSignalSection({ signals }: { signals: DetailTemplateTrustSignal[] 
   );
 }
 
-function StoryIntroSection({ product, image }: { product: Product; image: string }) {
+function StoryIntroSection({ product, image, promise }: { product: Product; image: string; promise: string }) {
   return (
     <section className="shell detail-master-story">
       <div>
         <span>FRESH FIRST</span>
         <h2>사진보다 먼저, 기준을 확인합니다</h2>
         <p>{product.description}</p>
+        <strong>{promise}</strong>
       </div>
       <div>
         <Image src={image} alt={`${product.name} 상품 소개`} fill sizes="(max-width: 700px) 100vw, 42vw" />
+      </div>
+    </section>
+  );
+}
+
+function ProductFitSection({ product, eyebrow, usage, promise }: { product: Product; eyebrow: string; usage: string; promise: string }) {
+  const items = [
+    { label: "추천 활용", value: usage },
+    { label: "선별 기준", value: promise },
+    { label: "구매 전 확인", value: "옵션별 중량, 가격, 재고를 구매 영역에서 한 번 더 확인하세요." }
+  ];
+
+  return (
+    <section className="shell detail-master-fit" aria-label={`${product.name} 구매 추천 정보`}>
+      <div>
+        <span>{eyebrow}</span>
+        <h2>{product.name}는 이런 분께 좋아요</h2>
+      </div>
+      <div>
+        {items.map((item) => (
+          <article key={item.label}>
+            <strong>{item.label}</strong>
+            <p>{item.value}</p>
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -310,6 +343,38 @@ function FAQSection({ faq }: { faq: ReturnType<typeof getVisibleProductDetailSec
             <summary>{item.question}</summary>
             <p>{item.answer}</p>
           </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ReviewReadySection() {
+  return (
+    <section className="shell detail-master-review-ready" aria-label="리뷰 준비중">
+      <div>
+        <span>REVIEW</span>
+        <h2>구매 후기 영역 준비중</h2>
+        <p>오픈 후 실제 구매 고객의 별점과 사진 후기를 이 위치에 표시할 예정입니다.</p>
+      </div>
+      <strong>사진 리뷰 · 별점 · 구매 인증</strong>
+    </section>
+  );
+}
+
+function BrandPromiseSection() {
+  const items = ["산지 기준 확인", "평일 오후 1시 이전 당일 출고", "상품별 신선 포장", "문제 발생 시 고객센터 응대"];
+
+  return (
+    <section className="shell detail-master-brand-promise" aria-label="파도스토리 약속">
+      <SectionTitle
+        eyebrow="PADO PROMISE"
+        title="파도스토리가 지키는 기본"
+        description="상품이 많아져도 산지, 포장, 배송 기준은 흔들리지 않도록 관리합니다."
+      />
+      <div>
+        {items.map((item) => (
+          <span key={item}>{item}</span>
         ))}
       </div>
     </section>
