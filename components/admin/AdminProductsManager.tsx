@@ -98,6 +98,7 @@ export function AdminProductsManager() {
   const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [message, setMessage] = useState("상품 목록을 불러오는 중입니다...");
   const [bulkHiding, setBulkHiding] = useState(false);
+  const [highlightedProduct, setHighlightedProduct] = useState<{ id?: string; slug?: string } | null>(null);
 
   const loadProducts = async () => {
     const response = await fetch("/api/admin/products", { cache: "no-store" });
@@ -111,8 +112,24 @@ export function AdminProductsManager() {
   };
 
   useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem("pado-admin-last-created-product");
+      if (raw) setHighlightedProduct(JSON.parse(raw));
+    } catch {}
     loadProducts();
   }, []);
+
+  useEffect(() => {
+    if (!highlightedProduct || !products.length) return;
+    const matched = products.find((product) => product.id === highlightedProduct.id || product.slug === highlightedProduct.slug);
+    if (matched) {
+      setMessage(`방금 등록한 상품이 목록에 표시되었습니다: ${matched.name} (${matched.slug})`);
+      setSortMode("recent");
+      setStatusFilter("all");
+      setTestFilter("all");
+      setQualityFilter("all");
+    }
+  }, [highlightedProduct, products]);
 
   const counts = useMemo(() => {
     const base = { all: products.length, selling: 0, soldout: 0, hidden: 0, test: 0, production: 0 };
@@ -320,7 +337,7 @@ export function AdminProductsManager() {
                 const detailScore = getDetailScore(product);
                 const verificationProduct = isVerificationProduct(product);
                 return (
-                  <tr key={product.id}>
+                  <tr key={product.id} className={highlightedProduct && (highlightedProduct.id === product.id || highlightedProduct.slug === product.slug) ? "recently-created" : ""}>
                     <td>
                       <strong>{product.name}</strong>
                       {verificationProduct && <span className="test-product-badge">검증</span>}

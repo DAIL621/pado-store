@@ -1,11 +1,20 @@
 import { createRequire } from "node:module";
+import { existsSync } from "node:fs";
 
 const require = createRequire(import.meta.url);
 const baseUrl = process.env.PADO_TEST_BASE_URL || "http://127.0.0.1:3000";
 const password = process.env.DEV_ADMIN_PASSWORD || "pado-admin-test";
+const bundledNodeModules = "C:/Users/L/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules";
 
 function loadPlaywright() {
-  for (const candidate of ["playwright-core", "playwright"]) {
+  const candidates = [
+    "playwright-core",
+    "playwright",
+    process.env.PADO_PLAYWRIGHT_MODULE_DIR,
+    existsSync(`${bundledNodeModules}/playwright`) ? `${bundledNodeModules}/playwright` : undefined,
+    existsSync(`${bundledNodeModules}/.pnpm/node_modules/playwright-core`) ? `${bundledNodeModules}/.pnpm/node_modules/playwright-core` : undefined
+  ].filter(Boolean);
+  for (const candidate of candidates) {
     try {
       return require(candidate);
     } catch {}

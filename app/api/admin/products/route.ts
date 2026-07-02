@@ -3,6 +3,7 @@ import { readJsonBody } from "@/lib/api/request";
 import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/product-options";
 import { requireAdminApi } from "@/lib/auth/admin-api";
 import { normalizeProductDetailInput } from "@/lib/products/detail";
+import { createProductSlug } from "@/lib/products/slug";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET() {
@@ -39,16 +40,32 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "기본 가격은 0원 이상의 숫자로 입력해주세요." }, { status: 400 });
   }
 
-  const slug =
-    body.slug ||
-    String(body.name ?? "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9가-힣-]/g, "");
+  const slug = createProductSlug({ slug: body.slug, name: body.name, origin: body.origin });
 
   if (!slug) {
-    return NextResponse.json({ ok: false, message: "상품 URL 이름을 만들 수 없습니다. slug를 직접 입력해주세요." }, { status: 400 });
+    return NextResponse.json({ ok: false, message: "영문 상품 URL(slug)을 만들 수 없습니다. 예: wando-live-abalone" }, { status: 400 });
+  }
+
+  const { data: duplicateProduct, error: duplicateError } = await supabase
+    .from("products")
+    .select("id, slug, name, is_active")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (duplicateError) {
+    return NextResponse.json({ ok: false, message: duplicateError.message }, { status: 500 });
+  }
+
+  if (duplicateProduct) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: "DUPLICATE_SLUG",
+        slug,
+        message: `이미 같은 URL 이름(slug)의 상품이 있습니다: ${duplicateProduct.name} (${slug})`
+      },
+      { status: 409 }
+    );
   }
 
   const optionInputs = parseProductOptions(body.options, "기본 옵션");
@@ -106,5 +123,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: optionError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, product, productUrl: `/products/${product.slug}` });
+  return NextResponse.json({
+    ok: true,
+    product,
+    productId: product.id,
+    productSlug: product.slug,
+    productUrl: `/products/${product.slug}`,
+    message: `상품 등록완료: ${product.name} (${product.slug})`
+  });
 }

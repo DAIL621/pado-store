@@ -674,3 +674,23 @@
 - `pnpm run verify:detail-template` 성공
 - `pnpm run verify:admin-static` 성공
 - GitHub push 완료
+## 2026-07-02 상품 등록 완료 UX 및 실제 저장 검증 보강
+### 완료 작업
+
+- 상품 등록 성공 시 버튼 문구가 `상품 등록완료`로 변경되도록 개선했습니다.
+- 저장 성공 Toast와 생성된 상품 ID/slug 표시를 추가했습니다.
+- 저장 성공 후 `/admin/products`로 이동하고 방금 생성한 상품을 하이라이트하도록 개선했습니다.
+- 상품 생성 API 응답에 `productId`, `productSlug`, `productUrl`을 포함했습니다.
+- 상품 slug를 영문 기준으로 생성하는 공통 헬퍼를 추가했습니다.
+- 한글 상품명 기반 주요 상품은 영문 slug로 자동 매핑되도록 했습니다.
+- slug 중복을 insert 전에 검사하고 `DUPLICATE_SLUG` 오류를 명확히 반환하도록 개선했습니다.
+- 상품 등록 E2E가 실제 등록, 목록 최상단 표시, 공개 상세페이지 200, 중복 slug 409, 테스트 상품 soft delete까지 검증하도록 확장했습니다.
+- Playwright 검증 스크립트가 Codex 번들 Playwright 경로를 안정적으로 찾도록 fallback을 보강했습니다.
+- 프로젝트 운영 규칙 파일 `AGENTS.md`를 생성했습니다.
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
+- `pnpm run verify:admin` 성공
+- `pnpm run verify:admin-new-click` 성공

@@ -36,6 +36,8 @@ export type AdminProductBuilderPayload = {
 type SubmitResult = {
   ok: boolean;
   message?: string;
+  productId?: string;
+  productSlug?: string;
   productUrl?: string;
 };
 
@@ -131,6 +133,8 @@ export function AdminProductBuilder({
   const [detailJson, setDetailJson] = useState(() => createProductDetailFormValue(initialDetail));
   const [message, setMessage] = useState(initialMessage);
   const [createdUrl, setCreatedUrl] = useState("");
+  const [createdInfo, setCreatedInfo] = useState("");
+  const [saveCompleted, setSaveCompleted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draftStatus, setDraftStatus] = useState("");
   const [toastMessage, setToastMessage] = useState("");
@@ -182,10 +186,20 @@ export function AdminProductBuilder({
 
   const update = (key: keyof AdminProductFormState, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
+    setSaveCompleted(false);
+    setCreatedInfo("");
   };
 
   const updateOption = (index: number, key: keyof AdminProductOptionForm, value: string) => {
     setOptions((current) => current.map((option, optionIndex) => (optionIndex === index ? { ...option, [key]: value } : option)));
+    setSaveCompleted(false);
+    setCreatedInfo("");
+  };
+
+  const updateDetailJson = (nextDetail: ProductDetail) => {
+    setDetailJson(nextDetail);
+    setSaveCompleted(false);
+    setCreatedInfo("");
   };
 
   const addOption = () => {
@@ -404,6 +418,8 @@ export function AdminProductBuilder({
     }
     setSaving(true);
     setCreatedUrl("");
+    setCreatedInfo("");
+    setSaveCompleted(false);
     setMessage("저장하는 중입니다...");
 
     let result: SubmitResult;
@@ -434,8 +450,14 @@ export function AdminProductBuilder({
     }
     if (draftStorageKey) window.localStorage.removeItem(draftStorageKey);
     setCreatedUrl(result.productUrl ?? "");
+    setCreatedInfo(
+      [result.productId ? `ID: ${result.productId}` : "", result.productSlug ? `Slug: ${result.productSlug}` : ""]
+        .filter(Boolean)
+        .join(" · ")
+    );
     setMessage(result.message ?? successMessage);
     setToastMessage(result.message ?? successMessage);
+    setSaveCompleted(true);
     window.setTimeout(() => setToastMessage(""), 2800);
     setSaving(false);
     await onSuccess?.(result);
@@ -479,6 +501,7 @@ export function AdminProductBuilder({
           <h2>{title}</h2>
           <span className="admin-message">{message}</span>
           {draftStatus && <small className="admin-draft-status">{draftStatus}</small>}
+          {createdInfo && <small className="admin-created-info">{createdInfo}</small>}
           {createdUrl && <a className="admin-message-link" href={createdUrl} target="_blank">방금 저장한 상품 보기 →</a>}
         </div>
         <div className="admin-builder-actions">
@@ -573,7 +596,7 @@ export function AdminProductBuilder({
             </details>
 
             <div data-admin-section="detail">
-              <ProductDetailEditor value={detailJson} onChange={setDetailJson} />
+              <ProductDetailEditor value={detailJson} onChange={updateDetailJson} />
             </div>
 
             <details className="admin-form-section" open>
@@ -618,7 +641,9 @@ export function AdminProductBuilder({
               </div>
               <div className="admin-save-panel">
                 <p>필수 정보와 상세페이지 자동 생성 정보를 확인한 뒤 저장합니다.</p>
-                <button type="submit" className="button teal" disabled={saving} onClick={clickSave}>{saving ? savingLabel : submitLabel}</button>
+                <button type="submit" className="button teal" disabled={saving || saveCompleted} onClick={clickSave}>
+                  {saving ? savingLabel : saveCompleted ? "상품 등록완료" : submitLabel}
+                </button>
               </div>
             </details>
           </div>
