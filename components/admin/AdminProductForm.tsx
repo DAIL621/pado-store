@@ -39,7 +39,6 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
         successMessage="상품이 등록되었습니다. 상품 목록 페이지에서 확인할 수 있습니다."
         initialForm={emptyProductForm}
         initialOptions={defaultProductOptions}
-        resetAfterSuccess
         draftStorageKey="pado-admin-product-create-draft"
         onSubmit={createProduct}
         onSuccess={(result) => {
@@ -54,7 +53,14 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
               })
             );
           }
-          window.setTimeout(() => router.push("/admin/products"), 650);
+          window.setTimeout(() => {
+            router.push("/admin/products");
+            window.setTimeout(() => {
+              if (window.location.pathname !== "/admin/products") {
+                window.location.assign("/admin/products");
+              }
+            }, 900);
+          }, 1400);
         }}
       />
     </AdminLayout>

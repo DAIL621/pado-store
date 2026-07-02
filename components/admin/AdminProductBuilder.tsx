@@ -421,6 +421,7 @@ export function AdminProductBuilder({
     setCreatedInfo("");
     setSaveCompleted(false);
     setMessage("저장하는 중입니다...");
+    setToastMessage(savingLabel);
 
     let result: SubmitResult;
     try {
@@ -641,7 +642,15 @@ export function AdminProductBuilder({
               </div>
               <div className="admin-save-panel">
                 <p>필수 정보와 상세페이지 자동 생성 정보를 확인한 뒤 저장합니다.</p>
-                <button type="submit" className="button teal" disabled={saving || saveCompleted} onClick={clickSave}>
+                <button
+                  type="button"
+                  className="button teal"
+                  disabled={saving || saveCompleted}
+                  aria-busy={saving}
+                  data-testid="admin-product-submit"
+                  data-save-state={saving ? "saving" : saveCompleted ? "completed" : "idle"}
+                  onClick={clickSave}
+                >
                   {saving ? savingLabel : saveCompleted ? "상품 등록완료" : submitLabel}
                 </button>
               </div>

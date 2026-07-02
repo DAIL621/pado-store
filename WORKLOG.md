@@ -694,3 +694,25 @@
 - `pnpm run verify:detail-json` 성공
 - `pnpm run verify:admin` 성공
 - `pnpm run verify:admin-new-click` 성공
+## 2026-07-02 상품 등록 버튼 실제 화면 UX 재검증 및 보강
+### 완료 작업
+
+- `/admin/new` 최종 저장 버튼을 `type="button"` 기반 명시적 클릭 액션으로 변경하여 브라우저 기본 submit 흐름과 충돌하지 않게 수정했습니다.
+- 클릭 즉시 버튼 상태가 `저장 중...`으로 바뀌고 Toast가 표시되도록 보강했습니다.
+- 저장 성공 후 `상품 등록완료` 상태가 실제 화면에 보이도록 `/admin/products` 이동 대기 시간을 늘렸습니다.
+- `router.push`가 지연되거나 실패할 경우 `window.location.assign("/admin/products")`로 이동하는 fallback을 추가했습니다.
+- 생성 성공 직후 폼을 즉시 초기화하지 않도록 변경하여 성공 상태와 등록 차단 패널이 동시에 보이는 모순을 제거했습니다.
+- `verify:admin-new-click`가 실제 Edge 실행 기준으로 저장 전, 저장 중, 등록 완료, 상품 목록, 상세페이지 캡처를 생성하도록 개선했습니다.
+- `verify:detail-json`은 Supabase 네트워크성 `fetch failed`에 한해 짧은 retry를 수행하도록 보강했습니다.
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
+- `pnpm run verify:admin` 성공
+- 실제 Edge 기반 상품 등록 E2E 성공
+- 저장 중 버튼 문구: `저장 중...`
+- 저장 완료 버튼 문구: `상품 등록완료`
+- 등록 상품 목록 최상단 표시 확인
+- `/products/{english-slug}` 상세페이지 200 확인
+- 중복 slug 409 `DUPLICATE_SLUG` 확인

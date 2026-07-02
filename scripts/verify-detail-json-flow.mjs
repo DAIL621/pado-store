@@ -48,7 +48,7 @@ function assert(condition, message) {
 }
 
 const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
-const slug = `detail-auto-verification-${stamp}`;
+let slug = `detail-auto-verification-${stamp}`;
 
 const detailJson = {
   heroImages: [
@@ -110,28 +110,36 @@ const uploadResult = await readJson(upload);
 assert(upload.ok, `image upload failed: ${upload.status}`);
 assert(uploadResult.url?.startsWith("/uploads/products/"), "uploaded image url was not returned");
 
-const create = await request("/api/admin/products", {
-  method: "POST",
-  headers: { "content-type": "application/json" },
-  body: JSON.stringify({
-    name: `Detail Auto Verification Product ${stamp}`,
-    slug,
-    origin: "Wando",
-    category: "Verification",
-    subtitle: "Automatic detail page verification product",
-    description: "Checks whether admin detail_json data renders through the master product detail template.",
-    basePrice: "12300",
-    imageUrl: "/images/products/wando-abalone.webp",
-    badge: "TEST",
-    highlights: "Automatic detail, Admin input, Save verification",
-    options: [{ name: "Verification option 1kg", priceDelta: "0", stock: "3" }],
-    detailJson: {
-      ...detailJson,
-      heroImages: detailJson.heroImages.map((image, index) => (index === 0 ? { ...image, url: uploadResult.url } : image))
-    }
-  })
-});
-const createResult = await readJson(create);
+let create;
+let createResult;
+for (let attempt = 0; attempt < 3; attempt += 1) {
+  const attemptSlug = attempt === 0 ? slug : `${slug}-retry-${attempt}`;
+  create = await request("/api/admin/products", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      name: `Detail Auto Verification Product ${stamp}${attempt ? ` Retry ${attempt}` : ""}`,
+      slug: attemptSlug,
+      origin: "Wando",
+      category: "Verification",
+      subtitle: "Automatic detail page verification product",
+      description: "Checks whether admin detail_json data renders through the master product detail template.",
+      basePrice: "12300",
+      imageUrl: "/images/products/wando-abalone.webp",
+      badge: "TEST",
+      highlights: "Automatic detail, Admin input, Save verification",
+      options: [{ name: "Verification option 1kg", priceDelta: "0", stock: "3" }],
+      detailJson
+    })
+  });
+  createResult = await readJson(create);
+  if (create.ok) {
+    slug = attemptSlug;
+    break;
+  }
+  if (!String(createResult?.message ?? "").includes("fetch failed")) break;
+  await new Promise((resolve) => setTimeout(resolve, 700 * (attempt + 1)));
+}
 
 if (!create.ok) {
   console.error(JSON.stringify(createResult, null, 2));

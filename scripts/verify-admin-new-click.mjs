@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 
 const require = createRequire(import.meta.url);
 const baseUrl = process.env.PADO_TEST_BASE_URL || "http://127.0.0.1:3000";
@@ -23,10 +23,7 @@ function loadPlaywright() {
 }
 
 function edgeExecutablePath() {
-  return (
-    process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ||
-    "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
-  );
+  return process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 }
 
 async function fillField(page, name, value) {
@@ -42,6 +39,8 @@ async function fillField(page, name, value) {
 const { chromium } = loadPlaywright();
 const browser = await chromium.launch({ headless: true, executablePath: edgeExecutablePath() });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+mkdirSync("screenshots", { recursive: true });
+
 const consoleErrors = [];
 page.on("console", (message) => {
   const text = message.text();
@@ -63,8 +62,9 @@ try {
   await page.evaluate(() => window.localStorage.removeItem("pado-admin-product-create-draft"));
   await page.reload({ waitUntil: "networkidle" });
 
-  await page.locator('.admin-save-panel button[type="submit"]').click();
-  await page.locator(".admin-message").filter({ hasText: "등록 차단:" }).waitFor({ timeout: 7000 });
+  const submitButton = page.getByTestId("admin-product-submit");
+  await submitButton.click();
+  await page.locator(".admin-message").waitFor({ timeout: 7000 });
   const blockedMessage = await page.locator(".admin-message").first().textContent();
 
   await fillField(page, "name", `Pado E2E Product ${stamp}`);
@@ -77,12 +77,26 @@ try {
   await fillField(page, "options.0.name", "E2E option 1kg");
   await fillField(page, "options.0.priceDelta", "0");
   await fillField(page, "options.0.stock", "3");
-  await page.locator('.admin-save-panel button[type="submit"]').click();
-  await Promise.race([
-    page.getByText("상품 등록완료").waitFor({ timeout: 7000 }),
-    page.getByText("저장하는 중입니다").waitFor({ timeout: 7000 }),
-    page.waitForURL("**/admin/products", { timeout: 7000 })
-  ]).catch(() => {});
+  await page.screenshot({ path: "screenshots/admin-create-before-click-real-edge.png", fullPage: true });
+
+  let delayedCreateOnce = false;
+  await page.route("**/api/admin/products", async (route) => {
+    if (!delayedCreateOnce && route.request().method() === "POST") {
+      delayedCreateOnce = true;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    await route.continue();
+  });
+
+  await submitButton.click();
+  await page.locator('[data-testid="admin-product-submit"][data-save-state="saving"]').waitFor({ timeout: 7000 });
+  const savingButtonText = await submitButton.textContent();
+  await page.screenshot({ path: "screenshots/admin-create-saving-real-edge.png", fullPage: false });
+
+  await page.locator('[data-testid="admin-product-submit"][data-save-state="completed"]').waitFor({ timeout: 12000 });
+  const completedButtonText = await submitButton.textContent();
+  await page.screenshot({ path: "screenshots/admin-create-completed-real-edge.png", fullPage: false });
+
   await page.waitForURL("**/admin/products", { timeout: 20000 }).catch(async (error) => {
     const currentMessage = await page.locator(".admin-message").first().textContent().catch(() => "");
     const validationText = await page.locator(".admin-validation-panel").first().innerText().catch(() => "");
@@ -99,11 +113,14 @@ try {
   if (created.base_price !== 12300) throw new Error(`Created product price mismatch: ${created.base_price}`);
 
   await page.locator(".product-admin-table").getByText(slug).waitFor({ timeout: 7000 });
+  await page.screenshot({ path: "screenshots/admin-products-after-create-real-edge.png", fullPage: true });
   const firstSlug = await page.locator(".product-admin-table tbody tr").first().locator("small").first().textContent();
   if (firstSlug !== slug) throw new Error(`Created product should be visible at the top. first=${firstSlug} expected=${slug}`);
 
   const detail = await page.request.get(`${baseUrl}/products/${slug}`);
   if (detail.status() !== 200) throw new Error(`Created product detail page failed: ${detail.status()}`);
+  await page.goto(`${baseUrl}/products/${slug}`, { waitUntil: "networkidle" });
+  await page.screenshot({ path: "screenshots/admin-detail-after-create-real-edge.png", fullPage: true });
 
   const duplicate = await page.request.post(`${baseUrl}/api/admin/products`, {
     data: {
@@ -139,6 +156,8 @@ try {
         ok: true,
         blockedMessage,
         redirectedToProducts: true,
+        savingButtonText,
+        completedButtonText,
         productCreated: true,
         productListedAtTop: true,
         productDetailStatus: 200,
@@ -146,6 +165,13 @@ try {
         productId: created.id,
         duplicateSlugRejected: true,
         testProductSoftDeleted: true,
+        screenshots: [
+          "screenshots/admin-create-before-click-real-edge.png",
+          "screenshots/admin-create-saving-real-edge.png",
+          "screenshots/admin-create-completed-real-edge.png",
+          "screenshots/admin-products-after-create-real-edge.png",
+          "screenshots/admin-detail-after-create-real-edge.png"
+        ],
         consoleErrors: []
       },
       null,

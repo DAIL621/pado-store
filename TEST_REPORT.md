@@ -717,3 +717,36 @@
 
 - 한글 slug는 공개 상세 라우트에서 의도치 않게 404로 이어질 수 있어 영문 slug 생성 기준으로 수정했습니다.
 - 상품이 목록에 보이지 않는 문제는 저장 성공 후 목록 이동/하이라이트/정렬 검증이 부족해 발생 여부를 즉시 확인하기 어려웠습니다. E2E에서 목록 최상단 표시까지 검증하도록 보강했습니다.
+## 2026-07-02 상품 등록 완료 UX 실제 브라우저 재검증
+### 검증 범위
+
+- `/dev-admin-login` 개발용 관리자 로그인
+- `/admin/new` 빈 필수값 상태에서 저장 차단 메시지 표시
+- 필수값 입력 후 상품 등록 버튼 실제 클릭
+- 클릭 직후 `저장 중...` 버튼 상태 표시
+- API 성공 후 `상품 등록완료` 버튼 상태 표시
+- 성공 Toast 및 `/admin/products` 자동 이동
+- 방금 등록한 상품 목록 최상단 표시
+- 영문 slug 상세페이지 `/products/{slug}` 200 응답
+- 중복 slug 409 `DUPLICATE_SLUG` 응답
+- 테스트 상품 soft delete 정리
+- 브라우저 console error 없음
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run verify:admin`: 성공
+- `pnpm run verify:admin-new-click`: 성공
+- 실제 Edge 캡처 생성:
+  - `screenshots/admin-create-saving-real-edge.png`
+  - `screenshots/admin-create-completed-real-edge.png`
+  - `screenshots/admin-products-after-create-real-edge.png`
+  - `screenshots/admin-detail-after-create-real-edge.png`
+
+### 발견 및 수정
+
+- 저장 버튼이 폼 submit 흐름에 의존하지 않도록 `type="button"` 명시 클릭 액션으로 변경했습니다.
+- 성공 후 이동이 너무 빨라 `상품 등록완료` 상태를 사용자가 확인하기 어려운 문제를 보완했습니다.
+- 성공 직후 폼 초기화로 인해 완료 상태와 차단 패널이 함께 보일 수 있는 문제를 제거했습니다.
+- Supabase 네트워크성 `fetch failed`로 detail_json 검증이 흔들릴 수 있어 retry를 추가했습니다.
