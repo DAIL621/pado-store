@@ -733,3 +733,21 @@
 - `http://localhost:3000/admin/new` 307 확인
 - `pnpm run build` 성공
 - build 후 `pnpm run dev:ensure` health 200 확인
+## 2026-07-02 상품 등록 버튼 단계별 진단 UI 추가
+### 완료 작업
+
+- `/admin/new` 저장 영역에 개발 모드 전용 `Submit Debug` 패널을 추가했습니다.
+- 버튼 `pointerdown`, `click`, form 연결 여부, disabled 상태, 버튼 위 최상단 DOM, validation, API 요청/응답, navigation 예약 시간을 화면에 표시하도록 했습니다.
+- `scripts/diagnose-admin-submit.mjs`와 `diagnose:admin-submit` 명령을 추가해 실제 Edge 브라우저에서 좌표 클릭 기준으로 DOM/overlay/click/submit/network를 순서대로 진단하도록 했습니다.
+- 실제 Edge 진단 결과 버튼 DOM 존재, disabled false, overlay 없음, click handler 실행, POST `/api/admin/products` 200, 목록 표시, 상세페이지 200을 확인했습니다.
+
+### 검증
+
+- `pnpm run diagnose:admin-submit` 성공
+- `pnpm run build` 성공
+- `pnpm run verify:admin` 성공
+- 진단 캡처 생성:
+  - `screenshots/admin-submit-diagnose-before-click.png`
+  - `screenshots/admin-submit-diagnose-after-click.png`
+  - `screenshots/admin-submit-diagnose-completed.png`
+  - `screenshots/admin-submit-diagnose-products.png`

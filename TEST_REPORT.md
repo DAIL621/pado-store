@@ -774,3 +774,45 @@
 - 이전 localhost 종료 원인은 검증용 임시 서버를 명령 내부에서 실행하고 종료 시 정리한 흐름이었습니다.
 - 작업 종료 전 `dev:ensure`를 실행하도록 AGENTS.md 규칙을 추가했습니다.
 - 샌드박스 하위 프로세스 정리 이슈를 확인하여, 최종 테스트용 dev server는 외부 실행 승인 흐름에서 유지되도록 검증했습니다.
+## 2026-07-02 상품 등록 버튼 실제 Edge 단계별 진단
+### 검증 순서
+
+1. 실제 버튼 DOM 존재 확인
+2. 버튼 disabled 상태 확인
+3. 버튼 위 투명 overlay 여부 확인
+4. pointerdown/click 이벤트 발생 확인
+5. React click handler 및 form 연결 확인
+6. validation 통과 확인
+7. POST `/api/admin/products` Network 요청 확인
+8. API 200 응답 body 확인
+9. 버튼 상태 `상품 등록하기 -> 저장 중... -> 상품 등록완료` 확인
+10. `/admin/products` 이동 및 등록 상품 목록 표시 확인
+11. `/products/{english-slug}` 상세페이지 200 확인
+
+### 결과
+
+- DOM: 존재
+- disabled: false
+- pointer-events: auto
+- overlay: 없음, `elementFromPoint`가 저장 버튼 자신을 반환
+- click event: 발생
+- form found: true
+- validation: passed
+- API: `/api/admin/products` POST 200
+- button transition: `상품 등록하기 -> 저장 중... -> 상품 등록완료`
+- product list: 등록 상품 표시
+- detail page: 200
+- `pnpm run build`: 성공
+- `pnpm run verify:admin`: 성공
+
+### 캡처
+
+- `screenshots/admin-submit-diagnose-before-click.png`
+- `screenshots/admin-submit-diagnose-after-click.png`
+- `screenshots/admin-submit-diagnose-completed.png`
+- `screenshots/admin-submit-diagnose-products.png`
+
+### 판단
+
+- 현재 최신 코드/새로고침된 Edge 기준으로는 클라이언트 이벤트와 API 저장 흐름이 정상 동작합니다.
+- 사용자 브라우저에서 계속 무반응이면 오래된 번들/탭 상태 가능성이 높으므로, `/admin/new`에서 강력 새로고침 후 하단 `Submit Debug` 패널의 pointerdown/click 값이 바뀌는지 확인하면 원인을 즉시 분리할 수 있습니다.

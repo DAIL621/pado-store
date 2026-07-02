@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { FormEvent, KeyboardEvent, MouseEvent } from "react";
+import type { FormEvent, KeyboardEvent, MouseEvent, PointerEvent } from "react";
 import { ProductDetailEditor } from "@/components/admin/ProductDetailEditor";
 import { ProductDetailPreview } from "@/components/admin/ProductDetailPreview";
 import { generateProductDescription, generateProductDetailDraft } from "@/lib/admin/ai-product-drafts";
@@ -45,6 +45,23 @@ type ValidationIssue = {
   label: string;
   message: string;
   section: "basic" | "options" | "detail";
+};
+
+type SubmitDebugState = {
+  mountedAt: string;
+  lastPointerDownAt?: string;
+  lastClickAt?: string;
+  clickCount: number;
+  formFound?: boolean;
+  buttonDisabled?: boolean;
+  topElementAtButton?: string;
+  submitStartedAt?: string;
+  validationStatus?: string;
+  apiStatus?: string;
+  apiStartedAt?: string;
+  apiFinishedAt?: string;
+  apiMessage?: string;
+  navigationScheduledAt?: string;
 };
 
 function validateProductPayload(payload: Pick<AdminProductBuilderPayload, "form" | "options">): ValidationIssue[] {
@@ -114,6 +131,19 @@ export const emptyProductForm: AdminProductFormState = {
 
 export const defaultProductOptions: AdminProductOptionForm[] = [{ name: "기본 옵션", priceDelta: "0", stock: "30" }];
 
+function debugTime() {
+  return new Date().toLocaleTimeString("ko-KR", { hour12: false });
+}
+
+function describeElement(element: Element | null) {
+  if (!element) return "none";
+  const htmlElement = element as HTMLElement;
+  const id = htmlElement.id ? `#${htmlElement.id}` : "";
+  const classes = typeof htmlElement.className === "string" && htmlElement.className ? `.${htmlElement.className.trim().replace(/\s+/g, ".")}` : "";
+  const testId = htmlElement.dataset?.testid ? `[data-testid="${htmlElement.dataset.testid}"]` : "";
+  return `${element.tagName.toLowerCase()}${id}${classes}${testId}`;
+}
+
 export function AdminProductBuilder({
   title,
   initialMessage,
@@ -139,9 +169,17 @@ export function AdminProductBuilder({
   const [draftStatus, setDraftStatus] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [draftReady, setDraftReady] = useState(!draftStorageKey);
+  const [submitDebug, setSubmitDebug] = useState<SubmitDebugState>({ mountedAt: debugTime(), clickCount: 0 });
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+  const showSubmitDebug = process.env.NODE_ENV !== "production";
+
+  const updateSubmitDebug = (patch: Partial<SubmitDebugState>) => {
+    if (!showSubmitDebug) return;
+    setSubmitDebug((current) => ({ ...current, ...patch }));
+  };
 
   useEffect(() => {
+    updateSubmitDebug({ mountedAt: debugTime(), apiStatus: "hydrated" });
     if (!draftStorageKey) return;
 
     try {
@@ -382,7 +420,11 @@ export function AdminProductBuilder({
   };
 
   const saveProduct = async (formElement: HTMLFormElement) => {
-    if (saving) return;
+    if (saving) {
+      updateSubmitDebug({ apiStatus: "ignored: saving", apiMessage: "saveProduct ignored because saving=true" });
+      return;
+    }
+    updateSubmitDebug({ submitStartedAt: debugTime(), validationStatus: "running", apiStatus: "not-started", apiMessage: "" });
     firstInvalidRef.current = null;
     const formData = new FormData(formElement);
     const submittedForm: AdminProductFormState = {
@@ -406,6 +448,7 @@ export function AdminProductBuilder({
 
     if (submitBlockingIssues.length > 0) {
       const firstIssue = submitBlockingIssues[0];
+      updateSubmitDebug({ validationStatus: `blocked: ${firstIssue.section}`, apiStatus: "not-started", apiMessage: firstIssue.message });
       setMessage(`등록 차단: ${firstIssue.message}`);
       setToastMessage("필수 입력 항목이 부족합니다.");
       window.setTimeout(() => setToastMessage(""), 2600);
@@ -422,15 +465,22 @@ export function AdminProductBuilder({
     setSaveCompleted(false);
     setMessage("저장하는 중입니다...");
     setToastMessage(savingLabel);
+    updateSubmitDebug({ validationStatus: "passed", apiStatus: "requesting", apiStartedAt: debugTime() });
 
     let result: SubmitResult;
     try {
       result = await onSubmit({ form: submittedForm, options: submittedOptions, detailJson });
+      updateSubmitDebug({
+        apiStatus: result.ok ? "success" : "failed",
+        apiFinishedAt: debugTime(),
+        apiMessage: result.message ?? (result.ok ? "ok" : "failed")
+      });
     } catch (error) {
       result = {
         ok: false,
         message: error instanceof Error ? error.message : "네트워크 또는 브라우저 오류로 저장에 실패했습니다."
       };
+      updateSubmitDebug({ apiStatus: "exception", apiFinishedAt: debugTime(), apiMessage: result.message });
     }
 
     if (!result.ok) {
@@ -461,17 +511,45 @@ export function AdminProductBuilder({
     setSaveCompleted(true);
     window.setTimeout(() => setToastMessage(""), 2800);
     setSaving(false);
+    updateSubmitDebug({ navigationScheduledAt: debugTime(), apiMessage: result.message ?? successMessage });
     await onSuccess?.(result);
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    updateSubmitDebug({ submitStartedAt: debugTime(), apiMessage: "form submit event fired" });
     await saveProduct(event.currentTarget);
+  };
+
+  const recordPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const topElement = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    updateSubmitDebug({
+      lastPointerDownAt: debugTime(),
+      buttonDisabled: event.currentTarget.disabled,
+      topElementAtButton: describeElement(topElement)
+    });
   };
 
   const clickSave = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     const formElement = event.currentTarget.form;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const topElement = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    updateSubmitDebug({
+      lastClickAt: debugTime(),
+      clickCount: submitDebug.clickCount + 1,
+      formFound: Boolean(formElement),
+      buttonDisabled: event.currentTarget.disabled,
+      topElementAtButton: describeElement(topElement),
+      apiMessage: "button click handler fired"
+    });
+    console.info("[PADO_ADMIN_SUBMIT_DEBUG]", {
+      at: debugTime(),
+      formFound: Boolean(formElement),
+      disabled: event.currentTarget.disabled,
+      topElementAtButton: describeElement(topElement)
+    });
     if (!formElement) {
       setMessage("저장 실패: 상품 등록 폼을 찾지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.");
       return;
@@ -649,11 +727,33 @@ export function AdminProductBuilder({
                   aria-busy={saving}
                   data-testid="admin-product-submit"
                   data-save-state={saving ? "saving" : saveCompleted ? "completed" : "idle"}
+                  onPointerDown={recordPointerDown}
                   onClick={clickSave}
                 >
                   {saving ? savingLabel : saveCompleted ? "상품 등록완료" : submitLabel}
                 </button>
               </div>
+              {showSubmitDebug && (
+                <div className="admin-submit-debug" data-testid="admin-submit-debug" aria-live="polite">
+                  <strong>Submit Debug</strong>
+                  <dl>
+                    <div><dt>mounted</dt><dd>{submitDebug.mountedAt}</dd></div>
+                    <div><dt>pointerdown</dt><dd>{submitDebug.lastPointerDownAt ?? "-"}</dd></div>
+                    <div><dt>click</dt><dd>{submitDebug.lastClickAt ?? "-"}</dd></div>
+                    <div><dt>click count</dt><dd>{submitDebug.clickCount}</dd></div>
+                    <div><dt>disabled</dt><dd>{String(submitDebug.buttonDisabled ?? false)}</dd></div>
+                    <div><dt>form found</dt><dd>{String(submitDebug.formFound ?? false)}</dd></div>
+                    <div><dt>top element</dt><dd>{submitDebug.topElementAtButton ?? "-"}</dd></div>
+                    <div><dt>submit</dt><dd>{submitDebug.submitStartedAt ?? "-"}</dd></div>
+                    <div><dt>validation</dt><dd>{submitDebug.validationStatus ?? "-"}</dd></div>
+                    <div><dt>api</dt><dd>{submitDebug.apiStatus ?? "-"}</dd></div>
+                    <div><dt>api start</dt><dd>{submitDebug.apiStartedAt ?? "-"}</dd></div>
+                    <div><dt>api finish</dt><dd>{submitDebug.apiFinishedAt ?? "-"}</dd></div>
+                    <div><dt>navigation</dt><dd>{submitDebug.navigationScheduledAt ?? "-"}</dd></div>
+                    <div className="wide"><dt>message</dt><dd>{submitDebug.apiMessage ?? "-"}</dd></div>
+                  </dl>
+                </div>
+              )}
             </details>
           </div>
 
