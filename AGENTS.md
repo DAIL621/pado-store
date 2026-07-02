@@ -72,8 +72,21 @@ localhost:3000이 꺼져 있으면 다시 실행한다.
 - pnpm run verify:detail-json
 - pnpm run verify:detail-template
 - 관련 Playwright E2E
+- pnpm run dev:ensure
 
 테스트 실패 시 원인을 분석하고 수정한다.
+
+## 6-1. 개발 서버 유지 규칙
+
+작업 종료 전 localhost:3000 Health Check를 반드시 수행한다.
+
+서버가 꺼져 있으면 `pnpm run dev:ensure`로 재실행한다.
+
+사용자가 바로 브라우저에서 테스트할 수 있는 상태로 작업을 마친다.
+
+build, verify, Playwright 실행 후에도 localhost:3000이 살아있는지 확인한다.
+
+검증용 임시 dev server를 실행한 경우에도 최종 종료 전 `pnpm run dev:ensure`를 다시 실행한다.
 
 ## 7. 관리자 상품등록 원칙
 

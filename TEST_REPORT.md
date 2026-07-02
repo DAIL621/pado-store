@@ -750,3 +750,27 @@
 - 성공 후 이동이 너무 빨라 `상품 등록완료` 상태를 사용자가 확인하기 어려운 문제를 보완했습니다.
 - 성공 직후 폼 초기화로 인해 완료 상태와 차단 패널이 함께 보일 수 있는 문제를 제거했습니다.
 - Supabase 네트워크성 `fetch failed`로 detail_json 검증이 흔들릴 수 있어 retry를 추가했습니다.
+## 2026-07-02 개발 서버 유지 관리자 검증
+### 검증 범위
+
+- `pnpm run dev:ensure` 신규 명령
+- 서버 종료 상태에서 자동 실행
+- 서버 실행 상태에서 중복 실행 방지
+- `/api/health` 200 응답
+- `/admin/new` 접근 가능 여부
+- `next build` 후 dev server 유지 여부
+
+### 결과
+
+- 서버 종료 상태: `dev:ensure`가 `pnpm run dev` 실행 후 health 200 확인
+- 서버 실행 상태: `dev server already running` 출력 및 동일 PID 유지
+- `/api/health`: 200
+- `/admin/new`: 307, 로그인 보호 라우트로 정상 접근 가능
+- `pnpm run build`: 성공
+- build 후 `pnpm run dev:ensure`: health 200 유지
+
+### 발견 및 수정
+
+- 이전 localhost 종료 원인은 검증용 임시 서버를 명령 내부에서 실행하고 종료 시 정리한 흐름이었습니다.
+- 작업 종료 전 `dev:ensure`를 실행하도록 AGENTS.md 규칙을 추가했습니다.
+- 샌드박스 하위 프로세스 정리 이슈를 확인하여, 최종 테스트용 dev server는 외부 실행 승인 흐름에서 유지되도록 검증했습니다.

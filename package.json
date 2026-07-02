@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:ensure": "node scripts/ensure-dev-server.mjs",
     "build": "next build",
     "start": "next start",
     "verify:admin-static": "node scripts/verify-admin-static.mjs",

@@ -716,3 +716,20 @@
 - 등록 상품 목록 최상단 표시 확인
 - `/products/{english-slug}` 상세페이지 200 확인
 - 중복 slug 409 `DUPLICATE_SLUG` 확인
+## 2026-07-02 개발 서버 유지 관리자 추가
+### 완료 작업
+
+- `scripts/ensure-dev-server.mjs`를 추가해 `localhost:3000` health check 후 서버가 꺼져 있으면 `pnpm run dev`를 자동 실행하도록 구성했습니다.
+- `package.json`에 `dev:ensure` 명령을 추가했습니다.
+- `AGENTS.md`에 작업 종료 전 `pnpm run dev:ensure` 실행 및 build/verify/Playwright 후 health check 규칙을 추가했습니다.
+- 이전에 localhost가 죽은 원인은 검증 명령 내부에서 임시 dev server를 띄운 뒤 `finally`에서 종료했기 때문으로 확인했습니다.
+- 샌드박스 내부 하위 프로세스는 명령 종료 후 정리될 수 있어, 실제 사용자가 테스트할 서버는 승인된 외부 실행으로 유지되도록 확인했습니다.
+
+### 검증
+
+- 서버가 꺼진 상태에서 `pnpm run dev:ensure` 실행 시 재시작 확인
+- 서버가 켜진 상태에서 `pnpm run dev:ensure` 실행 시 중복 실행하지 않음 확인
+- `http://localhost:3000/api/health` 200 확인
+- `http://localhost:3000/admin/new` 307 확인
+- `pnpm run build` 성공
+- build 후 `pnpm run dev:ensure` health 200 확인
