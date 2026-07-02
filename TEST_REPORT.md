@@ -816,3 +816,24 @@
 
 - 현재 최신 코드/새로고침된 Edge 기준으로는 클라이언트 이벤트와 API 저장 흐름이 정상 동작합니다.
 - 사용자 브라우저에서 계속 무반응이면 오래된 번들/탭 상태 가능성이 높으므로, `/admin/new`에서 강력 새로고침 후 하단 `Submit Debug` 패널의 pointerdown/click 값이 바뀌는지 확인하면 원인을 즉시 분리할 수 있습니다.
+## 2026-07-02 상품 등록 slug 중복 복구 검증
+
+### 검증 범위
+
+- slug 중복 상품 등록 시 `DUPLICATE_SLUG` 응답 확인
+- 관리자 등록 화면의 `테스트용 URL 자동 생성` 버튼 표시 확인
+- `-test-YYYYMMDD-HHMM` suffix 자동 생성 확인
+- 테스트 URL로 재저장 성공 확인
+- `/admin/products` 이동 후 신규 테스트 상품 최상단 표시 확인
+- `/products/{generated-test-slug}` 상세페이지 200 확인
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run verify:admin`: 성공
+- `pnpm run verify:admin-duplicate-test-slug`: 성공
+
+### 생성된 검증 케이스
+
+- `scripts/verify-admin-duplicate-test-slug.mjs`

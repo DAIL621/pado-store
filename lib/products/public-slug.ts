@@ -1,4 +1,5 @@
 export function isPublicProductSlug(slug: string) {
   const normalized = slug.toLowerCase();
-  return !normalized.startsWith("ops-") && !normalized.includes("test");
+  const isGeneratedTestDetailSlug = /-test-\d{8}-\d{4,6}$/.test(normalized);
+  return !normalized.startsWith("ops-") && (isGeneratedTestDetailSlug || !normalized.includes("test"));
 }

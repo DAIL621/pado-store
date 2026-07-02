@@ -13,8 +13,9 @@
     "verify:admin-upload": "node scripts/verify-admin-upload.mjs",
     "verify:admin-presets": "node scripts/verify-admin-presets.mjs",
     "verify:admin-new-click": "node scripts/verify-admin-new-click.mjs",
+    "verify:admin-duplicate-test-slug": "node scripts/verify-admin-duplicate-test-slug.mjs",
     "diagnose:admin-submit": "node scripts/diagnose-admin-submit.mjs",
-    "verify:admin": "pnpm run verify:admin-static && pnpm run verify:detail-json && pnpm run verify:admin-edit && pnpm run verify:admin-upload && pnpm run verify:admin-presets && pnpm run verify:admin-new-click",
+    "verify:admin": "pnpm run verify:admin-static && pnpm run verify:detail-json && pnpm run verify:admin-edit && pnpm run verify:admin-upload && pnpm run verify:admin-presets && pnpm run verify:admin-new-click && pnpm run verify:admin-duplicate-test-slug",
     "verify:product-seo": "node scripts/verify-product-seo.mjs",
     "verify:detail-template": "node scripts/verify-detail-template-sections.mjs && pnpm run verify:product-seo",
     "lint": "next lint"

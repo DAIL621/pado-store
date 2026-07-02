@@ -23,6 +23,8 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
     return {
       ok: response.ok,
       message: response.ok ? result.message ?? "상품 등록완료. 상품 목록 페이지로 이동합니다." : result.message,
+      code: result.code,
+      slug: result.slug,
       productId: result.productId,
       productSlug: result.productSlug,
       productUrl: result.productUrl

@@ -35,10 +35,12 @@ export type AdminProductBuilderPayload = {
 
 type SubmitResult = {
   ok: boolean;
+  code?: string;
   message?: string;
   productId?: string;
   productSlug?: string;
   productUrl?: string;
+  slug?: string;
 };
 
 type ValidationIssue = {
@@ -144,6 +146,18 @@ function describeElement(element: Element | null) {
   return `${element.tagName.toLowerCase()}${id}${classes}${testId}`;
 }
 
+function createTestSlug(baseSlug: string) {
+  const now = new Date();
+  const date = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0")
+  ].join("");
+  const time = [String(now.getHours()).padStart(2, "0"), String(now.getMinutes()).padStart(2, "0")].join("");
+  const normalizedBase = baseSlug.trim().replace(/-test-\d{8}-\d{4}.*$/, "") || "test-product";
+  return `${normalizedBase}-test-${date}-${time}`;
+}
+
 export function AdminProductBuilder({
   title,
   initialMessage,
@@ -164,6 +178,7 @@ export function AdminProductBuilder({
   const [message, setMessage] = useState(initialMessage);
   const [createdUrl, setCreatedUrl] = useState("");
   const [createdInfo, setCreatedInfo] = useState("");
+  const [duplicateSlug, setDuplicateSlug] = useState("");
   const [saveCompleted, setSaveCompleted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draftStatus, setDraftStatus] = useState("");
@@ -226,6 +241,7 @@ export function AdminProductBuilder({
     setForm((current) => ({ ...current, [key]: value }));
     setSaveCompleted(false);
     setCreatedInfo("");
+    setDuplicateSlug("");
   };
 
   const updateOption = (index: number, key: keyof AdminProductOptionForm, value: string) => {
@@ -463,6 +479,7 @@ export function AdminProductBuilder({
     setCreatedUrl("");
     setCreatedInfo("");
     setSaveCompleted(false);
+    setDuplicateSlug("");
     setMessage("저장하는 중입니다...");
     setToastMessage(savingLabel);
     updateSubmitDebug({ validationStatus: "passed", apiStatus: "requesting", apiStartedAt: debugTime() });
@@ -484,6 +501,9 @@ export function AdminProductBuilder({
     }
 
     if (!result.ok) {
+      if (result.code === "DUPLICATE_SLUG") {
+        setDuplicateSlug(result.slug || submittedForm.slug);
+      }
       setMessage(`저장 실패: ${result.message ?? "저장에 실패했습니다."}`);
       setToastMessage("저장 실패");
       window.setTimeout(() => setToastMessage(""), 2600);
@@ -500,6 +520,7 @@ export function AdminProductBuilder({
       setDetailJson(createProductDetailFormValue(initialDetail));
     }
     if (draftStorageKey) window.localStorage.removeItem(draftStorageKey);
+    setDuplicateSlug("");
     setCreatedUrl(result.productUrl ?? "");
     setCreatedInfo(
       [result.productId ? `ID: ${result.productId}` : "", result.productSlug ? `Slug: ${result.productSlug}` : ""]
@@ -557,6 +578,19 @@ export function AdminProductBuilder({
     await saveProduct(formElement);
   };
 
+  const applyTestSlug = () => {
+    const nextSlug = createTestSlug(duplicateSlug || form.slug || form.name);
+    setForm((current) => ({ ...current, slug: nextSlug }));
+    setDuplicateSlug("");
+    setSaveCompleted(false);
+    setCreatedInfo("");
+    setCreatedUrl("");
+    setMessage(`테스트용 URL을 생성했습니다: ${nextSlug}`);
+    setToastMessage("테스트용 URL 생성 완료");
+    updateSubmitDebug({ apiStatus: "ready-after-test-slug", apiMessage: nextSlug });
+    window.setTimeout(() => setToastMessage(""), 2200);
+  };
+
   return (
     <>
     <div className="admin-product-progress">
@@ -580,8 +614,25 @@ export function AdminProductBuilder({
           <h2>{title}</h2>
           <span className="admin-message">{message}</span>
           {draftStatus && <small className="admin-draft-status">{draftStatus}</small>}
+          {duplicateSlug && (
+            <div className="admin-duplicate-slug-action" role="status">
+              <span>같은 URL이 이미 있습니다. 상세페이지 디자인 확인용 테스트 URL로 바꿔 저장할 수 있습니다.</span>
+              <button
+                type="button"
+                className="button outline"
+                data-testid="admin-apply-test-slug"
+                onClick={applyTestSlug}
+              >
+                테스트용 URL 자동 생성
+              </button>
+            </div>
+          )}
           {createdInfo && <small className="admin-created-info">{createdInfo}</small>}
-          {createdUrl && <a className="admin-message-link" href={createdUrl} target="_blank">방금 저장한 상품 보기 →</a>}
+          {createdUrl && (
+            <a className="admin-detail-link button outline" data-testid="admin-created-detail-link" href={createdUrl} target="_blank">
+              생성된 상세페이지 보기 →
+            </a>
+          )}
         </div>
         <div className="admin-builder-actions">
           <button type="button" className="button outline" onClick={fillDraft}>초안 자동 채우기</button>

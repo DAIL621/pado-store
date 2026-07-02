@@ -751,3 +751,18 @@
   - `screenshots/admin-submit-diagnose-after-click.png`
   - `screenshots/admin-submit-diagnose-completed.png`
   - `screenshots/admin-submit-diagnose-products.png`
+## 2026-07-02 상품 등록 slug 중복 복구 UX 개선
+### 완료 작업
+
+- `/admin/new` 상품 등록 시 slug 중복이 발생하면 저장 실패로 끝나지 않고 `테스트용 URL 자동 생성` 버튼을 표시하도록 개선했습니다.
+- 테스트 URL 생성 버튼 클릭 시 기존 slug 뒤에 `-test-YYYYMMDD-HHMM` 형식의 suffix를 붙여 즉시 재저장할 수 있게 했습니다.
+- 저장 성공 후 생성된 상세페이지로 바로 이동하는 버튼을 표시했습니다.
+- 관리자 상품 목록 액션에 `상세보기` 링크를 추가해 방금 등록한 테스트 상품의 상세 URL을 빠르게 확인할 수 있게 했습니다.
+- 공개 slug 필터에서 자동 생성 테스트 상세 URL만 예외 허용해 `/products/{slug}` 200 검증이 가능하도록 수정했습니다.
+- `verify:admin-duplicate-test-slug` 검증 스크립트를 추가하고 `verify:admin` 체인에 포함했습니다.
+
+### 검증
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
+- `pnpm run verify:admin` 성공
+- 중복 slug -> 테스트 URL 자동 생성 -> 재저장 -> 목록 최상단 표시 -> 상세페이지 200 확인

@@ -356,6 +356,7 @@ export function AdminProductsManager() {
                     <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
                     <td>{new Date(product.created_at).toLocaleDateString("ko-KR")}</td>
                     <td className="admin-actions">
+                      <a href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세보기</a>
                       <button type="button" onClick={() => setEditing(product)}>수정</button>
                       {status === "hidden" ? (
                         <button type="button" onClick={() => recover(product)}>다시 판매하기</button>
