@@ -859,3 +859,17 @@
 ### 생성된 검증 케이스
 
 - `scripts/verify-admin-private-detail.mjs`
+## 2026-07-02 관리자 Preview 실제 상세 템플릿 전환 검증
+
+### 검증 범위
+
+- 관리자 Live Preview가 `ProductDetailTemplate`을 직접 사용하는지 확인
+- Preview 전용 구매 영역이 실제 결제/장바구니 동작 없이 표시되는지 확인
+- `/admin/new` 실제 등록 플로우에서 Preview 렌더링으로 인한 콘솔 오류가 없는지 확인
+- 기존 상품 등록, detail_json 저장, 상세페이지 200 검증 유지 확인
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:admin-new-click`: 성공
+- `pnpm run verify:admin`: 성공

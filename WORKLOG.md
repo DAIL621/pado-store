@@ -785,3 +785,17 @@
 - `pnpm run verify:admin` 성공
 - 관리자 검증 상품 상세 200 / 고객 검증 상품 상세 404 확인
 - 관리자 숨김 상품 상세 200 / 고객 숨김 상품 상세 404 확인
+## 2026-07-02 관리자 상세페이지 Preview 실제 템플릿 전환
+### 완료 작업
+
+- 관리자 상품 등록/수정 화면의 Live Preview를 축약형 전용 UI에서 실제 `ProductDetailTemplate` 렌더링 방식으로 전환했습니다.
+- 입력 중인 폼/옵션/detail_json 값을 임시 `Product` 모델로 변환해 실제 `/products/[slug]` 상세페이지와 동일한 컴포넌트 구조로 미리보기합니다.
+- Preview 구매 영역은 실제 장바구니/결제가 실행되지 않는 안전한 `PreviewPurchaseSlot`으로 대체했습니다.
+- 모바일/PC 미리보기 모드에서 실제 상세 템플릿이 관리자 패널 안에 안정적으로 들어가도록 preview 전용 CSS를 보강했습니다.
+- `verify:admin-static`에 실제 상세 템플릿 preview 사용 여부를 검증하는 조건을 추가했습니다.
+
+### 검증
+- `pnpm run build` 성공
+- `pnpm run verify:admin-new-click` 성공
+- `pnpm run verify:admin` 성공
+- 관리자 등록 Preview 렌더링 및 실제 등록 플로우 콘솔 오류 없음 확인
