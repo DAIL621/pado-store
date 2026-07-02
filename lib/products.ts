@@ -1,6 +1,7 @@
 import { products as fallbackProducts, type Product, type ProductOption } from "@/data/products";
 import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { isPublicProductSlug } from "@/lib/products/public-slug";
+import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 type ProductRow = {
@@ -107,18 +108,42 @@ export async function getProducts(): Promise<Product[]> {
   }
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | undefined> {
-  if (!isPublicProductSlug(slug)) return undefined;
+export async function getProductBySlug(slug: string, options: { includePrivate?: boolean } = {}): Promise<Product | undefined> {
+  const includePrivate = Boolean(options.includePrivate);
+  if (!includePrivate && !isPublicProductSlug(slug)) return undefined;
   if (!hasSupabaseEnv()) return fallbackProducts.find((product) => product.slug === slug);
 
   try {
+    if (includePrivate && hasSupabaseAdminEnv()) {
+      const supabase = createAdminClient();
+      const { data: productRow, error: productError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("slug", slug)
+        .maybeSingle();
+
+      if (productError || !productRow) return undefined;
+
+      const { data: optionRows } = await supabase
+        .from("product_options")
+        .select("id, name, price_delta, stock")
+        .eq("product_id", productRow.id)
+        .order("created_at", { ascending: true });
+
+      return toProduct({ ...(productRow as ProductRow), product_options: (optionRows ?? []) as OptionRow[] });
+    }
+
     const supabase = await createClient();
-    const { data, error } = await supabase
+    let query = supabase
       .from("products")
       .select("*, product_options(id, name, price_delta, stock)")
-      .eq("slug", slug)
-      .eq("is_active", true)
-      .single();
+      .eq("slug", slug);
+
+    if (!includePrivate) {
+      query = query.eq("is_active", true);
+    }
+
+    const { data, error } = await query.single();
 
     if (error || !data) {
       const products = await getProducts();

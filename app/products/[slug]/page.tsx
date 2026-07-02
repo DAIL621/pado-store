@@ -6,7 +6,9 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { ProductDetailTemplate } from "@/components/products/ProductDetailTemplate";
 import { StickyPurchaseBar } from "@/components/products/StickyPurchaseBar";
 import type { Product } from "@/data/products";
+import { getAdminSession } from "@/lib/auth/admin";
 import { getProductBySlug, getProducts } from "@/lib/products";
+import { isPublicProductSlug } from "@/lib/products/public-slug";
 
 export const dynamic = "force-dynamic";
 
@@ -74,7 +76,8 @@ function JsonLdScript({ data }: { data: Record<string, unknown> }) {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const adminSession = await getAdminSession();
+  const product = await getProductBySlug(slug, { includePrivate: adminSession.ok });
 
   if (!product) {
     return { title: "상품을 찾을 수 없습니다" };
@@ -83,10 +86,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const description = buildSeoDescription(product);
   const productPath = `/products/${product.slug}`;
   const title = `${product.name} | ${product.origin} 산지직송 수산물`;
+  const isPrivatePreview = adminSession.ok && (!product.isActive || !isPublicProductSlug(product.slug));
 
   return {
     title,
     description,
+    robots: isPrivatePreview ? { index: false, follow: false } : undefined,
     alternates: {
       canonical: productPath
     },
@@ -105,10 +110,42 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
+function AdminPreviewNotice({ product }: { product: Product }) {
+  const reason = !product.isActive ? "숨김 상태" : "검증 상태";
+  return (
+    <div className="shell admin-product-preview-notice" role="status">
+      <strong>관리자 미리보기</strong>
+      <span>이 상품은 현재 {reason}입니다. 관리자만 볼 수 있으며 일반 고객 상품 목록에는 노출되지 않습니다.</span>
+      <a href="/admin/products">관리자 목록으로 돌아가기</a>
+    </div>
+  );
+}
+
+function AdminProductUnavailable({ slug }: { slug: string }) {
+  return (
+    <div className="page-wrap">
+      <div className="shell admin-product-unavailable">
+        <strong>관리자 확인 필요</strong>
+        <h1>상품 상세페이지를 열 수 없습니다.</h1>
+        <p>
+          요청한 slug `{slug}` 상품을 찾지 못했습니다. 상품이 삭제되었거나 slug가 변경되었을 수 있습니다.
+          관리자 상품 목록에서 실제 slug를 다시 확인해주세요.
+        </p>
+        <a className="button teal" href="/admin/products">관리자 상품 목록</a>
+      </div>
+    </div>
+  );
+}
+
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
-  if (!product) notFound();
+  const adminSession = await getAdminSession();
+  const product = await getProductBySlug(slug, { includePrivate: adminSession.ok });
+  if (!product) {
+    if (adminSession.ok) return <AdminProductUnavailable slug={slug} />;
+    notFound();
+  }
+  const isPrivatePreview = adminSession.ok && (!product.isActive || !isPublicProductSlug(product.slug));
 
   const recommended = (await getProducts())
     .filter((item) => item.slug !== product.slug)
@@ -117,6 +154,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     <div className="detail-page">
       <JsonLdScript data={buildProductJsonLd(product)} />
       <JsonLdScript data={buildBreadcrumbJsonLd(product)} />
+      {isPrivatePreview && <AdminPreviewNotice product={product} />}
 
       <div className="shell breadcrumb">
         <Link href="/">홈</Link>

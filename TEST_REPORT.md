@@ -837,3 +837,25 @@
 ### 생성된 검증 케이스
 
 - `scripts/verify-admin-duplicate-test-slug.mjs`
+## 2026-07-02 관리자 전용 상세 preview 라우팅 검증
+
+### 검증 범위
+
+- 관리자 로그인 상태에서 검증/test slug 상품 상세페이지 200
+- 일반 고객 상태에서 검증/test slug 상품 상세페이지 404
+- 관리자 로그인 상태에서 숨김 상품 상세페이지 200
+- 일반 고객 상태에서 숨김 상품 상세페이지 404
+- 관리자 상품 목록 `상세보기` 링크가 실제 `/products/{slug}`로 연결되는지 확인
+- 관리자 preview 안내 배너 표시 확인
+- Submit Debug 시간 표시 hydration mismatch 제거 확인
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run verify:admin-new-click`: 성공
+- `pnpm run verify:admin`: 성공
+
+### 생성된 검증 케이스
+
+- `scripts/verify-admin-private-detail.mjs`

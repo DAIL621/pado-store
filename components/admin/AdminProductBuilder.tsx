@@ -184,7 +184,7 @@ export function AdminProductBuilder({
   const [draftStatus, setDraftStatus] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [draftReady, setDraftReady] = useState(!draftStorageKey);
-  const [submitDebug, setSubmitDebug] = useState<SubmitDebugState>({ mountedAt: debugTime(), clickCount: 0 });
+  const [submitDebug, setSubmitDebug] = useState<SubmitDebugState>({ mountedAt: "-", clickCount: 0 });
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const showSubmitDebug = process.env.NODE_ENV !== "production";
 

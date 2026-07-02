@@ -766,3 +766,22 @@
 - `pnpm run verify:detail-json` 성공
 - `pnpm run verify:admin` 성공
 - 중복 slug -> 테스트 URL 자동 생성 -> 재저장 -> 목록 최상단 표시 -> 상세페이지 200 확인
+## 2026-07-02 관리자 전용 검증/숨김 상품 상세페이지 preview 라우팅 개선
+### 완료 작업
+
+- `/products/[slug]` 상세 조회를 고객용 공개 조회와 관리자 preview 조회로 분리했습니다.
+- 관리자 로그인 상태에서는 검증 상품, 테스트 상품, 숨김 상품도 실제 상세페이지 템플릿으로 확인할 수 있게 했습니다.
+- 일반 고객/비로그인 상태에서는 검증/숨김 상품이 계속 404로 유지되도록 정책을 확인했습니다.
+- 관리자 preview 상품에는 `관리자 미리보기` 안내 배너를 표시하고, 검색엔진 색인을 막도록 metadata robots를 보강했습니다.
+- 상세 조회에서 비활성 상품을 안정적으로 읽기 위해 관리자 preview 경로는 서비스 롤 클라이언트로 상품/옵션을 분리 조회하도록 개선했습니다.
+- 관리자 목록의 `상세보기` 버튼이 실제 `/products/{slug}`로 이동하는지 자동 검증에 포함했습니다.
+- `verify:admin-private-detail` 검증 스크립트를 추가하고 `verify:admin` 체인에 포함했습니다.
+- 관리자 등록 Submit Debug 초기 시간이 SSR/클라이언트 hydration mismatch를 만들던 문제를 수정했습니다.
+
+### 검증
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
+- `pnpm run verify:admin-new-click` 성공
+- `pnpm run verify:admin` 성공
+- 관리자 검증 상품 상세 200 / 고객 검증 상품 상세 404 확인
+- 관리자 숨김 상품 상세 200 / 고객 숨김 상품 상세 404 확인
