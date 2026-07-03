@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync } from "node:fs";
+import { appendFileSync, copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -118,7 +118,7 @@ async function captureAdminPreview(browser, baseUrl, slug, path) {
   return { path, captured: rowFound, fallback: rowFound ? undefined : "/admin/new" };
 }
 
-function appendCaptureDocs({ slug, targetUrl, status, mode, reason, captures }) {
+function appendCaptureDocs({ slug, targetUrl, status, mode, reason, captures, phase }) {
   const now = new Date().toISOString();
   const lines = [
     "",
@@ -129,10 +129,11 @@ function appendCaptureDocs({ slug, targetUrl, status, mode, reason, captures }) 
     `- 응답 상태: ${status}`,
     `- 캡처 모드: ${mode}`,
     `- 사유: ${reason}`,
+    phase ? `- Before/After 단계: ${phase}` : null,
     "- 캡처 파일:",
     ...Object.entries(captures).map(([key, value]) => `  - ${key}: ${value.path}${value.captured === false ? " (fallback)" : ""}`),
     ""
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 
   appendFileSync("TEST_REPORT.md", lines, "utf8");
   appendFileSync("WORKLOG.md", lines, "utf8");
@@ -141,6 +142,8 @@ function appendCaptureDocs({ slug, targetUrl, status, mode, reason, captures }) 
 const baseUrl = process.env.PADO_BASE_URL || "http://127.0.0.1:3000";
 const requestedSlug = readArg("slug") || process.env.PADO_DETAIL_SLUG || "";
 const requestedUrl = readArg("url") || process.env.PADO_DETAIL_URL || "";
+const requestedPhase = (readArg("phase") || process.env.PADO_CAPTURE_PHASE || "").toLowerCase();
+const capturePhase = ["before", "after"].includes(requestedPhase) ? requestedPhase : "";
 const { chromium, devices } = loadPlaywright();
 const browser = await chromium.launch({ headless: true, executablePath: edgeExecutablePath() });
 const outputDir = "screenshots/detail";
@@ -201,16 +204,31 @@ try {
     error: error.message
   }));
 
+  if (capturePhase) {
+    const beforeAfterDir = "screenshots/before-after";
+    mkdirSync(beforeAfterDir, { recursive: true });
+    for (const key of ["hero", "gallery", "cta"]) {
+      const destination = `${beforeAfterDir}/${capturePhase}-${key}.png`;
+      copyFileSync(captures[key].path, destination);
+      captures[`${capturePhase}-${key}`] = {
+        path: destination,
+        captured: captures[key].captured,
+        source: captures[key].path
+      };
+    }
+  }
+
   appendCaptureDocs({
     slug,
     targetUrl,
     status: policy.status,
     mode: policy.mode,
     reason: policy.reason,
-    captures
+    captures,
+    phase: capturePhase
   });
 
-  console.log(JSON.stringify({ ok: true, slug, targetUrl, status: policy.status, mode: policy.mode, reason: policy.reason, captures }, null, 2));
+  console.log(JSON.stringify({ ok: true, slug, targetUrl, status: policy.status, mode: policy.mode, reason: policy.reason, phase: capturePhase, captures }, null, 2));
 } finally {
   await captureContext?.close().catch(() => {});
   await browser.close();

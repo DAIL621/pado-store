@@ -137,6 +137,35 @@ localhost:3000이 꺼져 있으면 다시 실행한다.
 - `detail-{slug}-recommend.png`
 - `admin-preview-{slug}.png`
 
+상세페이지를 수정할 때마다 Before/After 비교 캡처를 반드시 생성한다.
+
+수정 전:
+
+- `pnpm run capture:detail:before -- --slug={target-slug}`
+
+수정 후:
+
+- `pnpm run capture:detail:after -- --slug={target-slug}`
+
+Before/After 캡처 파일은 `screenshots/before-after/`에 저장한다.
+
+필수 비교 캡처 파일:
+
+- `before-hero.png`
+- `after-hero.png`
+- `before-gallery.png`
+- `after-gallery.png`
+- `before-cta.png`
+- `after-cta.png`
+
+상세페이지 작업 보고서에는 다음 내용을 반드시 포함한다.
+
+- 무엇이 변경되었는지
+- 왜 변경했는지
+- 판매 전환율에 어떤 도움이 되는지
+- Before 캡처 경로
+- After 캡처 경로
+
 캡처 완료 후 `TEST_REPORT.md`와 `WORKLOG.md`에 캡처 대상 slug, 상세페이지 URL, 응답 상태, 캡처 경로를 기록한다.
 
 캡처 파일은 Git에 반드시 커밋하지 않아도 된다. 단, 최종 보고서에는 모든 캡처 경로를 반드시 포함한다.

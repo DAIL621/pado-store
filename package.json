@@ -20,6 +20,8 @@
     "verify:product-seo": "node scripts/verify-product-seo.mjs",
     "verify:detail-template": "node scripts/verify-detail-template-sections.mjs && pnpm run verify:product-seo",
     "capture:detail": "pnpm run dev:ensure && node scripts/capture-detail.mjs",
+    "capture:detail:before": "pnpm run dev:ensure && node scripts/capture-detail.mjs --phase=before",
+    "capture:detail:after": "pnpm run dev:ensure && node scripts/capture-detail.mjs --phase=after",
     "capture:detail-responsive": "node scripts/capture-detail-responsive.mjs",
     "lint": "next lint"
   },
