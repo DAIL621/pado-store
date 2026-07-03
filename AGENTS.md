@@ -1,5 +1,26 @@
 # PADO STORY Codex Operating Rules
 
+## 0. PADO STORY Design System
+
+All new pages and all generated product detail pages must follow the project design system documents.
+
+Primary references:
+
+- `DESIGN_SYSTEM.md`
+- `COLOR_SYSTEM.md`
+- `COMPONENT_GUIDE.md`
+- `MOBILE_GUIDE.md`
+- `CTA_GUIDE.md`
+- `IMAGE_GUIDE.md`
+- `TYPOGRAPHY_GUIDE.md`
+- `ICON_GUIDE.md`
+- `BRAND_GUIDE.md`
+- `PADO_AI_GUIDE.md`
+
+Before changing product detail UI, check the relevant guide first. Do not create one-off visual rules when an existing token, spacing rule, CTA rule, image role, or component pattern already exists.
+
+The current MASTER detail template uses PADO design tokens through `--pado-*` root variables and `--detail-*` local aliases. Future detail pages must keep this token mapping.
+
 ## 1. 작업 기본 원칙
 
 이 프로젝트에서는 작업을 중간에 멈추지 않는다.

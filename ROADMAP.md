@@ -261,3 +261,22 @@
 3. 실제 상품 사진 6장 이상 기준으로 Gallery 자동 레이아웃을 한 번 더 검증한다.
 4. 관리자 Preview에서 static/public 상품도 직접 선택해 Preview 캡처할 수 있게 개선한다.
 5. 실구매 흐름 기준으로 옵션 선택, 장바구니, 주문서 UX를 상세페이지와 이어서 점검한다.
+## 2026-07-03 Sprint 5 Design System
+
+### 완료
+
+- PADO STORY Design System 문서 체계 생성.
+- 신규 페이지, 자동 상세페이지, AI 문구, 모바일 UX, CTA, 이미지, 타이포그래피, 아이콘, 브랜드 기준을 문서화.
+- 상세페이지 V4 CSS를 `--pado-*` 디자인 토큰 기준으로 리팩토링.
+
+### 적용 원칙
+
+- 이후 생성되는 모든 상세페이지는 `DESIGN_SYSTEM.md`를 최상위 기준으로 따른다.
+- 상세페이지 UI 수정 전 `COLOR_SYSTEM.md`, `COMPONENT_GUIDE.md`, `MOBILE_GUIDE.md`, `CTA_GUIDE.md`, `IMAGE_GUIDE.md`, `TYPOGRAPHY_GUIDE.md`를 확인한다.
+- AI 생성 문구는 `PADO_AI_GUIDE.md`의 톤과 금지사항을 따른다.
+
+### 다음 작업
+
+1. 관리자 상품등록 Preview에 Design System 체크리스트 표시.
+2. 상세페이지 품질 점수에 Design System 준수 항목 추가.
+3. 상품별 실데이터 입력 시 이미지 role과 CTA 문구가 guide를 따르는지 자동 검증.

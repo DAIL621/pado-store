@@ -1162,3 +1162,89 @@
 
 - `pado-gift-set`에는 포장/배송과 FAQ detail_json 데이터가 없어 해당 섹션 캡처는 fallback으로 생성됐습니다.
 - Performance 69는 로컬 dev server에서 측정한 값입니다. production build/배포 URL 기준 재측정이 필요합니다.
+## 2026-07-03T06:11:12.733Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: after
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - story: screenshots/detail/detail-pado-gift-set-story.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - footer: screenshots/detail/detail-pado-gift-set-footer.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - after-hero: screenshots/before-after/after-hero.png
+  - after-gallery: screenshots/before-after/after-gallery.png
+  - after-cta: screenshots/before-after/after-cta.png
+## 2026-07-03T06:11:29.384Z 상세페이지 품질 점수
+
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 품질 점수: 100/100
+- 결과 파일: reports/detail-quality-pado-gift-set.json
+  - PASS Hero value and product image: 14/14 (Hero and primary image are visible.)
+  - PASS Purchase CTA: 14/14 (Option and purchase actions are visible.)
+  - PASS Brand hero: 10/10 (PADO STORY brand hero is visible.)
+  - PASS Brand story: 10/10 (Brand story section is visible.)
+  - PASS Why PADO STORY cards: 10/10 (6 trust cards found.)
+  - PASS Photo gallery: 10/10 (1 gallery images found.)
+  - PASS Gallery captions and badges: 8/8 (Captions and badges are visible.)
+  - PASS Footer purchase CTA: 8/8 (Footer CTA is visible.)
+  - PASS Mobile layout stability: 8/8 (scrollWidth=393, innerWidth=393)
+  - PASS SEO basics: 8/8 (title=선물세트 | 산지 혼합 산지직송 수산물 | 파도스토리; description=감사한 마음을 전하는 파도스토리 구성 명절과 감사 선물에 맞춰 구성할 수 있는 선물세트 기본 구조입니다. 실제 구성품과 패키지 사진이 준비되면 교체합니다. 산지 혼합 산지 기준으로 선별해 신선 포장합니다.)
+## 2026-07-03 Sprint 5 PADO STORY Design System
+
+### 완료
+
+- 앞으로 생성되는 모든 페이지와 자동 상세페이지의 기준 문서 10개를 생성했습니다.
+- `AGENTS.md`에 Design System 우선 규칙을 추가했습니다.
+- 상세페이지 V4 CSS를 `--pado-*` 루트 토큰과 `--detail-*` 로컬 alias 구조로 정리했습니다.
+- 현재 상세페이지가 새 디자인 시스템의 컬러 토큰을 따르도록 리팩토링했습니다.
+
+### 생성 문서
+
+- `DESIGN_SYSTEM.md`
+- `PADO_AI_GUIDE.md`
+- `COLOR_SYSTEM.md`
+- `COMPONENT_GUIDE.md`
+- `MOBILE_GUIDE.md`
+- `CTA_GUIDE.md`
+- `IMAGE_GUIDE.md`
+- `TYPOGRAPHY_GUIDE.md`
+- `ICON_GUIDE.md`
+- `BRAND_GUIDE.md`
+
+### 검증
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-template`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run capture:detail:after -- --slug=pado-gift-set`: 성공
+- `pnpm run score:detail -- --slug=pado-gift-set`: 성공, `100/100`
+- `pnpm run dev:ensure`: 성공, `/api/health` 200
+
+### 캡처
+
+- Desktop: `screenshots/detail/detail-pado-gift-set-desktop-full.png`
+- Tablet: `screenshots/detail/detail-pado-gift-set-tablet-full.png`
+- Mobile: `screenshots/detail/detail-pado-gift-set-mobile-full.png`
+- Hero: `screenshots/detail/detail-pado-gift-set-hero.png`
+- Story: `screenshots/detail/detail-pado-gift-set-story.png`
+- CTA: `screenshots/detail/detail-pado-gift-set-cta.png`
+- Gallery: `screenshots/detail/detail-pado-gift-set-gallery.png`
+- Footer: `screenshots/detail/detail-pado-gift-set-footer.png`
+
+### 다음 기준
+
+- 신규 UI를 만들기 전 해당 guide 문서를 먼저 확인합니다.
+- 상세페이지 디자인은 `DESIGN_SYSTEM.md`, `COLOR_SYSTEM.md`, `MOBILE_GUIDE.md`, `CTA_GUIDE.md`, `IMAGE_GUIDE.md`를 우선 적용합니다.
+- AI 문구 생성은 `PADO_AI_GUIDE.md`의 표현 톤과 금지사항을 따릅니다.
