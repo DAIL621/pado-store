@@ -111,6 +111,30 @@ export function AdminProductsManager() {
     setMessage(`총 ${result.products?.length ?? 0}개 상품을 불러왔습니다.`);
   };
 
+  const copyDetailUrl = async (product: AdminProduct) => {
+    const path = `/products/${product.slug}`;
+    const url = typeof window === "undefined" ? path : `${window.location.origin}${path}`;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const input = document.createElement("input");
+        input.value = url;
+        input.setAttribute("readonly", "true");
+        input.style.position = "fixed";
+        input.style.left = "-9999px";
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+      }
+      setMessage(`상세페이지 URL을 복사했습니다: ${product.slug}`);
+    } catch {
+      setMessage(`URL 복사에 실패했습니다. 직접 열기 주소: ${url}`);
+    }
+  };
+
   useEffect(() => {
     try {
       const raw = window.sessionStorage.getItem("pado-admin-last-created-product");
@@ -357,6 +381,7 @@ export function AdminProductsManager() {
                     <td>{new Date(product.created_at).toLocaleDateString("ko-KR")}</td>
                     <td className="admin-actions">
                       <a href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세보기</a>
+                      <button type="button" onClick={() => copyDetailUrl(product)}>URL 복사</button>
                       <button type="button" onClick={() => setEditing(product)}>수정</button>
                       {status === "hidden" ? (
                         <button type="button" onClick={() => recover(product)}>다시 판매하기</button>

@@ -16,6 +16,8 @@ assert(productsManager.includes("QualityFilter"), "admin product quality filter 
 assert(productsManager.includes("SortMode"), "admin product sort mode is missing");
 assert(productsManager.includes("quality-low"), "admin product low-quality sort is missing");
 assert(productsManager.includes("stock-low"), "admin product stock sort is missing");
+assert(productsManager.includes("copyDetailUrl"), "admin product detail URL copy action is missing");
+assert(productsManager.includes("URL 복사"), "admin product detail URL copy button is missing");
 assert(productEditor.includes("handlePaste"), "admin pasted image upload handler is missing");
 assert(productEditor.includes("clipboardData.files"), "admin pasted image upload does not read clipboard files");
 assert(productBuilder.includes("가격/재고"), "admin quality score does not include price/stock readiness");
@@ -41,7 +43,8 @@ console.log(
         "create-success-ux",
         "english-slug",
         "duplicate-slug",
-        "real-detail-template-preview"
+        "real-detail-template-preview",
+        "detail-url-copy"
       ]
     },
     null,

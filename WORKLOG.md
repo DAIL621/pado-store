@@ -814,3 +814,15 @@
 - `pnpm run verify:detail-template` 성공
 - `pnpm run verify:detail-json` 성공
 - `pnpm run verify:admin` 성공
+## 2026-07-02 관리자 상품 목록 상세 URL 복사 UX 추가
+### 완료 작업
+
+- 관리자 상품 목록의 각 상품 액션에 `URL 복사` 버튼을 추가했습니다.
+- 버튼 클릭 시 실제 `/products/{slug}` 기준 절대 URL을 클립보드에 복사합니다.
+- Clipboard API가 막힌 환경에서도 임시 input fallback으로 복사를 시도합니다.
+- 복사 성공/실패 결과를 관리자 상품 목록 메시지 영역에 표시합니다.
+- `verify:admin-static`에 상세 URL 복사 버튼 검증을 추가했습니다.
+
+### 검증
+- `pnpm run build` 성공
+- `pnpm run verify:admin-static` 성공

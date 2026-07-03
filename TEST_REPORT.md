@@ -890,3 +890,15 @@
 - `pnpm run verify:detail-template`: 성공
 - `pnpm run verify:detail-json`: 성공
 - `pnpm run verify:admin`: 성공
+## 2026-07-02 관리자 상품 목록 상세 URL 복사 검증
+
+### 검증 범위
+
+- 상품 목록 액션 영역에 `상세보기`와 `URL 복사`가 함께 표시되는지 확인
+- `copyDetailUrl` 복사 함수 존재 확인
+- Clipboard API fallback 로직 존재 확인
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:admin-static`: 성공
