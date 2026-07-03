@@ -881,3 +881,22 @@
 1. 실제 상품별 상세 이미지 6장 이상을 입력해 갤러리 레이아웃 품질을 상품별로 검증합니다.
 2. 상세페이지 Hero에 리뷰/평점 데이터가 생겼을 때 자동 연결되도록 리뷰 준비 영역을 구체화합니다.
 3. 상품 옵션 선택 박스의 모바일 UX를 추가로 압축해 첫 화면 구매 전환을 더 높입니다.
+
+## 2026-07-03T03:16:56.288Z 상세페이지 자동 캡처
+
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)

@@ -965,3 +965,22 @@
 - 관리자 등록 E2E에서 생성 상품 slug가 목록 최상단에 표시되고 상세페이지가 200으로 열립니다.
 - 중복 slug 테스트 URL 생성 후 저장 및 상세 200 검증이 통과했습니다.
 - 관리자 로그인 상태에서는 검증/숨김 상품 상세 Preview가 가능하고, 일반 고객 상태에서는 정책대로 404를 유지합니다.
+
+## 2026-07-03T03:16:56.288Z 상세페이지 자동 캡처
+
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)

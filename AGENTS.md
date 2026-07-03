@@ -63,30 +63,20 @@ Vercel Dashboard, Supabase Dashboard, Kakao Console, Toss Console처럼 외부 �
 
 localhost:3000이 꺼져 있으면 다시 실행한다.
 
+작업 종료 전 `pnpm run dev:ensure`를 실행하여 사용자가 바로 브라우저에서 테스트할 수 있는 상태로 둔다.
+
 ## 6. 테스트 규칙
 
 수정 후 가능한 경우 아래 검증을 수행한다.
 
-- pnpm run build
-- pnpm run verify:admin
-- pnpm run verify:detail-json
-- pnpm run verify:detail-template
+- `pnpm run build`
+- `pnpm run verify:admin`
+- `pnpm run verify:detail-json`
+- `pnpm run verify:detail-template`
 - 관련 Playwright E2E
-- pnpm run dev:ensure
+- `pnpm run dev:ensure`
 
 테스트 실패 시 원인을 분석하고 수정한다.
-
-## 6-1. 개발 서버 유지 규칙
-
-작업 종료 전 localhost:3000 Health Check를 반드시 수행한다.
-
-서버가 꺼져 있으면 `pnpm run dev:ensure`로 재실행한다.
-
-사용자가 바로 브라우저에서 테스트할 수 있는 상태로 작업을 마친다.
-
-build, verify, Playwright 실행 후에도 localhost:3000이 살아있는지 확인한다.
-
-검증용 임시 dev server를 실행한 경우에도 최종 종료 전 `pnpm run dev:ensure`를 다시 실행한다.
 
 ## 7. 관리자 상품등록 원칙
 
@@ -94,7 +84,7 @@ build, verify, Playwright 실행 후에도 localhost:3000이 살아있는지 확
 
 저장 중, 저장 성공, 저장 실패, 필수값 부족, 중복 slug 상태를 화면에 명확히 표시한다.
 
-저장 성공 시 /admin/products로 이동하고 등록 상품이 목록에 보여야 한다.
+저장 성공 시 `/admin/products`로 이동하고 등록 상품이 목록에 보여야 한다.
 
 ## 8. 상세페이지 원칙
 
@@ -106,7 +96,54 @@ build, verify, Playwright 실행 후에도 localhost:3000이 살아있는지 확
 
 모바일 화면을 최우선으로 검증한다.
 
-## 9. 문서 업데이트
+## 9. 상세페이지 작업 완료 규칙
+
+상세페이지 관련 작업은 코드 수정만으로 완료 처리하지 않는다.
+
+상세페이지 작업 완료 전 반드시 다음 순서로 검증한다.
+
+- `pnpm run build`
+- `pnpm run verify:detail-template`
+- `pnpm run verify:detail-json`
+- `pnpm run dev:ensure`
+- `pnpm run capture:detail -- --slug={target-slug}`
+
+캡처 전 개발 서버 상태를 반드시 확인한다. `localhost:3000`이 꺼져 있으면 `pnpm run dev:ensure`로 다시 실행한다.
+
+캡처 대상 상세페이지가 200으로 열리는지 확인한다. 404가 나오면 캡처하지 않고 원인을 표시한다.
+
+가능한 원인:
+
+- slug 없음
+- hidden 상품
+- 검증 상품인데 관리자 권한 없음
+- DB 조회 실패
+- route 문제
+
+관리자 로그인 상태에서는 검증 상품과 숨김 상품도 상세페이지 캡처가 가능해야 한다.
+
+상세페이지 캡처 파일은 `screenshots/detail/`에 저장한다.
+
+필수 캡처 파일:
+
+- `detail-{slug}-desktop-full.png`
+- `detail-{slug}-tablet-full.png`
+- `detail-{slug}-mobile-full.png`
+- `detail-{slug}-hero.png`
+- `detail-{slug}-cta.png`
+- `detail-{slug}-gallery.png`
+- `detail-{slug}-shipping.png`
+- `detail-{slug}-faq.png`
+- `detail-{slug}-recommend.png`
+- `admin-preview-{slug}.png`
+
+캡처 완료 후 `TEST_REPORT.md`와 `WORKLOG.md`에 캡처 대상 slug, 상세페이지 URL, 응답 상태, 캡처 경로를 기록한다.
+
+캡처 파일은 Git에 반드시 커밋하지 않아도 된다. 단, 최종 보고서에는 모든 캡처 경로를 반드시 포함한다.
+
+상세페이지 디자인을 수정했다고 보고할 때 캡처가 없으면 완료로 보지 않는다.
+
+## 10. 문서 업데이트
 
 작업 종료 시 아래 문서를 업데이트한다.
 
@@ -118,7 +155,7 @@ build, verify, Playwright 실행 후에도 localhost:3000이 살아있는지 확
 
 단, 문서 업데이트보다 실제 기능 개선을 우선한다.
 
-## 10. 최종 보고
+## 11. 최종 보고
 
 최종 보고에는 아래 내용을 포함한다.
 
@@ -132,3 +169,5 @@ build, verify, Playwright 실행 후에도 localhost:3000이 살아있는지 확
 - Push 여부
 - 남은 BLOCKERS
 - 다음 추천 작업
+
+상세페이지 작업인 경우 캡처 파일 경로를 반드시 포함한다.
