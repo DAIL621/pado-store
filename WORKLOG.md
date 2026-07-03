@@ -1045,3 +1045,120 @@
 - `pnpm run capture:detail:before -- --slug=pado-gift-set` 성공
 - `pnpm run capture:detail:after -- --slug=pado-gift-set` 성공
 - `pnpm run capture:detail -- --slug=pado-gift-set` 성공
+## 2026-07-03T05:30:44.210Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: before
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - before-hero: screenshots/before-after/before-hero.png
+  - before-gallery: screenshots/before-after/before-gallery.png
+  - before-cta: screenshots/before-after/before-cta.png## 2026-07-03T05:42:07.327Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: after
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - story: screenshots/detail/detail-pado-gift-set-story.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - footer: screenshots/detail/detail-pado-gift-set-footer.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - after-hero: screenshots/before-after/after-hero.png
+  - after-gallery: screenshots/before-after/after-gallery.png
+  - after-cta: screenshots/before-after/after-cta.png
+## 2026-07-03T05:44:07.353Z 상세페이지 품질 점수
+
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 품질 점수: 100/100
+- 결과 파일: reports/detail-quality-pado-gift-set.json
+  - PASS Hero value and product image: 14/14 (Hero and primary image are visible.)
+  - PASS Purchase CTA: 14/14 (Option and purchase actions are visible.)
+  - PASS Brand hero: 10/10 (PADO STORY brand hero is visible.)
+  - PASS Brand story: 10/10 (Brand story section is visible.)
+  - PASS Why PADO STORY cards: 10/10 (6 trust cards found.)
+  - PASS Photo gallery: 10/10 (1 gallery images found.)
+  - PASS Gallery captions and badges: 8/8 (Captions and badges are visible.)
+  - PASS Footer purchase CTA: 8/8 (Footer CTA is visible.)
+  - PASS Mobile layout stability: 8/8 (scrollWidth=393, innerWidth=393)
+  - PASS SEO basics: 8/8 (title=선물세트 | 산지 혼합 산지직송 수산물 | 파도스토리; description=감사한 마음을 전하는 파도스토리 구성 명절과 감사 선물에 맞춰 구성할 수 있는 선물세트 기본 구조입니다. 실제 구성품과 패키지 사진이 준비되면 교체합니다. 산지 혼합 산지 기준으로 선별해 신선 포장합니다.)
+## 2026-07-03 Sprint 4 Premium Detail Design
+
+### 완료
+
+- `ProductDetailTemplate`를 PADO STORY 브랜드 경험 중심으로 리디자인했습니다.
+- 상세페이지 Hero에서 상품 사진을 크게 보여주고, 오른쪽은 상품명, 별점 준비 문구, 가격, 할인율, 배송 안내, 옵션/구매 CTA 중심으로 정리했습니다.
+- Hero 아래에 PADO STORY 브랜드 Hero를 추가해 산지직송, 당일출고, 신선배송, 실물촬영 신뢰 요소를 노출했습니다.
+- "왜 파도스토리인가?" 6개 카드를 아이콘/컬러/hover 중심으로 재정비했습니다.
+- Brand Story 섹션과 풀스크린 감성 배너를 추가해 산지, 생산자, 포장 철학이 스크롤 중 자연스럽게 전달되도록 했습니다.
+- 갤러리 사진마다 자동 badge, 제목, 설명이 표시되도록 했습니다.
+- FAQ 이후 Footer 구매 CTA를 강화해 마지막 스크롤 지점에서도 다시 구매 영역으로 이동할 수 있게 했습니다.
+- `capture:detail` 스크립트에 Story/Footer 캡처 대상을 추가했습니다.
+- 상세페이지 품질 점수 스크립트 `pnpm run score:detail`을 추가했습니다.
+
+### 변경 이유와 판매 전환율 기대효과
+
+- 첫 화면에서 상품 사진과 가격/배송/구매 버튼이 동시에 보이도록 해 구매 판단 시간을 줄였습니다.
+- 브랜드 신뢰 요소를 Hero 바로 아래에 분리해 Hero 정보 과밀을 줄이고, 산지직송 쇼핑몰로서의 신뢰감을 강화했습니다.
+- 중간 브랜드 Story와 감성 배너는 단순 정보 나열을 줄이고 "선물해도 괜찮은 상품"이라는 인상을 강화합니다.
+- 갤러리 caption/badge는 사진의 의미를 빠르게 이해시키므로 상세페이지 이탈을 줄이는 데 도움이 됩니다.
+- Footer CTA는 긴 상세페이지 하단에서 다시 구매 행동을 유도합니다.
+
+### 검증 및 캡처
+
+- 대상 slug: `pado-gift-set`
+- 상세페이지 URL: `http://127.0.0.1:3000/products/pado-gift-set`
+- 상세페이지 응답: `200`
+- 품질 점수: `100/100`
+- Lighthouse(dev server): Performance `69`, Accessibility `96`, Best Practices `100`, SEO `100`
+- Lighthouse 주요 지표: LCP `8.0s`, CLS `0.003`, TBT `290ms`
+- Lighthouse 결과 파일: `reports/lighthouse-detail-pado-gift-set.json`
+- 품질 점수 파일: `reports/detail-quality-pado-gift-set.json`
+
+### 캡처 파일
+
+- Desktop: `screenshots/detail/detail-pado-gift-set-desktop-full.png`
+- Tablet: `screenshots/detail/detail-pado-gift-set-tablet-full.png`
+- Mobile: `screenshots/detail/detail-pado-gift-set-mobile-full.png`
+- Hero: `screenshots/detail/detail-pado-gift-set-hero.png`
+- Story: `screenshots/detail/detail-pado-gift-set-story.png`
+- CTA: `screenshots/detail/detail-pado-gift-set-cta.png`
+- Gallery: `screenshots/detail/detail-pado-gift-set-gallery.png`
+- Shipping: `screenshots/detail/detail-pado-gift-set-shipping.png` fallback
+- FAQ: `screenshots/detail/detail-pado-gift-set-faq.png` fallback
+- Recommend: `screenshots/detail/detail-pado-gift-set-recommend.png`
+- Footer: `screenshots/detail/detail-pado-gift-set-footer.png`
+- Admin Preview: `screenshots/detail/admin-preview-pado-gift-set.png` fallback
+- Before Hero: `screenshots/before-after/before-hero.png`
+- After Hero: `screenshots/before-after/after-hero.png`
+- Before Gallery: `screenshots/before-after/before-gallery.png`
+- After Gallery: `screenshots/before-after/after-gallery.png`
+- Before CTA: `screenshots/before-after/before-cta.png`
+- After CTA: `screenshots/before-after/after-cta.png`
+
+### 참고
+
+- `pado-gift-set`에는 포장/배송과 FAQ detail_json 데이터가 없어 해당 섹션 캡처는 fallback으로 생성됐습니다.
+- Performance 69는 로컬 dev server에서 측정한 값입니다. production build/배포 URL 기준 재측정이 필요합니다.

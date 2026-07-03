@@ -23,6 +23,7 @@
     "capture:detail:before": "pnpm run dev:ensure && node scripts/capture-detail.mjs --phase=before",
     "capture:detail:after": "pnpm run dev:ensure && node scripts/capture-detail.mjs --phase=after",
     "capture:detail-responsive": "node scripts/capture-detail-responsive.mjs",
+    "score:detail": "pnpm run dev:ensure && node scripts/score-detail-quality.mjs",
     "lint": "next lint"
   },
   "dependencies": {

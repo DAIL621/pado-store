@@ -187,11 +187,13 @@ try {
 
   const sectionTargets = {
     hero: [".detail-master-hero", ".detail-master"],
+    story: [".detail-brand-story, .detail-master-story", ".detail-master"],
     cta: ["#purchase-box, .detail-master-final-cta", ".detail-master"],
     gallery: ["#detail-master-gallery", ".detail-master"],
     shipping: ["#detail-master-shipping", ".detail-master"],
     faq: ["#detail-master-faq", ".detail-master"],
-    recommend: [".recommended-section", ".detail-page, main, body"]
+    recommend: [".recommended-section", ".detail-page, main, body"],
+    footer: [".detail-footer-order, .detail-master-final-cta", ".detail-master"]
   };
 
   for (const [key, [selector, fallback]] of Object.entries(sectionTargets)) {

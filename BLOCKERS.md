@@ -103,3 +103,8 @@ alter table products add column if not exists detail_json jsonb not null default
 - Vercel Production URL에서 `capture:detail-responsive`와 동일한 상세페이지 캡처를 다시 생성하려면 최신 배포 완료 확인이 필요합니다.
 - Supabase Storage 운영 bucket 및 `PADO_PRODUCT_IMAGE_STORAGE=supabase` 전환은 외부 콘솔 확인 후 진행해야 합니다.
 - 실제 리뷰/평점 데이터는 아직 없으므로 상세페이지 리뷰 영역은 준비 상태 문구로 표시됩니다.
+## 2026-07-03 Sprint 4 확인 필요
+
+- `pado-gift-set`의 포장/배송, FAQ detail_json 데이터가 비어 있어 해당 섹션 캡처가 fallback으로 생성됩니다. 실제 상품 데이터 입력 후 재캡처가 필요합니다.
+- Lighthouse Performance `69`는 로컬 dev server 기준입니다. 실제 배포 URL 또는 `next start` 기준 production 서버에서 재측정해야 최종 성능 판단이 가능합니다.
+- Admin Preview 캡처는 `pado-gift-set`이 static/public 상품이라 관리자 DB row를 찾지 못해 `/admin/new` fallback으로 생성됐습니다. 관리자 DB에 등록된 상품 slug 기준으로 다시 캡처하면 실제 Preview 일치성을 더 정확히 확인할 수 있습니다.

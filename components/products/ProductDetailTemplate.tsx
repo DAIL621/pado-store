@@ -21,31 +21,35 @@ type SectionTitleProps = {
 
 type GalleryLayout = "spotlight" | "mosaic" | "editorial" | "dense";
 
+type JourneyStep = ReturnType<typeof getVisibleProductDetailSections>["journey"][number];
+type Recipe = ReturnType<typeof getVisibleProductDetailSections>["recipes"][number];
+type HeroImage = ReturnType<typeof getVisibleProductDetailSections>["heroImages"][number];
+type FaqItem = ReturnType<typeof getVisibleProductDetailSections>["faq"][number];
+
 export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
   const { template, sections, heroImages, featureItems, overviewItems, trustSignals, packagingImage } = buildProductDetailTemplateModel(product);
   const hasAutoContent = hasVisibleProductDetailContent(sections);
   const galleryImages = sections.heroImages.length ? sections.heroImages : heroImages;
+  const mainImage = heroImages[0]?.url || product.image;
 
   return (
     <section
-      className="detail-master detail-master-v2"
+      className="detail-master detail-master-v2 detail-master-v4"
       aria-label={`${product.name} 상품 상세`}
       data-template-id={template.id}
       data-template-schema={template.schemaVersion}
       data-template-kind={template.kind}
     >
-      <HeroSection
-        product={product}
-        heroImage={heroImages[0]?.url || product.image}
-        heroSubImage={heroImages[1]?.url || heroImages[0]?.url || product.image}
-        heroImages={heroImages}
-        purchaseSlot={purchaseSlot}
-      />
+      <HeroSection product={product} heroImage={mainImage} heroImages={heroImages} purchaseSlot={purchaseSlot} />
+
+      <BrandHeroSection product={product} image={heroImages[1]?.url || mainImage} />
 
       <TrustSignalSection signals={trustSignals} />
 
+      <BrandStorySection product={product} image={heroImages[1]?.url || mainImage} promise={template.copy.promise} />
+
       {product.description && (
-        <StoryIntroSection product={product} image={heroImages[1]?.url || heroImages[0]?.url || product.image} promise={template.copy.promise} />
+        <StoryIntroSection product={product} image={heroImages[1]?.url || mainImage} promise={template.copy.promise} />
       )}
 
       {featureItems.length > 0 && <FeatureSection productName={product.name} features={featureItems} />}
@@ -56,7 +60,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
       {sections.journey.length > 0 && <TimelineSection steps={sections.journey} productName={product.name} />}
 
-      <ProductImpactBanner product={product} image={heroImages[2]?.url || heroImages[0]?.url || product.image} promise={template.copy.promise} />
+      <ProductImpactBanner product={product} image={heroImages[2]?.url || mainImage} promise={template.copy.promise} />
 
       {sections.benefits.length > 0 && <AdvantageSection productName={product.name} benefits={sections.benefits} />}
 
@@ -97,20 +101,17 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 function HeroSection({
   product,
   heroImage,
-  heroSubImage,
   heroImages,
   purchaseSlot
 }: {
   product: Product;
   heroImage: string;
-  heroSubImage: string;
   heroImages: Array<{ label: string; url: string; description?: string }>;
   purchaseSlot: ReactNode;
 }) {
   const totalStock = getTotalStock(product);
   const isSoldOut = totalStock <= 0;
   const discountVisible = product.discountRate > 0;
-  const reviewCopy = "★ 4.9 · 리뷰 준비중";
   const thumbnails = heroImages.slice(0, 5);
 
   return (
@@ -133,10 +134,11 @@ function HeroSection({
 
       <div className="detail-master-hero-copy">
         <div className="detail-master-hero-kicker">
-          <strong>{reviewCopy}</strong>
+          <strong>PADO STORY</strong>
+          <span>★ 4.9 · 리뷰 준비중</span>
         </div>
         <h1>{product.name}</h1>
-        <p>{product.subtitle || "가장 좋은 상태의 수산물을 선별해 식탁까지 신선하게 보내드립니다."}</p>
+        <p>{product.subtitle || "좋은 산지, 빠른 출고, 신선한 포장 기준으로 준비한 파도스토리 수산물입니다."}</p>
 
         <div className="detail-master-price-panel" aria-label="상품 가격 정보">
           {discountVisible && (
@@ -160,25 +162,38 @@ function HeroSection({
         <div className="detail-master-hero-purchase" id="detail-master-hero-purchase" aria-label="옵션 선택 및 구매">
           {purchaseSlot}
         </div>
+      </div>
+    </section>
+  );
+}
 
-        <div className="detail-master-hero-mini">
-          <div>
-            <Image src={heroSubImage} alt={`${product.name} 보조 사진`} fill sizes="96px" />
-          </div>
-          <p>등록된 사진과 상세 정보는 관리자 Preview와 실제 상품 상세페이지에서 동일하게 표시됩니다.</p>
-        </div>
+function BrandHeroSection({ product, image }: { product: Product; image: string }) {
+  return (
+    <section className="shell detail-brand-hero" aria-label="파도스토리 브랜드 약속">
+      <div className="detail-brand-hero-copy">
+        <span>PADO STORY</span>
+        <h2>산지의 오늘을 식탁까지.</h2>
+        <p>{product.origin}에서 시작한 신선함을 선별, 포장, 출고 기준으로 식탁까지 지켜 보냅니다.</p>
+      </div>
+      <div className="detail-brand-hero-points" aria-label="브랜드 신뢰 요소">
+        {["산지직송", "당일출고", "신선배송", "실물촬영"].map((item) => (
+          <strong key={item}>{item}</strong>
+        ))}
+      </div>
+      <div className="detail-brand-hero-image">
+        <Image src={image} alt={`${product.name} 브랜드 이미지`} fill sizes="(max-width: 700px) 100vw, 34vw" />
       </div>
     </section>
   );
 }
 
 function TrustSignalSection({ signals }: { signals: DetailTemplateTrustSignal[] }) {
-  const defaults = [
+  const defaults: DetailTemplateTrustSignal[] = [
     { label: "산지직송", title: "산지에서 바로", body: "중간 보관 시간을 줄여 신선도를 지킵니다." },
     { label: "당일출고", title: "13시 전 출고", body: "평일 기준 빠르게 포장해 출고합니다." },
     { label: "신선포장", title: "냉장 포장", body: "상품 특성에 맞춘 포장재를 사용합니다." },
     { label: "선별", title: "상태 확인", body: "출고 전 크기와 상태를 확인합니다." },
-    { label: "실물촬영", title: "사진 중심", body: "등록된 사진을 상세페이지에 그대로 반영합니다." },
+    { label: "실물촬영", title: "사진 중심", body: "등록한 사진을 상세페이지에 그대로 반영합니다." },
     { label: "품질검수", title: "문제 대응", body: "수령 후 문제가 있으면 고객센터가 확인합니다." }
   ];
   const merged = [...signals, ...defaults].slice(0, 6);
@@ -190,8 +205,9 @@ function TrustSignalSection({ signals }: { signals: DetailTemplateTrustSignal[] 
         <span>WHY PADO STORY</span>
         <h2>왜 파도스토리인가?</h2>
       </div>
-      {merged.map((signal) => (
-        <article key={`${signal.label}-${signal.title}`}>
+      {merged.map((signal, index) => (
+        <article key={`${signal.label}-${signal.title}`} className="fade-up">
+          <i aria-hidden="true">{["산", "출", "냉", "선", "실", "검"][index] ?? "✓"}</i>
           <span>{signal.label}</span>
           <strong>{signal.title}</strong>
           <p>{signal.body}</p>
@@ -201,12 +217,31 @@ function TrustSignalSection({ signals }: { signals: DetailTemplateTrustSignal[] 
   );
 }
 
+function BrandStorySection({ product, image, promise }: { product: Product; image: string; promise: string }) {
+  return (
+    <section className="shell detail-brand-story" aria-label="파도스토리 브랜드 스토리">
+      <div>
+        <span>BRAND STORY</span>
+        <h2>PADO STORY는 좋은 산지와 좋은 식탁 사이를 잇습니다.</h2>
+        <p>
+          생산자의 산지를 확인하고, 상품마다 다른 신선 포장 기준을 적용합니다.
+          고객의 화면에서 본 기대감이 도착 순간까지 이어지도록 관리합니다.
+        </p>
+        <strong>{promise}</strong>
+      </div>
+      <div>
+        <Image src={image} alt={`${product.name} 생산자와 산지 이야기`} fill sizes="(max-width: 700px) 100vw, 42vw" />
+      </div>
+    </section>
+  );
+}
+
 function StoryIntroSection({ product, image, promise }: { product: Product; image: string; promise: string }) {
   return (
     <section className="shell detail-master-story">
       <div>
         <span>FRESH FIRST</span>
-        <h2>사진보다 먼저, 산지와 상태를 확인합니다</h2>
+        <h2>사진보다 먼저, 산지와 상태를 확인합니다.</h2>
         <p>{product.description}</p>
         <strong>{promise}</strong>
       </div>
@@ -221,9 +256,9 @@ function FeatureSection({ productName, features }: { productName: string; featur
   return (
     <section className="shell detail-master-block" id="detail-master-features">
       <SectionTitle
-        eyebrow="WHY PADO"
-        title={`왜 파도스토리 ${productName}인가요?`}
-        description="선별, 포장, 출고 기준을 구매 전에 바로 확인할 수 있도록 핵심만 정리했습니다."
+        eyebrow="SELLING POINT"
+        title={`${productName}의 구매 포인트`}
+        description="고객이 구매 전에 확인하고 싶은 핵심 포인트를 짧고 명확하게 정리했습니다."
       />
       <div className="detail-master-feature-grid">
         {features.map((feature, index) => (
@@ -240,7 +275,7 @@ function OverviewSection({ items }: { items: DetailTemplateInfoCard[] }) {
       <SectionTitle
         eyebrow="AT A GLANCE"
         title="상품 한눈에 보기"
-        description="주문 전 가장 많이 확인하는 산지, 배송, 보관, 구성 정보를 짧고 명확하게 모았습니다."
+        description="산지, 배송, 보관, 구성 정보를 한 번에 확인할 수 있게 모았습니다."
       />
       <div className="detail-master-overview">
         {items.map((item) => (
@@ -262,7 +297,7 @@ function ProductFitSection({ product, eyebrow, usage, promise }: { product: Prod
     <section className="shell detail-master-fit" aria-label={`${product.name} 구매 추천 정보`}>
       <div>
         <span>{eyebrow}</span>
-        <h2>{product.name}은 이런 분께 좋아요</h2>
+        <h2>{product.name}는 이런 분께 좋습니다.</h2>
       </div>
       <div>
         {items.map((item) => (
@@ -278,10 +313,10 @@ function ProductFitSection({ product, eyebrow, usage, promise }: { product: Prod
 
 function ProductImpactBanner({ product, image, promise }: { product: Product; image: string; promise: string }) {
   return (
-    <section className="shell detail-master-impact" aria-label={`${product.name} 브랜드 스토리`}>
+    <section className="shell detail-master-impact detail-full-bleed-banner" aria-label={`${product.name} 감성 배너`}>
       <div>
         <span>{product.origin}</span>
-        <h2>{product.origin}의 신선함을 그대로 식탁까지.</h2>
+        <h2>{product.origin}의 바다를 그대로 식탁까지.</h2>
         <p>{promise}</p>
       </div>
       <div>
@@ -291,7 +326,7 @@ function ProductImpactBanner({ product, image, promise }: { product: Product; im
   );
 }
 
-function TimelineSection({ steps, productName }: { steps: ReturnType<typeof getVisibleProductDetailSections>["journey"]; productName: string }) {
+function TimelineSection({ steps, productName }: { steps: JourneyStep[]; productName: string }) {
   return (
     <section className="shell detail-master-block" id="detail-master-timeline">
       <SectionTitle
@@ -324,7 +359,7 @@ function AdvantageSection({ productName, benefits }: { productName: string; bene
   );
 }
 
-function GallerySection({ images, productName }: { images: ReturnType<typeof getVisibleProductDetailSections>["heroImages"]; productName: string }) {
+function GallerySection({ images, productName }: { images: HeroImage[]; productName: string }) {
   const layout = getGalleryLayout(images.length);
 
   return (
@@ -332,13 +367,14 @@ function GallerySection({ images, productName }: { images: ReturnType<typeof get
       <SectionTitle
         eyebrow="GALLERY"
         title="사진으로 먼저 확인하세요"
-        description="대표사진 수에 맞춰 자동으로 보기 좋은 레이아웃을 선택합니다. 사진이 많아져도 상세페이지는 깨지지 않습니다."
+        description="사진마다 역할에 맞는 제목과 설명을 더해 실제 상품 상태를 더 빠르게 이해할 수 있게 했습니다."
       />
       <div className={`detail-master-gallery detail-master-gallery-${layout}`} data-gallery-layout={layout} data-image-count={images.length} aria-label={`${productName} 대표사진`}>
         {images.map((image, index) => (
           <figure key={`${image.label}-${image.url}-${index}`} className={index === 0 ? "is-featured" : undefined}>
             <div>
               <Image src={image.url} alt={`${productName} ${image.label}`} fill sizes={index === 0 ? "(max-width: 700px) 100vw, 48vw" : "(max-width: 700px) 50vw, 24vw"} />
+              <em>{getGalleryBadge(image.label, index)}</em>
             </div>
             <figcaption>
               <strong>{getGalleryTitle(image.label, index)}</strong>
@@ -351,7 +387,7 @@ function GallerySection({ images, productName }: { images: ReturnType<typeof get
   );
 }
 
-function CookingSection({ recipes, productName }: { recipes: ReturnType<typeof getVisibleProductDetailSections>["recipes"]; productName: string }) {
+function CookingSection({ recipes, productName }: { recipes: Recipe[]; productName: string }) {
   return (
     <section className="shell detail-master-block" id="detail-master-cooking">
       <SectionTitle eyebrow="HOW TO ENJOY" title="맛있게 먹는 방법" />
@@ -392,7 +428,7 @@ function PackageSection({ title, items, image, tone }: { title: string; items: s
   );
 }
 
-function FAQSection({ faq }: { faq: ReturnType<typeof getVisibleProductDetailSections>["faq"] }) {
+function FAQSection({ faq }: { faq: FaqItem[] }) {
   return (
     <section className="shell detail-master-block" id="detail-master-faq">
       <SectionTitle eyebrow="FAQ" title="자주 묻는 질문" />
@@ -413,7 +449,7 @@ function ReviewReadySection() {
     <section className="shell detail-master-review-ready" aria-label="리뷰 준비중">
       <div>
         <span>REVIEW</span>
-        <h2>구매 후기가 준비되는 영역입니다</h2>
+        <h2>구매 후기가 준비되는 영역입니다.</h2>
         <p>오픈 후 실제 구매 고객의 별점과 사진 후기를 이 위치에 표시할 예정입니다.</p>
       </div>
       <strong>사진 리뷰 · 별점 · 구매 인증</strong>
@@ -475,18 +511,21 @@ function FinalCtaSection({ product }: { product: Product }) {
   const optionCopy = product.options.length ? `${product.options.length}개 옵션` : "옵션 확인";
 
   return (
-    <section className="shell detail-master-final-cta" aria-label="구매 전 마지막 확인">
+    <section className="shell detail-master-final-cta detail-footer-order" aria-label="구매 전 마지막 확인">
       <div>
-        <span>READY TO ORDER</span>
-        <h2>{product.name}, 지금 주문 전 마지막으로 확인하세요</h2>
+        <span>PADO STORY ORDER</span>
+        <h2>{product.name}, 지금 주문 전 마지막으로 확인하세요.</h2>
         <p>
           {product.origin} 산지 기준, {optionCopy}, {isSoldOut ? "현재 품절 상태" : `현재 구매 가능 ${totalStock}개`}입니다.
-          옵션과 수량은 구매 영역에서 한 번 더 확인할 수 있습니다.
+          신선한 상태로 받을 수 있도록 옵션과 수량을 한 번 더 확인해주세요.
         </p>
       </div>
-      <a href="#purchase-box" className={isSoldOut ? "disabled" : ""}>
-        {isSoldOut ? "재입고 안내 확인" : "옵션 선택하러 가기"}
-      </a>
+      <div className="detail-footer-order-price">
+        <strong>{formatPrice(product.price)}~</strong>
+        <a href="#purchase-box" className={isSoldOut ? "disabled" : ""}>
+          {isSoldOut ? "재입고 안내 확인" : "바로 구매 영역으로"}
+        </a>
+      </div>
     </section>
   );
 }
@@ -530,15 +569,7 @@ function FeatureCard({ index, title }: { index: number; title: string }) {
   );
 }
 
-function TimelineCard({
-  step,
-  index,
-  productName
-}: {
-  step: ReturnType<typeof getVisibleProductDetailSections>["journey"][number];
-  index: number;
-  productName: string;
-}) {
+function TimelineCard({ step, index, productName }: { step: JourneyStep; index: number; productName: string }) {
   return (
     <article className="detail-master-timeline-card fade-up">
       {step.image && (
@@ -568,7 +599,7 @@ function getGalleryTitle(label: string, index: number) {
   const text = label.toLowerCase();
   if (/대표|main/.test(text) || index === 0) return "대표사진";
   if (/크기|비교|size/.test(text)) return "크기 비교";
-  if (/신선|질감|fresh/.test(text)) return "신선도와 질감";
+  if (/신선|질감|fresh/.test(text)) return "신선함과 질감";
   if (/구성|component/.test(text)) return "구성품 확인";
   if (/포장|배송|package|box/.test(text)) return "포장 상태";
   if (/조리|식탁|recipe|table/.test(text)) return "조리 후 모습";
@@ -578,10 +609,19 @@ function getGalleryTitle(label: string, index: number) {
 function getGalleryDescription(label: string, productName: string) {
   const text = label.toLowerCase();
   if (/대표|main/.test(text)) return `${productName}의 실제 질감과 색감을 먼저 확인하세요.`;
-  if (/크기|비교|size/.test(text)) return "받았을 때의 크기감을 예상할 수 있도록 비교 컷을 제공합니다.";
+  if (/크기|비교|size/.test(text)) return "받아보실 때의 크기감을 예상할 수 있도록 비교 컷을 제공합니다.";
   if (/신선|질감|fresh/.test(text)) return "표면 상태와 신선도를 사진으로 확인할 수 있습니다.";
   if (/구성|component/.test(text)) return "고객이 실제로 받는 구성품을 한눈에 보여드립니다.";
   if (/포장|배송|package|box/.test(text)) return "아이스팩과 냉장 포장으로 신선하게 배송합니다.";
   if (/조리|식탁|recipe|table/.test(text)) return "집에서 먹기 좋은 완성 모습을 미리 확인하세요.";
   return "상품 상태를 더 자세히 확인할 수 있는 사진입니다.";
+}
+
+function getGalleryBadge(label: string, index: number) {
+  const text = label.toLowerCase();
+  if (/대표|main/.test(text) || index === 0) return "MAIN";
+  if (/포장|배송|package|box/.test(text)) return "PACK";
+  if (/구성|component/.test(text)) return "SET";
+  if (/조리|식탁|recipe|table/.test(text)) return "TABLE";
+  return "PHOTO";
 }

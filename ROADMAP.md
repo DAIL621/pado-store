@@ -245,3 +245,19 @@
 3. 실제 리뷰 데이터 도입 전까지 리뷰 준비 영역의 신뢰 문구 보강
 4. Supabase Storage 운영 업로드 전환 최종 확인
 5. Production URL 기준 상세페이지/장바구니/주문 흐름 실기기 검증
+## 2026-07-03 Sprint 4 반영
+
+### 완료
+
+- MASTER 상세페이지를 브랜드 경험 중심의 Premium Detail Design으로 개선.
+- PADO STORY 브랜드 Hero, Brand Story, 풀스크린 감성 배너, Why PADO STORY 6개 카드, Gallery caption/badge, Footer CTA 강화 적용.
+- 상세페이지 캡처 스크립트에 Story/Footer 캡처 추가.
+- 상세페이지 품질 점수 스크립트 추가.
+
+### 다음 우선순위
+
+1. 실제 상품별 detail_json에 포장/배송, FAQ, 산지 Journey, 조리법 데이터를 채워 fallback 캡처를 줄인다.
+2. Production URL 또는 `next start` 기준 Lighthouse를 재측정하고 Hero LCP를 최적화한다.
+3. 실제 상품 사진 6장 이상 기준으로 Gallery 자동 레이아웃을 한 번 더 검증한다.
+4. 관리자 Preview에서 static/public 상품도 직접 선택해 Preview 캡처할 수 있게 개선한다.
+5. 실구매 흐름 기준으로 옵션 선택, 장바구니, 주문서 UX를 상세페이지와 이어서 점검한다.

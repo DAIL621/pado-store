@@ -114,3 +114,9 @@
 - [ ] Supabase Storage bucket 생성 및 정책 확인
 - [ ] Vercel Production 환경변수에 Storage 설정 등록
 - [ ] 운영 배포 URL에서 관리자 이미지 업로드 재검증
+## 2026-07-03 Sprint 4 배포 전 확인 추가
+
+- [ ] Production URL 기준 `pado-gift-set` 또는 실제 운영 상품 상세페이지 Lighthouse 재측정.
+- [ ] 실제 상품별 포장/배송, FAQ, Journey, 조리법 detail_json 입력 후 fallback 없는 상세페이지 캡처 생성.
+- [ ] Vercel 배포 후 상세페이지 Hero 이미지 LCP 확인.
+- [ ] 모바일 Safari/Android Chrome 실기기에서 Sticky 구매 CTA와 옵션 선택 UX 확인.
