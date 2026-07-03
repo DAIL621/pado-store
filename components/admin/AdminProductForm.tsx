@@ -44,6 +44,9 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
         draftStorageKey="pado-admin-product-create-draft"
         onSubmit={createProduct}
         onSuccess={(result) => {
+          if (result.productUrl) {
+            window.open(result.productUrl, "_blank", "noopener,noreferrer");
+          }
           if (result.productId || result.productSlug) {
             window.sessionStorage.setItem(
               "pado-admin-last-created-product",

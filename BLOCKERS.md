@@ -97,3 +97,9 @@ alter table products add column if not exists detail_json jsonb not null default
 - 실제 iPhone Safari / Android Chrome에서 상품 상세, 장바구니, 주문서, 마이페이지 흐름 최종 확인 필요.
 
 위 항목은 외부 콘솔 또는 실기기 접근이 필요한 확인 작업이며, 내부 코드 개선 작업의 종료 사유가 아닙니다.
+## 2026-07-03 외부 확인 필요 항목
+
+- 실제 iPhone Safari / Android Chrome 실기기에서 상세페이지 v2 Hero, Sticky CTA, 옵션 선택 터치감을 최종 확인해야 합니다.
+- Vercel Production URL에서 `capture:detail-responsive`와 동일한 상세페이지 캡처를 다시 생성하려면 최신 배포 완료 확인이 필요합니다.
+- Supabase Storage 운영 bucket 및 `PADO_PRODUCT_IMAGE_STORAGE=supabase` 전환은 외부 콘솔 확인 후 진행해야 합니다.
+- 실제 리뷰/평점 데이터는 아직 없으므로 상세페이지 리뷰 영역은 준비 상태 문구로 표시됩니다.

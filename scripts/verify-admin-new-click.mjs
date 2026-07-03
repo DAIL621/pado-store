@@ -88,6 +88,7 @@ try {
     await route.continue();
   });
 
+  const previewPagePromise = page.context().waitForEvent("page", { timeout: 15000 }).catch(() => null);
   await submitButton.click();
   await page.locator('[data-testid="admin-product-submit"][data-save-state="saving"]').waitFor({ timeout: 7000 });
   const savingButtonText = await submitButton.textContent();
@@ -96,6 +97,11 @@ try {
   await page.locator('[data-testid="admin-product-submit"][data-save-state="completed"]').waitFor({ timeout: 12000 });
   const completedButtonText = await submitButton.textContent();
   await page.screenshot({ path: "screenshots/admin-create-completed-real-edge.png", fullPage: false });
+
+  const previewPage = await previewPagePromise;
+  if (previewPage) {
+    await previewPage.close().catch(() => {});
+  }
 
   await page.waitForURL("**/admin/products", { timeout: 20000 }).catch(async (error) => {
     const currentMessage = await page.locator(".admin-message").first().textContent().catch(() => "");

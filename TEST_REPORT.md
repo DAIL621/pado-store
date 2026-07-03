@@ -931,3 +931,37 @@
 - `pnpm run build`: 성공
 - `pnpm run verify:admin-presets`: 성공
 - `pnpm run verify:admin-static`: 성공
+## 2026-07-03 상품 상세페이지 판매형 MASTER Template v2 검증
+
+### 검증 범위
+
+- 상품 등록 후 상세페이지 자동 생성 흐름
+- 관리자 Preview와 실제 상세페이지 동일 템플릿 유지
+- 등록 성공 버튼 상태: `저장 중...` -> `상품 등록완료`
+- 등록 후 `/admin/products` 이동 및 등록 상품 최상단 표시
+- 생성 상세페이지 200 응답
+- 검증/숨김 상품의 관리자 상세 Preview 접근 정책
+- 상세페이지 v2 Hero/가격/신뢰배지/모바일 Sticky CTA 렌더링
+- 대표사진 자동 갤러리 레이아웃 렌더링
+- Desktop/Tablet/Mobile 전체 페이지 캡처 생성
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run verify:detail-template`: 성공
+- `pnpm run verify:admin`: 성공
+- `pnpm run capture:detail-responsive`: 성공
+
+### 캡처 결과
+
+- Desktop: `screenshots/detail-v2-desktop.png`
+- Tablet: `screenshots/detail-v2-tablet.png`
+- Mobile: `screenshots/detail-v2-mobile.png`
+
+### 확인된 내용
+
+- 공개 상품 상세 URL이 `pado-master-v2` 템플릿으로 정상 렌더링됩니다.
+- 관리자 등록 E2E에서 생성 상품 slug가 목록 최상단에 표시되고 상세페이지가 200으로 열립니다.
+- 중복 slug 테스트 URL 생성 후 저장 및 상세 200 검증이 통과했습니다.
+- 관리자 로그인 상태에서는 검증/숨김 상품 상세 Preview가 가능하고, 일반 고객 상태에서는 정책대로 404를 유지합니다.

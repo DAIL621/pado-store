@@ -849,3 +849,35 @@
 - `pnpm run build` 성공
 - `pnpm run verify:admin-presets` 성공
 - `pnpm run verify:admin-static` 성공
+## 2026-07-03 상품 상세페이지 판매형 MASTER Template v2 고도화
+
+### 완료 작업
+
+- `ProductDetailTemplate` 렌더링 계층을 정리하여 깨진 관리자/고객 상세 문구를 판매형 한국어 문구로 교체했습니다.
+- 상세페이지 Hero를 사진 중심, 가격/할인율 중심, 신뢰 배지 중심으로 재구성했습니다.
+- 모바일 첫 화면에서 상품 사진, 할인율, 가격, 옵션 선택 CTA가 바로 보이도록 Hero와 구매 패널 간격을 조정했습니다.
+- 대표사진 개수에 따라 `spotlight`, `mosaic`, `editorial`, `dense` 갤러리 레이아웃이 자동 선택되도록 구현했습니다.
+- 모바일 하단 Sticky 구매바 문구와 구조를 정리하여 엄지 하나로 옵션 선택 영역에 접근할 수 있게 개선했습니다.
+- 상품 등록 성공 후 생성된 상세페이지 URL을 새 창으로 자동 열도록 관리자 등록 흐름을 개선했습니다.
+- 자동 Preview 새 창 때문에 흔들리던 `verify-admin-new-click` 검증을 보강했습니다.
+- `capture:detail-responsive` 스크립트를 추가하여 Desktop/Tablet/Mobile 상세페이지 캡처를 자동 생성하도록 했습니다.
+
+### 생성 캡처
+
+- `screenshots/detail-v2-desktop.png`
+- `screenshots/detail-v2-tablet.png`
+- `screenshots/detail-v2-mobile.png`
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-json` 성공
+- `pnpm run verify:detail-template` 성공
+- `pnpm run verify:admin` 성공
+- `pnpm run capture:detail-responsive` 성공
+
+### 다음 작업
+
+1. 실제 상품별 상세 이미지 6장 이상을 입력해 갤러리 레이아웃 품질을 상품별로 검증합니다.
+2. 상세페이지 Hero에 리뷰/평점 데이터가 생겼을 때 자동 연결되도록 리뷰 준비 영역을 구체화합니다.
+3. 상품 옵션 선택 박스의 모바일 UX를 추가로 압축해 첫 화면 구매 전환을 더 높입니다.

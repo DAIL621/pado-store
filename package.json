@@ -19,6 +19,7 @@
     "verify:admin": "pnpm run verify:admin-static && pnpm run verify:detail-json && pnpm run verify:admin-edit && pnpm run verify:admin-upload && pnpm run verify:admin-presets && pnpm run verify:admin-new-click && pnpm run verify:admin-duplicate-test-slug && pnpm run verify:admin-private-detail",
     "verify:product-seo": "node scripts/verify-product-seo.mjs",
     "verify:detail-template": "node scripts/verify-detail-template-sections.mjs && pnpm run verify:product-seo",
+    "capture:detail-responsive": "node scripts/capture-detail-responsive.mjs",
     "lint": "next lint"
   },
   "dependencies": {
