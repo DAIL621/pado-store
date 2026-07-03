@@ -940,4 +940,108 @@
   - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
   - after-hero: screenshots/before-after/after-hero.png
   - after-gallery: screenshots/before-after/after-gallery.png
-  - after-cta: screenshots/before-after/after-cta.png
+  - after-cta: screenshots/before-after/after-cta.png## 2026-07-03T04:49:31.123Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: before
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - before-hero: screenshots/before-after/before-hero.png
+  - before-gallery: screenshots/before-after/before-gallery.png
+  - before-cta: screenshots/before-after/before-cta.png## 2026-07-03T04:54:26.395Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: after
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - after-hero: screenshots/before-after/after-hero.png
+  - after-gallery: screenshots/before-after/after-gallery.png
+  - after-cta: screenshots/before-after/after-cta.png## 2026-07-03T04:56:22.511Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+## 2026-07-03 상세페이지 디자인 리뉴얼 V3
+
+### 변경 목적
+
+- 자동 생성 상세페이지를 테스트 화면이 아니라 실제 판매 가능한 프리미엄 쇼핑몰 상세페이지처럼 보이도록 개선했습니다.
+- 기능, JSON 구조, 상품 등록 시스템, Preview, 자동 캡처 시스템은 유지하고 UI/UX만 개선했습니다.
+
+### 변경 내용
+
+- Hero 대표사진 영역을 크게 키우고 썸네일 레일을 추가했습니다.
+- Hero 우측 정보는 상품명, 별점 임시 표시, 가격, 할인율, 배송정보, 옵션/수량/구매 CTA 중심으로 축소했습니다.
+- 산지, 선별, 포장, 품질 검수 같은 부가 정보는 Hero 아래 `왜 파도스토리인가?` 6개 카드로 이동했습니다.
+- 구매 박스의 깨진 한글 문구를 정리하고 장바구니/바로구매 버튼의 시각 우선순위를 강화했습니다.
+- 사진 갤러리에는 image label 기반 자동 제목/설명을 추가했습니다.
+- 중간 임팩트 배너를 추가해 상품 스토리와 브랜드 신뢰감을 한 번 더 전달하도록 했습니다.
+- 섹션 간격과 카드 그림자를 줄여 모바일 스크롤 피로를 낮췄습니다.
+
+### 왜 변경했는가
+
+- 기존 Hero는 정보가 많아 고객이 가장 먼저 봐야 할 사진, 가격, 옵션 선택이 분산되어 있었습니다.
+- 모바일 고객은 첫 화면에서 상품 가치와 구매 버튼을 빠르게 확인해야 하므로 Hero를 구매 중심으로 재배치했습니다.
+- 사진 설명이 없으면 상세 이미지의 역할이 약해져, 대표/포장/구성/조리 사진의 의미를 자동으로 보완했습니다.
+
+### 판매 전환율 기대 효과
+
+- 큰 대표사진으로 첫인상과 상품 신뢰감을 강화합니다.
+- 가격, 할인율, 배송, 옵션 선택을 한 화면에 묶어 구매 결정 시간을 줄입니다.
+- 바로구매 버튼의 대비를 높여 모바일에서 엄지 하나로 구매 흐름에 진입하기 쉽게 했습니다.
+- 구매 이유 카드와 중간 배너로 산지직송/당일출고/신선포장 신뢰 요소를 스크롤 중 반복 노출합니다.
+
+### Before / After 캡처
+
+- Before Hero: `screenshots/before-after/before-hero.png`
+- After Hero: `screenshots/before-after/after-hero.png`
+- Before Gallery: `screenshots/before-after/before-gallery.png`
+- After Gallery: `screenshots/before-after/after-gallery.png`
+- Before CTA: `screenshots/before-after/before-cta.png`
+- After CTA: `screenshots/before-after/after-cta.png`
+
+### 검증
+
+- `pnpm run build` 성공
+- `pnpm run verify:detail-template` 성공
+- `pnpm run verify:detail-json` 성공
+- `pnpm run verify:admin` 성공
+- `pnpm run capture:detail:before -- --slug=pado-gift-set` 성공
+- `pnpm run capture:detail:after -- --slug=pado-gift-set` 성공
+- `pnpm run capture:detail -- --slug=pado-gift-set` 성공

@@ -1024,4 +1024,112 @@
   - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
   - after-hero: screenshots/before-after/after-hero.png
   - after-gallery: screenshots/before-after/after-gallery.png
-  - after-cta: screenshots/before-after/after-cta.png
+  - after-cta: screenshots/before-after/after-cta.png## 2026-07-03T04:49:31.123Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: before
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - before-hero: screenshots/before-after/before-hero.png
+  - before-gallery: screenshots/before-after/before-gallery.png
+  - before-cta: screenshots/before-after/before-cta.png## 2026-07-03T04:54:26.395Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: after
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - after-hero: screenshots/before-after/after-hero.png
+  - after-gallery: screenshots/before-after/after-gallery.png
+  - after-cta: screenshots/before-after/after-cta.png## 2026-07-03T04:56:22.511Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+## 2026-07-03 상세페이지 디자인 리뉴얼 V3 검증
+
+### 대상
+
+- 대상 상품: 선물세트
+- 대상 slug: `pado-gift-set`
+- 상세페이지 URL: `http://127.0.0.1:3000/products/pado-gift-set`
+- 상세페이지 응답 상태: 200
+
+### 검증 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-template`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run verify:admin`: 성공
+- `pnpm run capture:detail:before -- --slug=pado-gift-set`: 성공
+- `pnpm run capture:detail:after -- --slug=pado-gift-set`: 성공
+- `pnpm run capture:detail -- --slug=pado-gift-set`: 성공
+
+### 디자인 검증 내용
+
+- Hero 대표사진이 기존보다 크게 표시되어 상품 시각 임팩트가 강화되었습니다.
+- Hero 우측 정보가 상품명, 별점, 가격, 할인율, 배송, 옵션, 수량, 장바구니, 바로구매 중심으로 정리되었습니다.
+- 산지/신선포장/품질검수 정보는 Hero 아래 구매 이유 카드로 분리되어 Hero의 혼잡도가 줄었습니다.
+- 갤러리 사진에 자동 제목과 설명이 표시되어 사진의 역할이 명확해졌습니다.
+- 중간 임팩트 배너가 추가되어 브랜드 스토리와 신뢰 메시지가 스크롤 중 다시 노출됩니다.
+
+### Before / After 캡처
+
+- Before Hero: `screenshots/before-after/before-hero.png`
+- After Hero: `screenshots/before-after/after-hero.png`
+- Before Gallery: `screenshots/before-after/before-gallery.png`
+- After Gallery: `screenshots/before-after/after-gallery.png`
+- Before CTA: `screenshots/before-after/before-cta.png`
+- After CTA: `screenshots/before-after/after-cta.png`
+
+### 자동 캡처
+
+- Desktop: `screenshots/detail/detail-pado-gift-set-desktop-full.png`
+- Tablet: `screenshots/detail/detail-pado-gift-set-tablet-full.png`
+- Mobile: `screenshots/detail/detail-pado-gift-set-mobile-full.png`
+- Hero: `screenshots/detail/detail-pado-gift-set-hero.png`
+- CTA: `screenshots/detail/detail-pado-gift-set-cta.png`
+- Gallery: `screenshots/detail/detail-pado-gift-set-gallery.png`
+- Shipping: `screenshots/detail/detail-pado-gift-set-shipping.png`
+- FAQ: `screenshots/detail/detail-pado-gift-set-faq.png`
+- Recommend: `screenshots/detail/detail-pado-gift-set-recommend.png`
+- Admin Preview: `screenshots/detail/admin-preview-pado-gift-set.png`
+
+### 참고
+
+- `pado-gift-set`에는 포장/배송, FAQ detail_json 섹션 데이터가 없어 해당 섹션 캡처는 fallback으로 생성되었습니다.

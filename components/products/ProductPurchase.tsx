@@ -52,7 +52,7 @@ export function ProductPurchase({ product }: { product: Product }) {
   const add = () => {
     if (!option || isSoldOut) return false;
     if (!canAddSelected) {
-      setMessage("이미 장바구니에 구매 가능 수량을 모두 담았습니다.");
+      setMessage("이미 장바구니에 구매 가능한 수량을 모두 담았습니다.");
       return false;
     }
     if (quantity > remainingStock) {
@@ -82,20 +82,28 @@ export function ProductPurchase({ product }: { product: Product }) {
   };
 
   return (
-    <div className="purchase-box" id="purchase-box">
+    <div className="purchase-box purchase-box-v3" id="purchase-box">
       <div className="purchase-head">
         <div>
-          <span>구매 옵션</span>
+          <span>예상 결제금액</span>
           <strong>{formatPrice(total)}</strong>
         </div>
         <small>배송비 4,000원 · 5만원 이상 무료배송</small>
       </div>
       <div className="purchase-benefits" aria-label="구매 혜택">
         <span>평일 13시 전 당일 출고</span>
-        <span>산지 냉장배송</span>
+        <span>냉장 신선 배송</span>
       </div>
       <label htmlFor="product-option">옵션 선택</label>
-      <select id="product-option" value={optionId} onChange={(event) => { setOptionId(event.target.value); setQuantity(1); setMessage(""); }}>
+      <select
+        id="product-option"
+        value={optionId}
+        onChange={(event) => {
+          setOptionId(event.target.value);
+          setQuantity(1);
+          setMessage("");
+        }}
+      >
         {product.options.map((item) => {
           const stock = Number(item.stock ?? 0);
           return (
@@ -133,18 +141,18 @@ export function ProductPurchase({ product }: { product: Product }) {
         <div><span style={{ width: `${freeShippingProgress}%` }} /></div>
         <p>
           {remainingForFreeShipping === 0
-            ? "무료배송이 적용됩니다"
+            ? "무료배송이 적용됩니다."
             : `${formatPrice(remainingForFreeShipping)} 더 담으면 무료배송`}
         </p>
       </div>
       <div className="total-row"><span>총 상품금액</span><strong>{formatPrice(total)}</strong></div>
       <div className="purchase-actions">
-        <button type="button" className="button outline" disabled={!canAddSelected} onClick={add}>{added ? "장바구니에 담았습니다" : "장바구니 담기"}</button>
+        <button type="button" className="button outline" disabled={!canAddSelected} onClick={add}>{added ? "장바구니에 담았습니다" : "장바구니"}</button>
         <button type="button" className="button teal" disabled={!canAddSelected} onClick={buyNow}>바로 구매하기</button>
       </div>
       <div className="purchase-assurance" aria-label="구매 전 안내">
         <span>결제 전 장바구니에서 옵션과 수량을 다시 확인할 수 있습니다.</span>
-        <span>신선식품 특성상 산지 조업 상황에 따라 출고 일정이 조정될 수 있습니다.</span>
+        <span>신선식품 특성상 산지 작업 상황에 따라 출고 일정이 조정될 수 있습니다.</span>
       </div>
     </div>
   );

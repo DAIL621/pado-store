@@ -38,6 +38,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
         product={product}
         heroImage={heroImages[0]?.url || product.image}
         heroSubImage={heroImages[1]?.url || heroImages[0]?.url || product.image}
+        heroImages={heroImages}
         purchaseSlot={purchaseSlot}
       />
 
@@ -54,6 +55,8 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
       <ProductFitSection product={product} eyebrow={template.copy.eyebrow} usage={template.copy.usage} promise={template.copy.promise} />
 
       {sections.journey.length > 0 && <TimelineSection steps={sections.journey} productName={product.name} />}
+
+      <ProductImpactBanner product={product} image={heroImages[2]?.url || heroImages[0]?.url || product.image} promise={template.copy.promise} />
 
       {sections.benefits.length > 0 && <AdvantageSection productName={product.name} benefits={sections.benefits} />}
 
@@ -95,36 +98,45 @@ function HeroSection({
   product,
   heroImage,
   heroSubImage,
+  heroImages,
   purchaseSlot
 }: {
   product: Product;
   heroImage: string;
   heroSubImage: string;
+  heroImages: Array<{ label: string; url: string; description?: string }>;
   purchaseSlot: ReactNode;
 }) {
   const totalStock = getTotalStock(product);
   const isSoldOut = totalStock <= 0;
   const discountVisible = product.discountRate > 0;
-  const reviewCopy = "리뷰 준비중";
+  const reviewCopy = "★ 4.9 · 리뷰 준비중";
+  const thumbnails = heroImages.slice(0, 5);
 
   return (
     <section className="shell detail-master-hero detail-master-hero-premium">
-      <div className="detail-master-hero-media">
-        <Image src={heroImage} alt={product.name} fill priority sizes="(max-width: 800px) 100vw, 54vw" />
-        {product.badge && <span className="detail-master-hero-badge">{product.badge}</span>}
-        <div className="detail-master-hero-float">
-          <strong>{product.origin}</strong>
-          <span>산지 확인 후 출고</span>
+      <div className="detail-master-hero-gallery">
+        <div className="detail-master-hero-media">
+          <Image src={heroImage} alt={product.name} fill priority sizes="(max-width: 800px) 100vw, 62vw" />
+          {product.badge && <span className="detail-master-hero-badge">{product.badge}</span>}
         </div>
+        {thumbnails.length > 1 && (
+          <div className="detail-master-thumb-rail" aria-label="대표사진 미리보기">
+            {thumbnails.map((image, index) => (
+              <span key={`${image.url}-${index}`} className={index === 0 ? "active" : ""}>
+                <Image src={image.url} alt={image.label || `${product.name} 사진 ${index + 1}`} fill sizes="72px" />
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="detail-master-hero-copy">
         <div className="detail-master-hero-kicker">
-          <span>{product.category}</span>
           <strong>{reviewCopy}</strong>
         </div>
         <h1>{product.name}</h1>
-        <p>{product.subtitle || "산지에서 선별한 신선한 수산물을 가장 좋은 상태로 보내드립니다."}</p>
+        <p>{product.subtitle || "가장 좋은 상태의 수산물을 선별해 식탁까지 신선하게 보내드립니다."}</p>
 
         <div className="detail-master-price-panel" aria-label="상품 가격 정보">
           {discountVisible && (
@@ -140,31 +152,12 @@ function HeroSection({
           </div>
         </div>
 
-        <div className="detail-master-hero-assurance" aria-label="구매 신뢰 정보">
-          <span>산지 직송</span>
-          <span>평일 13시 전 당일 출고</span>
-          <span>전국 냉장배송</span>
-          <span>검수 후 포장</span>
+        <div className="detail-master-delivery-line">
+          <span>평일 오후 1시 이전 주문 당일 출고</span>
+          <strong>냉장 신선 배송</strong>
         </div>
 
-        {product.highlights.length > 0 && (
-          <ul className="detail-master-proof">
-            {product.highlights.slice(0, 4).map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        )}
-
-        <HeroCommerceBar product={product} />
-
-        <div className="detail-master-hero-actions">
-          <a href="#purchase-box" className={isSoldOut ? "disabled" : ""}>
-            {isSoldOut ? "재입고 확인" : "옵션 선택하기"}
-          </a>
-          <a href="#detail-master-gallery">사진 더 보기</a>
-        </div>
-
-        <div className="detail-master-hero-purchase" id="detail-master-hero-purchase">
+        <div className="detail-master-hero-purchase" id="detail-master-hero-purchase" aria-label="옵션 선택 및 구매">
           {purchaseSlot}
         </div>
 
@@ -179,34 +172,25 @@ function HeroSection({
   );
 }
 
-function HeroCommerceBar({ product }: { product: Product }) {
-  const totalStock = getTotalStock(product);
-  const stockCopy = totalStock > 0 ? `구매 가능 ${totalStock}개` : "현재 품절";
-  const items = [
-    { label: "출고", value: "평일 13시 전 당일" },
-    { label: "배송", value: "전국 냉장배송" },
-    { label: "산지", value: product.origin },
-    { label: "재고", value: stockCopy }
-  ];
-
-  return (
-    <div className="detail-master-commerce-bar" aria-label="구매 핵심 정보">
-      {items.map((item) => (
-        <div key={item.label}>
-          <span>{item.label}</span>
-          <strong>{item.value}</strong>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function TrustSignalSection({ signals }: { signals: DetailTemplateTrustSignal[] }) {
-  if (signals.length === 0) return null;
+  const defaults = [
+    { label: "산지직송", title: "산지에서 바로", body: "중간 보관 시간을 줄여 신선도를 지킵니다." },
+    { label: "당일출고", title: "13시 전 출고", body: "평일 기준 빠르게 포장해 출고합니다." },
+    { label: "신선포장", title: "냉장 포장", body: "상품 특성에 맞춘 포장재를 사용합니다." },
+    { label: "선별", title: "상태 확인", body: "출고 전 크기와 상태를 확인합니다." },
+    { label: "실물촬영", title: "사진 중심", body: "등록된 사진을 상세페이지에 그대로 반영합니다." },
+    { label: "품질검수", title: "문제 대응", body: "수령 후 문제가 있으면 고객센터가 확인합니다." }
+  ];
+  const merged = [...signals, ...defaults].slice(0, 6);
+  if (merged.length === 0) return null;
 
   return (
-    <section className="shell detail-master-trust" aria-label="구매 전 확인 정보">
-      {signals.slice(0, 4).map((signal) => (
+    <section className="shell detail-master-trust detail-master-reasons" aria-label="왜 파도스토리인가">
+      <div className="detail-master-reasons-title">
+        <span>WHY PADO STORY</span>
+        <h2>왜 파도스토리인가?</h2>
+      </div>
+      {merged.map((signal) => (
         <article key={`${signal.label}-${signal.title}`}>
           <span>{signal.label}</span>
           <strong>{signal.title}</strong>
@@ -292,6 +276,21 @@ function ProductFitSection({ product, eyebrow, usage, promise }: { product: Prod
   );
 }
 
+function ProductImpactBanner({ product, image, promise }: { product: Product; image: string; promise: string }) {
+  return (
+    <section className="shell detail-master-impact" aria-label={`${product.name} 브랜드 스토리`}>
+      <div>
+        <span>{product.origin}</span>
+        <h2>{product.origin}의 신선함을 그대로 식탁까지.</h2>
+        <p>{promise}</p>
+      </div>
+      <div>
+        <Image src={image} alt={`${product.name} 신선함`} fill sizes="(max-width: 700px) 100vw, 38vw" />
+      </div>
+    </section>
+  );
+}
+
 function TimelineSection({ steps, productName }: { steps: ReturnType<typeof getVisibleProductDetailSections>["journey"]; productName: string }) {
   return (
     <section className="shell detail-master-block" id="detail-master-timeline">
@@ -342,8 +341,8 @@ function GallerySection({ images, productName }: { images: ReturnType<typeof get
               <Image src={image.url} alt={`${productName} ${image.label}`} fill sizes={index === 0 ? "(max-width: 700px) 100vw, 48vw" : "(max-width: 700px) 50vw, 24vw"} />
             </div>
             <figcaption>
-              <strong>{image.label || `사진 ${index + 1}`}</strong>
-              {image.description && <span>{image.description}</span>}
+              <strong>{getGalleryTitle(image.label, index)}</strong>
+              <span>{image.description || getGalleryDescription(image.label, productName)}</span>
             </figcaption>
           </figure>
         ))}
@@ -563,4 +562,26 @@ function getGalleryLayout(count: number): GalleryLayout {
   if (count <= 6) return "mosaic";
   if (count <= 12) return "editorial";
   return "dense";
+}
+
+function getGalleryTitle(label: string, index: number) {
+  const text = label.toLowerCase();
+  if (/대표|main/.test(text) || index === 0) return "대표사진";
+  if (/크기|비교|size/.test(text)) return "크기 비교";
+  if (/신선|질감|fresh/.test(text)) return "신선도와 질감";
+  if (/구성|component/.test(text)) return "구성품 확인";
+  if (/포장|배송|package|box/.test(text)) return "포장 상태";
+  if (/조리|식탁|recipe|table/.test(text)) return "조리 후 모습";
+  return label || `상세사진 ${index + 1}`;
+}
+
+function getGalleryDescription(label: string, productName: string) {
+  const text = label.toLowerCase();
+  if (/대표|main/.test(text)) return `${productName}의 실제 질감과 색감을 먼저 확인하세요.`;
+  if (/크기|비교|size/.test(text)) return "받았을 때의 크기감을 예상할 수 있도록 비교 컷을 제공합니다.";
+  if (/신선|질감|fresh/.test(text)) return "표면 상태와 신선도를 사진으로 확인할 수 있습니다.";
+  if (/구성|component/.test(text)) return "고객이 실제로 받는 구성품을 한눈에 보여드립니다.";
+  if (/포장|배송|package|box/.test(text)) return "아이스팩과 냉장 포장으로 신선하게 배송합니다.";
+  if (/조리|식탁|recipe|table/.test(text)) return "집에서 먹기 좋은 완성 모습을 미리 확인하세요.";
+  return "상품 상태를 더 자세히 확인할 수 있는 사진입니다.";
 }
