@@ -902,3 +902,15 @@
 
 - `pnpm run build`: 성공
 - `pnpm run verify:admin-static`: 성공
+## 2026-07-02 관리자 테스트 상품 복구 검증
+
+### 검증 범위
+
+- 숨김 검증 상품 목록 계산
+- `recoverVerificationProducts` 일괄 복구 액션 존재
+- `숨김 검증 복구` 버튼 표시
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:admin-static`: 성공

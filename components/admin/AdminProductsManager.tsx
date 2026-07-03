@@ -98,6 +98,7 @@ export function AdminProductsManager() {
   const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [message, setMessage] = useState("상품 목록을 불러오는 중입니다...");
   const [bulkHiding, setBulkHiding] = useState(false);
+  const [bulkRecovering, setBulkRecovering] = useState(false);
   const [highlightedProduct, setHighlightedProduct] = useState<{ id?: string; slug?: string } | null>(null);
 
   const loadProducts = async () => {
@@ -170,6 +171,10 @@ export function AdminProductsManager() {
 
   const visibleVerificationProducts = useMemo(
     () => products.filter((product) => isVerificationProduct(product) && getStatus(product) !== "hidden"),
+    [products]
+  );
+  const hiddenVerificationProducts = useMemo(
+    () => products.filter((product) => isVerificationProduct(product) && getStatus(product) === "hidden"),
     [products]
   );
 
@@ -259,6 +264,29 @@ export function AdminProductsManager() {
     await loadProducts();
   };
 
+  const recoverVerificationProducts = async () => {
+    if (!hiddenVerificationProducts.length || bulkRecovering) return;
+    if (!window.confirm(`숨김 처리된 검증 상품 ${hiddenVerificationProducts.length}개를 다시 표시할까요?`)) return;
+
+    setBulkRecovering(true);
+    let failed = 0;
+    for (const product of hiddenVerificationProducts) {
+      const response = await fetch(`/api/admin/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "recover" })
+      });
+      if (!response.ok) failed += 1;
+    }
+    setBulkRecovering(false);
+    setMessage(
+      failed
+        ? `검증 상품 ${hiddenVerificationProducts.length - failed}개를 복구했고 ${failed}개는 실패했습니다.`
+        : `숨김 검증 상품 ${hiddenVerificationProducts.length}개를 다시 표시했습니다.`
+    );
+    await loadProducts();
+  };
+
   const resetFilters = () => {
     setQuery("");
     setStatusFilter("all");
@@ -320,6 +348,14 @@ export function AdminProductsManager() {
           disabled={!visibleVerificationProducts.length || bulkHiding}
         >
           {bulkHiding ? "검증 상품 숨김 중..." : `검증 상품 숨김 ${visibleVerificationProducts.length}`}
+        </button>
+        <button
+          type="button"
+          className="outline-lite"
+          onClick={recoverVerificationProducts}
+          disabled={!hiddenVerificationProducts.length || bulkRecovering}
+        >
+          {bulkRecovering ? "검증 상품 복구 중..." : `숨김 검증 복구 ${hiddenVerificationProducts.length}`}
         </button>
       </div>
       <p className="admin-note">{message}</p>

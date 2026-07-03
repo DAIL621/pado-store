@@ -826,3 +826,14 @@
 ### 검증
 - `pnpm run build` 성공
 - `pnpm run verify:admin-static` 성공
+## 2026-07-02 관리자 테스트 상품 관리 UX 보강
+### 완료 작업
+
+- 관리자 상품 목록에 `숨김 검증 복구` 버튼을 추가했습니다.
+- 숨김 처리된 검증/테스트 상품을 일괄 `recover` 처리해 다시 상세페이지 preview와 목록 확인이 가능하도록 했습니다.
+- 일괄 복구 진행 중 버튼 문구와 실패 개수 메시지를 표시합니다.
+- `verify:admin-static`에 검증 상품 복구 기능 존재 여부를 추가했습니다.
+
+### 검증
+- `pnpm run build` 성공
+- `pnpm run verify:admin-static` 성공
