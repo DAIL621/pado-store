@@ -28,6 +28,16 @@ Use after FAQ or long detail content.
 - Use navy-to-teal background
 - Use coral button
 
+## Mid Page CTA
+
+Use after brand/product persuasion and before the gallery.
+
+- Include price
+- Include stock or sold-out state
+- Include delivery promise
+- Link to `#purchase-box`
+- Do not use more than one sentence of explanation
+
 ## Disabled CTA
 
 Sold out text:
@@ -35,4 +45,3 @@ Sold out text:
 - `재입고 안내 확인`
 
 Never hide a disabled CTA without explaining why purchase is blocked.
-

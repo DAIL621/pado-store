@@ -66,20 +66,38 @@ try {
   const results = [];
   const imageCount = await count(page, ".detail-master-gallery figure");
   const whyCount = await count(page, ".detail-master-reasons article");
+  const layoutTypeCount = await page.evaluate(() => new Set([...document.querySelectorAll("[data-layout-type]")].map((item) => item.getAttribute("data-layout-type"))).size);
+  const ctaCount = await count(page, 'a[href="#purchase-box"], .purchase-actions .button');
+  const storyFlowOk = await page.evaluate(() => {
+    const selectors = [
+      ".detail-master-hero",
+      ".detail-brand-story",
+      ".detail-layout-section",
+      ".detail-master-gallery",
+      ".detail-review-highlight",
+      ".detail-footer-order"
+    ];
+    const positions = selectors.map((selector) => document.querySelector(selector)?.getBoundingClientRect().top ?? null);
+    return positions.every((position) => position !== null) && positions.every((position, index) => index === 0 || Number(position) >= Number(positions[index - 1]) - 2);
+  });
   const noHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 2);
   const title = await page.title();
   const description = await page.locator('meta[name="description"]').getAttribute("content").catch(() => "");
 
-  add(results, "hero", "Hero value and product image", 14, await visible(page, ".detail-master-hero") && await visible(page, ".detail-master-hero-media"), "Hero and primary image are visible.");
-  add(results, "purchase", "Purchase CTA", 14, await visible(page, "#purchase-box") && await visible(page, ".purchase-actions"), "Option and purchase actions are visible.");
-  add(results, "brandHero", "Brand hero", 10, await visible(page, ".detail-brand-hero"), "PADO STORY brand hero is visible.");
-  add(results, "story", "Brand story", 10, await visible(page, ".detail-brand-story"), "Brand story section is visible.");
-  add(results, "why", "Why PADO STORY cards", 10, whyCount >= 6, `${whyCount} trust cards found.`);
-  add(results, "gallery", "Photo gallery", 10, imageCount >= 1, `${imageCount} gallery images found.`);
-  add(results, "galleryCaption", "Gallery captions and badges", 8, await visible(page, ".detail-master-gallery figcaption") && await visible(page, ".detail-master-gallery em"), "Captions and badges are visible.");
+  add(results, "hero", "Hero value and product image", 12, await visible(page, ".detail-master-hero") && await visible(page, ".detail-master-hero-media"), "Hero and primary image are visible.");
+  add(results, "purchase", "Purchase CTA", 12, await visible(page, "#purchase-box") && await visible(page, ".purchase-actions"), "Option and purchase actions are visible.");
+  add(results, "brandHero", "Brand hero", 8, await visible(page, ".detail-brand-hero"), "PADO STORY brand hero is visible.");
+  add(results, "story", "Brand story", 8, await visible(page, ".detail-brand-story"), "Brand story section is visible.");
+  add(results, "why", "Why PADO STORY cards", 8, whyCount >= 6, `${whyCount} trust cards found.`);
+  add(results, "gallery", "Photo gallery", 8, imageCount >= 1, `${imageCount} gallery images found.`);
+  add(results, "galleryCaption", "Gallery captions and badges", 6, await visible(page, ".detail-master-gallery figcaption") && await visible(page, ".detail-master-gallery em"), "Captions and badges are visible.");
   add(results, "footerCta", "Footer purchase CTA", 8, await visible(page, ".detail-footer-order"), "Footer CTA is visible.");
   add(results, "mobile", "Mobile layout stability", 8, noHorizontalOverflow, `scrollWidth=${await page.evaluate(() => document.documentElement.scrollWidth)}, innerWidth=${await page.evaluate(() => window.innerWidth)}`);
-  add(results, "seo", "SEO basics", 8, Boolean(title && description), `title=${title}; description=${description || "missing"}`);
+  add(results, "seo", "SEO basics", 6, Boolean(title && description), `title=${title}; description=${description || "missing"}`);
+  add(results, "layoutDiversity", "Section layout diversity", 6, layoutTypeCount >= 5, `${layoutTypeCount} layout types found.`);
+  add(results, "ctaDensity", "Conversion CTA count", 4, ctaCount >= 3, `${ctaCount} CTA elements found.`);
+  add(results, "review", "Review highlight", 4, await visible(page, ".detail-review-highlight"), "Review highlight section is visible.");
+  add(results, "storyFlow", "Story flow order", 2, storyFlowOk, "Hero, story, layout, gallery, review, final CTA order checked.");
 
   const score = results.reduce((sum, item) => sum + item.earned, 0);
   const report = {

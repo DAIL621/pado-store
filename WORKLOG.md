@@ -1248,3 +1248,148 @@
 - 신규 UI를 만들기 전 해당 guide 문서를 먼저 확인합니다.
 - 상세페이지 디자인은 `DESIGN_SYSTEM.md`, `COLOR_SYSTEM.md`, `MOBILE_GUIDE.md`, `CTA_GUIDE.md`, `IMAGE_GUIDE.md`를 우선 적용합니다.
 - AI 문구 생성은 `PADO_AI_GUIDE.md`의 표현 톤과 금지사항을 따릅니다.
+## 2026-07-03T08:44:34.890Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: before
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - story: screenshots/detail/detail-pado-gift-set-story.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - footer: screenshots/detail/detail-pado-gift-set-footer.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - before-hero: screenshots/before-after/before-hero.png
+  - before-gallery: screenshots/before-after/before-gallery.png
+  - before-cta: screenshots/before-after/before-cta.png
+## 2026-07-03T08:50:08.130Z 상세페이지 품질 점수
+
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 품질 점수: 100/100
+- 결과 파일: reports/detail-quality-pado-gift-set.json
+  - PASS Hero value and product image: 12/12 (Hero and primary image are visible.)
+  - PASS Purchase CTA: 12/12 (Option and purchase actions are visible.)
+  - PASS Brand hero: 8/8 (PADO STORY brand hero is visible.)
+  - PASS Brand story: 8/8 (Brand story section is visible.)
+  - PASS Why PADO STORY cards: 8/8 (6 trust cards found.)
+  - PASS Photo gallery: 8/8 (1 gallery images found.)
+  - PASS Gallery captions and badges: 6/6 (Captions and badges are visible.)
+  - PASS Footer purchase CTA: 8/8 (Footer CTA is visible.)
+  - PASS Mobile layout stability: 8/8 (scrollWidth=393, innerWidth=393)
+  - PASS SEO basics: 6/6 (title=선물세트 | 산지 혼합 산지직송 수산물 | 파도스토리; description=감사한 마음을 전하는 파도스토리 구성 명절과 감사 선물에 맞춰 구성할 수 있는 선물세트 기본 구조입니다. 실제 구성품과 패키지 사진이 준비되면 교체합니다. 산지 혼합 산지 기준으로 선별해 신선 포장합니다.)
+  - PASS Section layout diversity: 6/6 (5 layout types found.)
+  - PASS Conversion CTA count: 4/4 (5 CTA elements found.)
+  - PASS Review highlight: 4/4 (Review highlight section is visible.)
+  - PASS Story flow order: 2/2 (Hero, story, layout, gallery, review, final CTA order checked.)
+## 2026-07-03T08:50:54.677Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: after
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - story: screenshots/detail/detail-pado-gift-set-story.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - timeline: screenshots/detail/detail-pado-gift-set-timeline.png
+  - banner: screenshots/detail/detail-pado-gift-set-banner.png
+  - review: screenshots/detail/detail-pado-gift-set-review.png
+  - finalCta: screenshots/detail/detail-pado-gift-set-finalCta.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - footer: screenshots/detail/detail-pado-gift-set-footer.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - after-hero: screenshots/before-after/after-hero.png
+  - after-gallery: screenshots/before-after/after-gallery.png
+  - after-cta: screenshots/before-after/after-cta.png## 2026-07-03T08:53:38.097Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - story: screenshots/detail/detail-pado-gift-set-story.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - timeline: screenshots/detail/detail-pado-gift-set-timeline.png
+  - banner: screenshots/detail/detail-pado-gift-set-banner.png
+  - review: screenshots/detail/detail-pado-gift-set-review.png
+  - finalCta: screenshots/detail/detail-pado-gift-set-finalCta.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - footer: screenshots/detail/detail-pado-gift-set-footer.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+## 2026-07-03 Sprint 6 Premium Conversion Detail Engine
+
+### 완료
+
+- 상세페이지 MASTER Template에 설득형 Section Layout Engine을 1차 적용했습니다.
+- 카드 반복을 줄이기 위해 Image Left / Text Right, Text Left / Image Right, Mid CTA, Comparison, Review Highlight 레이아웃을 추가했습니다.
+- 상세페이지 흐름을 Hero → Brand Story → Why This Product → Production Story → Freshness → Gallery → Review → Final CTA 흐름으로 강화했습니다.
+- 중간 CTA를 추가해 가격, 재고, 배송 약속을 다시 노출하고 구매 영역으로 이동할 수 있게 했습니다.
+- Review Placeholder를 별점/BEST 후기 카드 형태로 업그레이드했습니다.
+- Gallery는 기존 캡션/배지를 유지하면서 이미지 비율 다양화 규칙을 추가했습니다.
+- 품질 점수 항목에 Section 다양성, Layout 반복률, CTA 개수, Story 흐름, Review 존재 여부를 추가했습니다.
+- 캡처 대상에 Timeline, Banner, Review, Final CTA를 추가했습니다.
+
+### 검증
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-template`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run score:detail -- --slug=pado-gift-set`: 성공, `100/100`
+- `pnpm run capture:detail:before -- --slug=pado-gift-set`: 성공
+- `pnpm run capture:detail:after -- --slug=pado-gift-set`: 성공
+- `pnpm run capture:detail -- --slug=pado-gift-set`: 성공
+
+### 캡처
+
+- Desktop: `screenshots/detail/detail-pado-gift-set-desktop-full.png`
+- Tablet: `screenshots/detail/detail-pado-gift-set-tablet-full.png`
+- Mobile: `screenshots/detail/detail-pado-gift-set-mobile-full.png`
+- Hero: `screenshots/detail/detail-pado-gift-set-hero.png`
+- Story: `screenshots/detail/detail-pado-gift-set-story.png`
+- Timeline/Layout: `screenshots/detail/detail-pado-gift-set-timeline.png`
+- Banner: `screenshots/detail/detail-pado-gift-set-banner.png`
+- CTA: `screenshots/detail/detail-pado-gift-set-cta.png`
+- Gallery: `screenshots/detail/detail-pado-gift-set-gallery.png`
+- Review: `screenshots/detail/detail-pado-gift-set-review.png`
+- Final CTA: `screenshots/detail/detail-pado-gift-set-finalCta.png`
+- Before Hero: `screenshots/before-after/before-hero.png`
+- After Hero: `screenshots/before-after/after-hero.png`
+- Before Gallery: `screenshots/before-after/before-gallery.png`
+- After Gallery: `screenshots/before-after/after-gallery.png`
+- Before CTA: `screenshots/before-after/before-cta.png`
+- After CTA: `screenshots/before-after/after-cta.png`
+
+### 변경 이유와 전환율 기대효과
+
+- 상세페이지가 카드 나열처럼 보이는 구간을 줄이고, 큰 이미지와 문장 중심의 스토리텔링을 추가했습니다.
+- 중간 CTA는 상세페이지 중간에서 가격/재고/배송 정보를 다시 확인시켜 구매 흐름으로 복귀하게 합니다.
+- Review Placeholder는 실제 리뷰 데이터가 들어오기 전에도 리뷰 영역의 기대 위치와 신뢰 구조를 만들어 둡니다.
+- Comparison 섹션은 고객의 불안 요소를 일반 구매와 PADO STORY 기준으로 비교해 구매 전 의사결정을 돕습니다.
+
+### 참고
+
+- `pado-gift-set`은 포장/배송과 FAQ detail_json 데이터가 없어 해당 캡처는 fallback으로 생성됩니다.

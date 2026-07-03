@@ -24,22 +24,43 @@ This system is the source of truth for all new pages and generated product detai
 ### Product Detail
 
 1. Product Hero
-2. PADO STORY Brand Promise
-3. Why PADO STORY Trust Cards
-4. Brand Story
-5. Product Selling Points
-6. Product Overview
-7. Origin to Table Journey
-8. Emotional Full-Bleed Banner
-9. Gallery
-10. Cooking / Serving
-11. Components
-12. Packaging and Delivery
-13. FAQ
-14. Review Ready
-15. Final CTA
+2. Brand Story
+3. Why This Product
+4. Production Story
+5. Freshness
+6. Gallery
+7. How To Eat
+8. Package
+9. FAQ
+10. Review
+11. Final CTA
 
 Sections with empty data must be hidden automatically.
+
+## Section Layout Engine
+
+Do not repeat only card grids. Product detail pages should automatically combine these layout types:
+
+- Full Width Banner
+- Image Left / Text Right
+- Text Left / Image Right
+- 2 Column Story
+- Full Image
+- Quote Section
+- Timeline
+- Icon Grid
+- Comparison Section
+- Review Highlight
+
+Every generated product detail page should use at least five distinct layout types before it is considered premium-ready.
+
+## Conversion Quality Rules
+
+- Include at least three CTA opportunities: Hero purchase, mid-page CTA, final CTA.
+- Include review readiness even before real review data exists.
+- Put the strongest image before long text.
+- Use comparison only to reduce customer uncertainty, not to attack competitors.
+- Keep story sections short. The product image and CTA must still feel close.
 
 ## Implementation Rules
 
@@ -58,4 +79,3 @@ Sections with empty data must be hidden automatically.
 - `pnpm run verify:detail-json`
 - `pnpm run dev:ensure`
 - `pnpm run capture:detail:after -- --slug={slug}`
-

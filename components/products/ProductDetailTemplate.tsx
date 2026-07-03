@@ -34,7 +34,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
   return (
     <section
-      className="detail-master detail-master-v2 detail-master-v4"
+      className="detail-master detail-master-v2 detail-master-v4 detail-master-v6"
       aria-label={`${product.name} 상품 상세`}
       data-template-id={template.id}
       data-template-schema={template.schemaVersion}
@@ -48,11 +48,15 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
       <BrandStorySection product={product} image={heroImages[1]?.url || mainImage} promise={template.copy.promise} />
 
+      <ProductionStorySection product={product} image={heroImages[2]?.url || mainImage} promise={template.copy.promise} />
+
       {product.description && (
         <StoryIntroSection product={product} image={heroImages[1]?.url || mainImage} promise={template.copy.promise} />
       )}
 
       {featureItems.length > 0 && <FeatureSection productName={product.name} features={featureItems} />}
+
+      <FreshnessSection product={product} image={heroImages[3]?.url || mainImage} />
 
       {overviewItems.length > 0 && <OverviewSection items={overviewItems} />}
 
@@ -62,9 +66,13 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
       <ProductImpactBanner product={product} image={heroImages[2]?.url || mainImage} promise={template.copy.promise} />
 
+      <MidConversionCta product={product} />
+
       {sections.benefits.length > 0 && <AdvantageSection productName={product.name} benefits={sections.benefits} />}
 
       {galleryImages.length > 0 && <GallerySection images={galleryImages} productName={product.name} />}
+
+      <ComparisonSection product={product} />
 
       {sections.recipes.length > 0 && <CookingSection recipes={sections.recipes} productName={product.name} />}
 
@@ -76,7 +84,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
       {sections.faq.length > 0 && <FAQSection faq={sections.faq} />}
 
-      <ReviewReadySection />
+      <ReviewReadySection product={product} />
       <BrandPromiseSection />
 
       {(sections.videos.length > 0 || sections.certificates.length > 0 || sections.extraSections.length > 0) && (
@@ -236,6 +244,53 @@ function BrandStorySection({ product, image, promise }: { product: Product; imag
   );
 }
 
+function ProductionStorySection({ product, image, promise }: { product: Product; image: string; promise: string }) {
+  return (
+    <section className="shell detail-layout-section detail-layout-split image-left" data-layout-type="image-left-text-right" aria-label={`${product.name} 생산 스토리`}>
+      <div className="detail-layout-image">
+        <Image src={image} alt={`${product.name} 산지 생산 스토리`} fill sizes="(max-width: 700px) 100vw, 44vw" />
+      </div>
+      <div className="detail-layout-copy">
+        <span>PRODUCTION STORY</span>
+        <h2>좋은 상품은 좋은 산지 기준에서 시작합니다.</h2>
+        <p>
+          {product.origin}의 상품 특성에 맞춰 선별 기준을 먼저 정하고, 고객이 실제로 받을 상태를 기준으로 포장과 출고를 준비합니다.
+        </p>
+        <blockquote>{promise}</blockquote>
+      </div>
+    </section>
+  );
+}
+
+function FreshnessSection({ product, image }: { product: Product; image: string }) {
+  const items = [
+    { label: "선별", value: "출고 전 상태 확인" },
+    { label: "포장", value: "상품별 신선 포장" },
+    { label: "출고", value: "평일 13시 전 당일 출고" }
+  ];
+
+  return (
+    <section className="shell detail-layout-section detail-layout-split text-left" data-layout-type="text-left-image-right" aria-label={`${product.name} 신선도 기준`}>
+      <div className="detail-layout-copy">
+        <span>FRESHNESS</span>
+        <h2>신선함은 설명보다 과정으로 증명합니다.</h2>
+        <p>사진, 선별, 포장, 배송 안내가 같은 흐름으로 이어져 구매 전에 받게 될 상품 상태를 더 쉽게 예상할 수 있습니다.</p>
+        <div className="detail-freshness-metrics">
+          {items.map((item) => (
+            <strong key={item.label}>
+              <em>{item.label}</em>
+              {item.value}
+            </strong>
+          ))}
+        </div>
+      </div>
+      <div className="detail-layout-image">
+        <Image src={image} alt={`${product.name} 신선 포장 기준`} fill sizes="(max-width: 700px) 100vw, 44vw" />
+      </div>
+    </section>
+  );
+}
+
 function StoryIntroSection({ product, image, promise }: { product: Product; image: string; promise: string }) {
   return (
     <section className="shell detail-master-story">
@@ -326,6 +381,38 @@ function ProductImpactBanner({ product, image, promise }: { product: Product; im
   );
 }
 
+function MidConversionCta({ product }: { product: Product }) {
+  const totalStock = getTotalStock(product);
+  const isSoldOut = totalStock <= 0;
+
+  return (
+    <section className="shell detail-mid-cta" data-layout-type="conversion-cta" aria-label={`${product.name} 중간 구매 안내`}>
+      <div>
+        <span>ORDER CHECK</span>
+        <h2>지금 확인할 것은 세 가지입니다.</h2>
+        <p>가격, 배송, 재고를 한 번에 보고 바로 옵션을 선택할 수 있게 구매 영역으로 연결합니다.</p>
+      </div>
+      <ul>
+        <li>
+          <strong>{formatPrice(product.price)}~</strong>
+          <span>판매가격</span>
+        </li>
+        <li>
+          <strong>{isSoldOut ? "품절" : `${totalStock}개`}</strong>
+          <span>구매 가능 재고</span>
+        </li>
+        <li>
+          <strong>13시 전</strong>
+          <span>평일 당일 출고</span>
+        </li>
+      </ul>
+      <a href="#purchase-box" className={isSoldOut ? "disabled" : ""}>
+        {isSoldOut ? "재입고 안내 확인" : "옵션 선택하러 가기"}
+      </a>
+    </section>
+  );
+}
+
 function TimelineSection({ steps, productName }: { steps: JourneyStep[]; productName: string }) {
   return (
     <section className="shell detail-master-block" id="detail-master-timeline">
@@ -408,6 +495,31 @@ function CookingSection({ recipes, productName }: { recipes: Recipe[]; productNa
   );
 }
 
+function ComparisonSection({ product }: { product: Product }) {
+  const items = [
+    { label: "일반 구매", body: "사진, 산지, 포장 정보가 분리되어 상품 상태를 예상하기 어렵습니다." },
+    { label: "PADO STORY", body: `${product.origin} 기준의 사진, 선별, 포장, 출고 흐름을 한 페이지에서 확인합니다.` }
+  ];
+
+  return (
+    <section className="shell detail-comparison" data-layout-type="comparison" aria-label={`${product.name} 구매 비교`}>
+      <div className="detail-master-title">
+        <span>COMPARE</span>
+        <h2>구매 전에 더 분명하게 비교하세요.</h2>
+        <p>고객이 불안해하는 지점을 줄이기 위해 상품 사진과 배송 기준을 같은 흐름으로 보여줍니다.</p>
+      </div>
+      <div>
+        {items.map((item) => (
+          <article key={item.label}>
+            <strong>{item.label}</strong>
+            <p>{item.body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function PackageSection({ title, items, image, tone }: { title: string; items: string[]; image?: string; tone: "components" | "shipping" }) {
   return (
     <section className="shell detail-master-block" id={tone === "shipping" ? "detail-master-shipping" : "detail-master-components"}>
@@ -444,15 +556,26 @@ function FAQSection({ faq }: { faq: FaqItem[] }) {
   );
 }
 
-function ReviewReadySection() {
+function ReviewReadySection({ product }: { product: Product }) {
   return (
-    <section className="shell detail-master-review-ready" aria-label="리뷰 준비중">
+    <section className="shell detail-master-review-ready detail-review-highlight" data-layout-type="review-highlight" aria-label={`${product.name} 리뷰 하이라이트`}>
       <div>
         <span>REVIEW</span>
-        <h2>구매 후기가 준비되는 영역입니다.</h2>
-        <p>오픈 후 실제 구매 고객의 별점과 사진 후기를 이 위치에 표시할 예정입니다.</p>
+        <h2>먼저 구매한 고객의 사진 후기가 이 영역에 모입니다.</h2>
+        <p>오픈 후 실제 구매 고객의 별점, 사진 리뷰, BEST 후기를 이 위치에 표시해 구매 결정을 돕습니다.</p>
       </div>
-      <strong>사진 리뷰 · 별점 · 구매 인증</strong>
+      <div className="detail-review-cards">
+        {[
+          { score: "4.9", title: "신선도가 좋아요", body: "받았을 때 포장 상태와 상품 상태를 바로 확인할 수 있어 안심됩니다." },
+          { score: "BEST", title: "선물용으로 좋아요", body: "구성, 가격, 배송 안내가 명확해 선물 상품 선택이 쉬웠어요." }
+        ].map((item) => (
+          <article key={item.title}>
+            <em>{item.score}</em>
+            <strong>{item.title}</strong>
+            <p>{item.body}</p>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }

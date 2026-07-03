@@ -17,6 +17,8 @@ Every product can have up to six primary images:
 - Gallery automatically chooses layout based on image count.
 - Missing images must hide gracefully.
 - Captions are generated from image role.
+- Story sections should alternate image-left and image-right layouts to reduce repetition.
+- Large editorial images should appear before dense information blocks.
 
 ## Cropping
 
@@ -24,10 +26,11 @@ Every product can have up to six primary images:
 - Gallery: square or editorial mosaic
 - Story banner: cinematic crop
 - Packaging: show box, ice pack, wrapping, or delivery condition
+- Production story: origin, producer, or product handling crop
+- Freshness story: texture, ice, packaging, or close-up crop
 
 ## Quality
 
 - Use WebP where possible.
 - Keep LCP image as optimized as possible.
 - Avoid dark overlays over product images unless text is on top.
-

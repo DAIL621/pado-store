@@ -280,3 +280,19 @@
 1. 관리자 상품등록 Preview에 Design System 체크리스트 표시.
 2. 상세페이지 품질 점수에 Design System 준수 항목 추가.
 3. 상품별 실데이터 입력 시 이미지 role과 CTA 문구가 guide를 따르는지 자동 검증.
+## 2026-07-03 Sprint 6 Premium Conversion Detail Engine
+
+### 완료
+
+- 상세페이지 엔진에 설득형 Section Layout Engine 1차 적용.
+- Story Flow를 Hero → Brand Story → Why This Product → Production Story → Freshness → Gallery → How To Eat/Package/FAQ → Review → Final CTA 방향으로 정리.
+- 중간 CTA, Comparison, Review Highlight 레이아웃 추가.
+- 품질 점수에 Layout 다양성, CTA 개수, Review 존재, Story 흐름 평가 추가.
+- 캡처 스크립트에 Timeline, Banner, Review, Final CTA 섹션 캡처 추가.
+
+### 다음 우선순위
+
+1. 실제 판매 상품 detail_json에 Journey, Packaging, FAQ, Recipe 데이터를 채워 fallback 없는 상세페이지를 만든다.
+2. 상품군별 Story Flow 문구를 전복/장어/갈치/밀키트/선물세트에 맞게 더 세분화한다.
+3. 실제 리뷰 기능 도입 전까지 Review Placeholder의 신뢰 문구와 사진 리뷰 준비 UI를 고도화한다.
+4. 이미지가 8장 이상인 상품으로 Gallery Masonry/Grid 자동 선택을 추가 검증한다.

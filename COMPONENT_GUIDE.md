@@ -54,3 +54,38 @@ Required:
 - Stock or status
 - Anchor to purchase box
 
+## Premium Conversion Layouts
+
+### Split Story
+
+Use for origin, production, and freshness persuasion.
+
+- One large image
+- One focused headline
+- One short paragraph
+- Optional quote chip
+
+### Mid Conversion CTA
+
+Use after the customer understands the product value but before the full gallery.
+
+- Price
+- Stock
+- Delivery promise
+- Anchor to purchase box
+
+### Comparison
+
+Use to reduce uncertainty.
+
+- Two columns maximum
+- Keep copy factual
+- Highlight PADO STORY's process, not vague superiority
+
+### Review Highlight
+
+Use even when real reviews are not ready.
+
+- Show review-ready placeholder
+- Mention photo reviews and purchase verification
+- Replace with live data later without layout changes

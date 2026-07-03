@@ -1331,3 +1331,138 @@
 - iPhone 기준 수평 overflow 없음.
 - 상세페이지 품질 점수 100/100 유지.
 - 이번 Sprint는 기능 추가 없이 디자인 기준 문서화와 토큰 정리에 집중했습니다.
+## 2026-07-03T08:44:34.890Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: before
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - story: screenshots/detail/detail-pado-gift-set-story.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - footer: screenshots/detail/detail-pado-gift-set-footer.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - before-hero: screenshots/before-after/before-hero.png
+  - before-gallery: screenshots/before-after/before-gallery.png
+  - before-cta: screenshots/before-after/before-cta.png
+## 2026-07-03T08:50:08.130Z 상세페이지 품질 점수
+
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 품질 점수: 100/100
+- 결과 파일: reports/detail-quality-pado-gift-set.json
+  - PASS Hero value and product image: 12/12 (Hero and primary image are visible.)
+  - PASS Purchase CTA: 12/12 (Option and purchase actions are visible.)
+  - PASS Brand hero: 8/8 (PADO STORY brand hero is visible.)
+  - PASS Brand story: 8/8 (Brand story section is visible.)
+  - PASS Why PADO STORY cards: 8/8 (6 trust cards found.)
+  - PASS Photo gallery: 8/8 (1 gallery images found.)
+  - PASS Gallery captions and badges: 6/6 (Captions and badges are visible.)
+  - PASS Footer purchase CTA: 8/8 (Footer CTA is visible.)
+  - PASS Mobile layout stability: 8/8 (scrollWidth=393, innerWidth=393)
+  - PASS SEO basics: 6/6 (title=선물세트 | 산지 혼합 산지직송 수산물 | 파도스토리; description=감사한 마음을 전하는 파도스토리 구성 명절과 감사 선물에 맞춰 구성할 수 있는 선물세트 기본 구조입니다. 실제 구성품과 패키지 사진이 준비되면 교체합니다. 산지 혼합 산지 기준으로 선별해 신선 포장합니다.)
+  - PASS Section layout diversity: 6/6 (5 layout types found.)
+  - PASS Conversion CTA count: 4/4 (5 CTA elements found.)
+  - PASS Review highlight: 4/4 (Review highlight section is visible.)
+  - PASS Story flow order: 2/2 (Hero, story, layout, gallery, review, final CTA order checked.)
+## 2026-07-03T08:50:54.677Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- Before/After 단계: after
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - story: screenshots/detail/detail-pado-gift-set-story.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - timeline: screenshots/detail/detail-pado-gift-set-timeline.png
+  - banner: screenshots/detail/detail-pado-gift-set-banner.png
+  - review: screenshots/detail/detail-pado-gift-set-review.png
+  - finalCta: screenshots/detail/detail-pado-gift-set-finalCta.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - footer: screenshots/detail/detail-pado-gift-set-footer.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+  - after-hero: screenshots/before-after/after-hero.png
+  - after-gallery: screenshots/before-after/after-gallery.png
+  - after-cta: screenshots/before-after/after-cta.png## 2026-07-03T08:53:38.097Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - story: screenshots/detail/detail-pado-gift-set-story.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - timeline: screenshots/detail/detail-pado-gift-set-timeline.png
+  - banner: screenshots/detail/detail-pado-gift-set-banner.png
+  - review: screenshots/detail/detail-pado-gift-set-review.png
+  - finalCta: screenshots/detail/detail-pado-gift-set-finalCta.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png (fallback)
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png (fallback)
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - footer: screenshots/detail/detail-pado-gift-set-footer.png
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png (fallback)
+## 2026-07-03 Sprint 6 Premium Conversion Detail Engine 검증
+
+### 자동 검증
+
+- `pnpm run build`: 성공
+- `pnpm run verify:detail-template`: 성공
+- `pnpm run verify:detail-json`: 성공
+- `pnpm run score:detail -- --slug=pado-gift-set`: 성공
+- `pnpm run capture:detail:before -- --slug=pado-gift-set`: 성공
+- `pnpm run capture:detail:after -- --slug=pado-gift-set`: 성공
+- `pnpm run capture:detail -- --slug=pado-gift-set`: 성공
+
+### 품질 점수
+
+- 총점: `100/100`
+- 추가된 평가 항목:
+  - Section layout diversity: 통과 (`5 layout types found`)
+  - Conversion CTA count: 통과 (`5 CTA elements found`)
+  - Review highlight: 통과
+  - Story flow order: 통과
+
+### 캡처
+
+- Desktop: `screenshots/detail/detail-pado-gift-set-desktop-full.png`
+- Tablet: `screenshots/detail/detail-pado-gift-set-tablet-full.png`
+- Mobile: `screenshots/detail/detail-pado-gift-set-mobile-full.png`
+- Hero: `screenshots/detail/detail-pado-gift-set-hero.png`
+- Story: `screenshots/detail/detail-pado-gift-set-story.png`
+- Timeline/Layout: `screenshots/detail/detail-pado-gift-set-timeline.png`
+- Banner: `screenshots/detail/detail-pado-gift-set-banner.png`
+- CTA: `screenshots/detail/detail-pado-gift-set-cta.png`
+- Gallery: `screenshots/detail/detail-pado-gift-set-gallery.png`
+- Review: `screenshots/detail/detail-pado-gift-set-review.png`
+- Final CTA: `screenshots/detail/detail-pado-gift-set-finalCta.png`
+- Recommend: `screenshots/detail/detail-pado-gift-set-recommend.png`
+- Before/After: `screenshots/before-after/`
+
+### 확인 내용
+
+- 상세페이지 URL 200 확인.
+- Desktop에서 Production Story, Freshness, Mid CTA, Comparison, Review Highlight, Final CTA 배치 정상 확인.
+- Mobile 기준 수평 overflow 없음.
+- 포장/배송, FAQ는 대상 상품 detail_json 데이터 부족으로 fallback 캡처 생성.
