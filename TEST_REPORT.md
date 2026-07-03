@@ -914,3 +914,20 @@
 
 - `pnpm run build`: 성공
 - `pnpm run verify:admin-static`: 성공
+## 2026-07-02 상품 등록 AI 더미 초안 검증
+
+### 검증 범위
+
+- `generateProductDescription`
+- `generateAdvantages`
+- `generateFAQ`
+- `generateCookingGuide`
+- `generateOriginStory`
+- `generateProductDetailDraft`
+- 관리자 프리셋 버튼 렌더링 유지
+
+### 결과
+
+- `pnpm run build`: 성공
+- `pnpm run verify:admin-presets`: 성공
+- `pnpm run verify:admin-static`: 성공

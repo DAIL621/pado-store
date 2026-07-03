@@ -837,3 +837,15 @@
 ### 검증
 - `pnpm run build` 성공
 - `pnpm run verify:admin-static` 성공
+## 2026-07-02 상품 등록 AI 더미 초안 문구 정리
+### 완료 작업
+
+- `ai-product-drafts`의 깨진 한글 문구를 실제 운영자가 읽을 수 있는 한국어 초안 생성기로 정리했습니다.
+- 상품명/카테고리를 기준으로 전복, 장어, 조개류, 생선, 밀키트, 선물세트, 기본 수산물 유형을 판정합니다.
+- 유형별 상품 장점, FAQ, 조리법, 산지에서 식탁까지 journey 문구를 자동 생성합니다.
+- 기존 `초안 자동 채우기` 흐름은 유지하면서 생성되는 상세페이지 초안 품질을 개선했습니다.
+
+### 검증
+- `pnpm run build` 성공
+- `pnpm run verify:admin-presets` 성공
+- `pnpm run verify:admin-static` 성공
