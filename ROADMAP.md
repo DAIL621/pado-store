@@ -296,3 +296,8 @@
 2. 상품군별 Story Flow 문구를 전복/장어/갈치/밀키트/선물세트에 맞게 더 세분화한다.
 3. 실제 리뷰 기능 도입 전까지 Review Placeholder의 신뢰 문구와 사진 리뷰 준비 UI를 고도화한다.
 4. 이미지가 8장 이상인 상품으로 Gallery Masonry/Grid 자동 선택을 추가 검증한다.
+## Sprint 7~10 반영: Premium Detail Engine
+
+- 상품 정보와 사진만으로 상세페이지 섹션을 자동 생성하는 1차 엔진을 반영했다.
+- Phase 1 상세페이지 기준은 이제 `detail_json` 직접 입력뿐 아니라 카테고리 자동 판별, FAQ fallback, 포장/배송 fallback, 리뷰 placeholder, 갤러리 캡션, SEO Preview를 포함한다.
+- 다음 단계는 실제 상품 이미지가 늘어날 때 이미지 역할 분류 정확도를 높이고, 관리자 Preview에서 섹션별 On/Off와 실제 저장 전 SEO 미리보기 UI를 강화하는 것이다.

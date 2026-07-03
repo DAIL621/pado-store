@@ -89,3 +89,10 @@ Use even when real reviews are not ready.
 - Show review-ready placeholder
 - Mention photo reviews and purchase verification
 - Replace with live data later without layout changes
+## Auto Generated Detail Components
+
+- `detail-auto-engine` generates category-aware copy and fallback data before the MASTER template renders.
+- `ProductDetailTemplate` should consume generated data instead of hardcoding product-specific sections.
+- Gallery cards may include `role`, `badge`, `title`, and `caption`; these should be rendered when present.
+- Review placeholders should look like future real review modules and must not block later replacement with real review data.
+- Admin Preview must use the same `ProductDetailTemplate` component as the customer page and support mobile, tablet, and desktop checks.

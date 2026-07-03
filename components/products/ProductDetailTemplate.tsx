@@ -24,12 +24,13 @@ type GalleryLayout = "spotlight" | "mosaic" | "editorial" | "dense";
 type JourneyStep = ReturnType<typeof getVisibleProductDetailSections>["journey"][number];
 type Recipe = ReturnType<typeof getVisibleProductDetailSections>["recipes"][number];
 type HeroImage = ReturnType<typeof getVisibleProductDetailSections>["heroImages"][number];
+type GalleryItem = HeroImage & { badge?: string; title?: string; caption?: string; role?: string };
 type FaqItem = ReturnType<typeof getVisibleProductDetailSections>["faq"][number];
 
 export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
-  const { template, sections, heroImages, featureItems, overviewItems, trustSignals, packagingImage } = buildProductDetailTemplateModel(product);
+  const { template, sections, heroImages, featureItems, overviewItems, trustSignals, packagingImage, auto } = buildProductDetailTemplateModel(product);
   const hasAutoContent = hasVisibleProductDetailContent(sections);
-  const galleryImages = sections.heroImages.length ? sections.heroImages : heroImages;
+  const galleryImages: GalleryItem[] = auto.gallery.length ? auto.gallery : sections.heroImages.length ? sections.heroImages : heroImages;
   const mainImage = heroImages[0]?.url || product.image;
 
   return (
@@ -66,13 +67,13 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
       <ProductImpactBanner product={product} image={heroImages[2]?.url || mainImage} promise={template.copy.promise} />
 
-      <MidConversionCta product={product} />
+      <MidConversionCta product={product} reasons={auto.purchaseReasons} />
 
       {sections.benefits.length > 0 && <AdvantageSection productName={product.name} benefits={sections.benefits} />}
 
       {galleryImages.length > 0 && <GallerySection images={galleryImages} productName={product.name} />}
 
-      <ComparisonSection product={product} />
+      <ComparisonSection product={product} comparison={auto.comparison} />
 
       {sections.recipes.length > 0 && <CookingSection recipes={sections.recipes} productName={product.name} />}
 
@@ -84,7 +85,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
       {sections.faq.length > 0 && <FAQSection faq={sections.faq} />}
 
-      <ReviewReadySection product={product} />
+      <ReviewReadySection product={product} reviews={auto.reviews} />
       <BrandPromiseSection />
 
       {(sections.videos.length > 0 || sections.certificates.length > 0 || sections.extraSections.length > 0) && (
@@ -381,9 +382,10 @@ function ProductImpactBanner({ product, image, promise }: { product: Product; im
   );
 }
 
-function MidConversionCta({ product }: { product: Product }) {
+function MidConversionCta({ product, reasons }: { product: Product; reasons: string[] }) {
   const totalStock = getTotalStock(product);
   const isSoldOut = totalStock <= 0;
+  const visibleReasons = reasons.slice(0, 3);
 
   return (
     <section className="shell detail-mid-cta" data-layout-type="conversion-cta" aria-label={`${product.name} 중간 구매 안내`}>
@@ -392,6 +394,13 @@ function MidConversionCta({ product }: { product: Product }) {
         <h2>지금 확인할 것은 세 가지입니다.</h2>
         <p>가격, 배송, 재고를 한 번에 보고 바로 옵션을 선택할 수 있게 구매 영역으로 연결합니다.</p>
       </div>
+      {visibleReasons.length > 0 && (
+        <div className="detail-auto-reasons" aria-label="자동 생성 구매 이유">
+          {visibleReasons.map((reason, index) => (
+            <span key={`${reason}-${index}`}>{reason}</span>
+          ))}
+        </div>
+      )}
       <ul>
         <li>
           <strong>{formatPrice(product.price)}~</strong>
@@ -446,7 +455,7 @@ function AdvantageSection({ productName, benefits }: { productName: string; bene
   );
 }
 
-function GallerySection({ images, productName }: { images: HeroImage[]; productName: string }) {
+function GallerySection({ images, productName }: { images: GalleryItem[]; productName: string }) {
   const layout = getGalleryLayout(images.length);
 
   return (
@@ -461,11 +470,11 @@ function GallerySection({ images, productName }: { images: HeroImage[]; productN
           <figure key={`${image.label}-${image.url}-${index}`} className={index === 0 ? "is-featured" : undefined}>
             <div>
               <Image src={image.url} alt={`${productName} ${image.label}`} fill sizes={index === 0 ? "(max-width: 700px) 100vw, 48vw" : "(max-width: 700px) 50vw, 24vw"} />
-              <em>{getGalleryBadge(image.label, index)}</em>
+              <em>{image.badge || getGalleryBadge(image.label, index)}</em>
             </div>
             <figcaption>
-              <strong>{getGalleryTitle(image.label, index)}</strong>
-              <span>{image.description || getGalleryDescription(image.label, productName)}</span>
+              <strong>{image.title || getGalleryTitle(image.label, index)}</strong>
+              <span>{image.caption || image.description || getGalleryDescription(image.label, productName)}</span>
             </figcaption>
           </figure>
         ))}
@@ -495,7 +504,7 @@ function CookingSection({ recipes, productName }: { recipes: Recipe[]; productNa
   );
 }
 
-function ComparisonSection({ product }: { product: Product }) {
+function ComparisonSection({ product, comparison }: { product: Product; comparison: { normal: string; pado: string } }) {
   const items = [
     { label: "일반 구매", body: "사진, 산지, 포장 정보가 분리되어 상품 상태를 예상하기 어렵습니다." },
     { label: "PADO STORY", body: `${product.origin} 기준의 사진, 선별, 포장, 출고 흐름을 한 페이지에서 확인합니다.` }
@@ -515,6 +524,16 @@ function ComparisonSection({ product }: { product: Product }) {
             <p>{item.body}</p>
           </article>
         ))}
+      </div>
+      <div className="detail-auto-comparison">
+        <article>
+          <strong>자동 비교 요약</strong>
+          <p>{comparison.normal}</p>
+        </article>
+        <article>
+          <strong>PADO STORY 기준</strong>
+          <p>{comparison.pado}</p>
+        </article>
       </div>
     </section>
   );
@@ -556,7 +575,13 @@ function FAQSection({ faq }: { faq: FaqItem[] }) {
   );
 }
 
-function ReviewReadySection({ product }: { product: Product }) {
+function ReviewReadySection({
+  product,
+  reviews
+}: {
+  product: Product;
+  reviews: Array<{ score: string; title: string; body: string; metric: string }>;
+}) {
   return (
     <section className="shell detail-master-review-ready detail-review-highlight" data-layout-type="review-highlight" aria-label={`${product.name} 리뷰 하이라이트`}>
       <div>
@@ -576,6 +601,18 @@ function ReviewReadySection({ product }: { product: Product }) {
           </article>
         ))}
       </div>
+      {reviews.length > 0 && (
+        <div className="detail-auto-review-cards" aria-label="자동 생성 리뷰 요약">
+          {reviews.slice(0, 3).map((item) => (
+            <article key={`${item.metric}-${item.title}`}>
+              <em>{item.score}</em>
+              <strong>{item.title}</strong>
+              <p>{item.body}</p>
+              <span>{item.metric}</span>
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

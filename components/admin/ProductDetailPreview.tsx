@@ -112,7 +112,7 @@ function PreviewPurchaseSlot({ product }: { product: Product }) {
 }
 
 export function ProductDetailPreview({ form, options, detail }: Props) {
-  const [viewMode, setViewMode] = useState<"mobile" | "desktop">("mobile");
+  const [viewMode, setViewMode] = useState<"mobile" | "tablet" | "desktop">("mobile");
   const product = useMemo(() => buildPreviewProduct(form, options, detail), [form, options, detail]);
   const completedSections = [
     getVisibleProductDetailSections(detail).heroImages.length,
@@ -124,7 +124,7 @@ export function ProductDetailPreview({ form, options, detail }: Props) {
   ].filter(Boolean).length;
 
   return (
-    <aside className={`admin-live-preview template-preview ${viewMode === "desktop" ? "desktop-preview" : "mobile-preview"}`} aria-label="상세페이지 미리보기">
+    <aside className={`admin-live-preview template-preview ${viewMode}-preview`} aria-label="상세페이지 미리보기">
       <div className="admin-live-preview-head">
         <div>
           <span>LIVE PREVIEW</span>
@@ -133,6 +133,7 @@ export function ProductDetailPreview({ form, options, detail }: Props) {
         </div>
         <div className="admin-preview-mode" aria-label="미리보기 화면 크기">
           <button type="button" className={viewMode === "mobile" ? "active" : ""} onClick={() => setViewMode("mobile")}>모바일</button>
+          <button type="button" className={viewMode === "tablet" ? "active" : ""} onClick={() => setViewMode("tablet")}>태블릿</button>
           <button type="button" className={viewMode === "desktop" ? "active" : ""} onClick={() => setViewMode("desktop")}>PC</button>
         </div>
       </div>

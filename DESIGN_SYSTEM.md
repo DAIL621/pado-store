@@ -79,3 +79,10 @@ Every generated product detail page should use at least five distinct layout typ
 - `pnpm run verify:detail-json`
 - `pnpm run dev:ensure`
 - `pnpm run capture:detail:after -- --slug={slug}`
+## Premium Detail Engine Rules
+
+- 상세페이지는 상품명, 카테고리, 산지, 옵션, 사진만 있어도 구매 설득 흐름이 끊기지 않아야 한다.
+- 자동 생성 섹션은 Hero, Brand Story, Production Story, Freshness, Why This Product, Gallery, Package/Shipping, FAQ, Review, Final CTA 순서를 기본으로 한다.
+- 데이터가 없는 섹션은 숨기되, 운영에 필수인 FAQ와 포장/배송은 카테고리 fallback을 우선 사용한다.
+- 반복 카드만 나열하지 않고 Split Story, Banner, Timeline, Gallery, Comparison, Review Highlight, CTA를 섞어 사용한다.
+- 품질 점수는 전환 중심으로 평가한다: CTA 가시성, 스토리 흐름, 이미지 비율, 섹션 다양성, 모바일 안정성, SEO, 접근성.

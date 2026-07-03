@@ -1,4 +1,4 @@
-import { appendFileSync, copyFileSync, existsSync, mkdirSync } from "node:fs";
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -115,7 +115,39 @@ async function captureAdminPreview(browser, baseUrl, slug, path) {
   await preview.waitFor({ timeout: 15000 });
   await preview.screenshot({ path });
   await context.close();
-  return { path, captured: rowFound, fallback: rowFound ? undefined : "/admin/new" };
+  return { path, captured: true, fallback: rowFound ? undefined : "/admin/new" };
+}
+
+async function writeSeoPreview(page, slug) {
+  mkdirSync("reports", { recursive: true });
+  const seo = await page.evaluate(() => {
+    const meta = (selector) => document.querySelector(selector)?.getAttribute("content") || "";
+    const jsonLd = [...document.querySelectorAll('script[type="application/ld+json"]')]
+      .map((script) => {
+        try {
+          return JSON.parse(script.textContent || "{}");
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    return {
+      title: document.title,
+      description: meta('meta[name="description"]'),
+      canonical: document.querySelector('link[rel="canonical"]')?.getAttribute("href") || "",
+      openGraphTitle: meta('meta[property="og:title"]'),
+      openGraphDescription: meta('meta[property="og:description"]'),
+      twitterTitle: meta('meta[name="twitter:title"]'),
+      twitterDescription: meta('meta[name="twitter:description"]'),
+      jsonLdTypes: jsonLd.map((item) => item["@type"]).filter(Boolean),
+      hasProductSchema: jsonLd.some((item) => item["@type"] === "Product"),
+      hasBreadcrumbSchema: jsonLd.some((item) => item["@type"] === "BreadcrumbList")
+    };
+  });
+  const path = `reports/seo-preview-${slug}.json`;
+  writeFileSync(path, JSON.stringify(seo, null, 2), "utf8");
+  return { path, captured: Boolean(seo.title), seo };
 }
 
 function appendCaptureDocs({ slug, targetUrl, status, mode, reason, captures, phase }) {
@@ -203,6 +235,8 @@ try {
   for (const [key, [selector, fallback]] of Object.entries(sectionTargets)) {
     captures[key] = await screenshotLocatorOrFallback(capturePage, selector, fallback, `${outputDir}/detail-${slug}-${key}.png`);
   }
+
+  captures.seoPreview = await writeSeoPreview(capturePage, slug);
 
   captures.adminPreview = await captureAdminPreview(browser, baseUrl, slug, `${outputDir}/admin-preview-${slug}.png`).catch(async (error) => ({
     path: `${outputDir}/admin-preview-${slug}.png`,

@@ -68,6 +68,24 @@ try {
   const whyCount = await count(page, ".detail-master-reasons article");
   const layoutTypeCount = await page.evaluate(() => new Set([...document.querySelectorAll("[data-layout-type]")].map((item) => item.getAttribute("data-layout-type"))).size);
   const ctaCount = await count(page, 'a[href="#purchase-box"], .purchase-actions .button');
+  const sectionCount = await count(page, ".detail-master > section, .detail-master > nav");
+  const imageRatioOk = await page.evaluate(() => {
+    const sections = [...document.querySelectorAll(".detail-master section")];
+    const imageSections = sections.filter((section) => section.querySelector("img"));
+    return sections.length > 0 && imageSections.length / sections.length >= 0.35;
+  });
+  const typographyOk = await page.evaluate(() => {
+    const headings = [...document.querySelectorAll(".detail-master h1, .detail-master h2")];
+    return headings.length >= 6 && headings.every((heading) => {
+      const style = window.getComputedStyle(heading);
+      return parseFloat(style.lineHeight) >= parseFloat(style.fontSize) * 1.05;
+    });
+  });
+  const accessibilityOk = await page.evaluate(() => {
+    const images = [...document.querySelectorAll(".detail-master img")];
+    const buttons = [...document.querySelectorAll(".detail-master button, .detail-master a")];
+    return images.every((image) => image.getAttribute("alt")) && buttons.every((button) => button.textContent?.trim() || button.getAttribute("aria-label"));
+  });
   const storyFlowOk = await page.evaluate(() => {
     const selectors = [
       ".detail-master-hero",
@@ -84,20 +102,24 @@ try {
   const title = await page.title();
   const description = await page.locator('meta[name="description"]').getAttribute("content").catch(() => "");
 
-  add(results, "hero", "Hero value and product image", 12, await visible(page, ".detail-master-hero") && await visible(page, ".detail-master-hero-media"), "Hero and primary image are visible.");
-  add(results, "purchase", "Purchase CTA", 12, await visible(page, "#purchase-box") && await visible(page, ".purchase-actions"), "Option and purchase actions are visible.");
-  add(results, "brandHero", "Brand hero", 8, await visible(page, ".detail-brand-hero"), "PADO STORY brand hero is visible.");
-  add(results, "story", "Brand story", 8, await visible(page, ".detail-brand-story"), "Brand story section is visible.");
-  add(results, "why", "Why PADO STORY cards", 8, whyCount >= 6, `${whyCount} trust cards found.`);
-  add(results, "gallery", "Photo gallery", 8, imageCount >= 1, `${imageCount} gallery images found.`);
-  add(results, "galleryCaption", "Gallery captions and badges", 6, await visible(page, ".detail-master-gallery figcaption") && await visible(page, ".detail-master-gallery em"), "Captions and badges are visible.");
-  add(results, "footerCta", "Footer purchase CTA", 8, await visible(page, ".detail-footer-order"), "Footer CTA is visible.");
+  add(results, "hero", "Hero value and product image", 8, await visible(page, ".detail-master-hero") && await visible(page, ".detail-master-hero-media"), "Hero and primary image are visible.");
+  add(results, "purchase", "Purchase CTA", 9, await visible(page, "#purchase-box") && await visible(page, ".purchase-actions"), "Option and purchase actions are visible.");
+  add(results, "brandHero", "Brand hero", 5, await visible(page, ".detail-brand-hero"), "PADO STORY brand hero is visible.");
+  add(results, "story", "Brand story", 5, await visible(page, ".detail-brand-story"), "Brand story section is visible.");
+  add(results, "why", "Why PADO STORY cards", 6, whyCount >= 6, `${whyCount} trust cards found.`);
+  add(results, "gallery", "Photo gallery", 6, imageCount >= 1, `${imageCount} gallery images found.`);
+  add(results, "galleryCaption", "Gallery captions and badges", 4, await visible(page, ".detail-master-gallery figcaption") && await visible(page, ".detail-master-gallery em"), "Captions and badges are visible.");
+  add(results, "footerCta", "Footer purchase CTA", 5, await visible(page, ".detail-footer-order"), "Footer CTA is visible.");
   add(results, "mobile", "Mobile layout stability", 8, noHorizontalOverflow, `scrollWidth=${await page.evaluate(() => document.documentElement.scrollWidth)}, innerWidth=${await page.evaluate(() => window.innerWidth)}`);
-  add(results, "seo", "SEO basics", 6, Boolean(title && description), `title=${title}; description=${description || "missing"}`);
-  add(results, "layoutDiversity", "Section layout diversity", 6, layoutTypeCount >= 5, `${layoutTypeCount} layout types found.`);
-  add(results, "ctaDensity", "Conversion CTA count", 4, ctaCount >= 3, `${ctaCount} CTA elements found.`);
-  add(results, "review", "Review highlight", 4, await visible(page, ".detail-review-highlight"), "Review highlight section is visible.");
-  add(results, "storyFlow", "Story flow order", 2, storyFlowOk, "Hero, story, layout, gallery, review, final CTA order checked.");
+  add(results, "seo", "SEO basics", 8, Boolean(title && description), `title=${title}; description=${description || "missing"}`);
+  add(results, "layoutDiversity", "Section layout diversity", 8, layoutTypeCount >= 5, `${layoutTypeCount} layout types found.`);
+  add(results, "ctaDensity", "Conversion CTA count", 5, ctaCount >= 3, `${ctaCount} CTA elements found.`);
+  add(results, "review", "Review highlight", 5, await visible(page, ".detail-review-highlight"), "Review highlight section is visible.");
+  add(results, "storyFlow", "Story flow order", 5, storyFlowOk, "Hero, story, layout, gallery, review, final CTA order checked.");
+  add(results, "sectionBalance", "Section balance", 4, sectionCount >= 12 && sectionCount <= 28, `${sectionCount} top-level detail sections found.`);
+  add(results, "imageRatio", "Image-to-story ratio", 4, imageRatioOk, "Image sections cover at least 35% of story sections.");
+  add(results, "typography", "Typography rhythm", 3, typographyOk, "Headings use readable line-height and enough hierarchy.");
+  add(results, "accessibility", "Accessibility basics", 2, accessibilityOk, "Images and interactive controls have accessible text.");
 
   const score = results.reduce((sum, item) => sum + item.earned, 0);
   const report = {
