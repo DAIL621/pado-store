@@ -56,8 +56,8 @@ const shoppingMenu: MobileMenuItem[] = [
   { icon: "bag", label: "전체상품", description: "모든 수산물 보기", href: "/products" },
   { icon: "season", label: "제철상품", description: "이번 달 가장 맛있는 상품", href: "/#season" },
   { icon: "hot", label: "인기상품", description: "오늘의 추천 상품", href: "/#recommend" },
-  { icon: "gift", label: "선물세트", description: "감사 선물 추천", href: "/products/pado-gift-set" },
-  { icon: "meal", label: "밀키트", description: "간편하게 즐기는 상품", href: "/products/abalone-porridge" },
+  { icon: "gift", label: "선물세트", description: "감사 선물 추천", href: "/categories/gift-set" },
+  { icon: "meal", label: "밀키트", description: "간편하게 즐기는 상품", href: "/categories/meal-kit" },
   { icon: "pin", label: "산지 이야기", description: "오늘 바다 이야기", href: "/#today-sea" }
 ];
 

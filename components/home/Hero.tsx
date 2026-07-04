@@ -74,8 +74,8 @@ const slidePlan = [
 const campaignLinks: Array<{ title: string; icon: CampaignIconName; href: string }> = [
   { title: "제철상품", icon: "season", href: "#season" },
   { title: "인기상품", icon: "hot", href: "#recommend" },
-  { title: "선물세트", icon: "gift", href: "/products/pado-gift-set" },
-  { title: "밀키트", icon: "meal", href: "/products/abalone-porridge" },
+  { title: "선물세트", icon: "gift", href: "/categories/gift-set" },
+  { title: "밀키트", icon: "meal", href: "/categories/meal-kit" },
   { title: "산지 이야기", icon: "pin", href: "#today-sea" },
   { title: "신상품", icon: "new", href: "/products" }
 ];

@@ -4,10 +4,12 @@ import { notFound } from "next/navigation";
 import { ProductPurchase } from "@/components/products/ProductPurchase";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductDetailTemplate } from "@/components/products/ProductDetailTemplate";
+import { RecentViewedProducts, RecentViewedTracker } from "@/components/products/RecentViewedProducts";
 import { StickyPurchaseBar } from "@/components/products/StickyPurchaseBar";
 import type { Product } from "@/data/products";
 import { getAdminSession } from "@/lib/auth/admin";
 import { getProductBySlug, getProducts } from "@/lib/products";
+import { getRelatedProducts } from "@/lib/products/discovery";
 import { isPublicProductSlug } from "@/lib/products/public-slug";
 
 export const dynamic = "force-dynamic";
@@ -147,11 +149,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
   const isPrivatePreview = adminSession.ok && (!product.isActive || !isPublicProductSlug(product.slug));
 
-  const recommended = (await getProducts())
-    .filter((item) => item.slug !== product.slug)
-    .slice(0, 3);
+  const allProducts = await getProducts();
+  const recommended = getRelatedProducts(product, allProducts, 3);
   return (
     <div className="detail-page">
+      <RecentViewedTracker slug={product.slug} />
       <JsonLdScript data={buildProductJsonLd(product)} />
       <JsonLdScript data={buildBreadcrumbJsonLd(product)} />
       {isPrivatePreview && <AdminPreviewNotice product={product} />}
@@ -204,6 +206,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
       </section>
+
+      <RecentViewedProducts products={allProducts} currentSlug={product.slug} />
 
       <StickyPurchaseBar product={product} />
     </div>

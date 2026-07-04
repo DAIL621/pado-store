@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { products } from "@/data/products";
 import { ProductCard } from "@/components/products/ProductCard";
+import { RecentViewedProducts } from "@/components/products/RecentViewedProducts";
+import { buildHomeShelves } from "@/lib/products/discovery";
 
 const seasons = [
   ["1월", "굴 · 대구 · 방어"],
@@ -54,8 +56,30 @@ const trustItems = [
   ["신선 포장", "상품에 맞춘 냉장 · 산소포장", "/images/story/cold-packaging.png"]
 ];
 
+const reviewHighlights = [
+  {
+    product: "완도 활전복",
+    title: "살아있는 상태로 도착해서 선물하기 좋았어요",
+    copy: "포장이 꼼꼼했고 크기도 고르게 와서 가족 식사용으로 만족도가 높았습니다.",
+    meta: "사진 후기 준비중 · 재구매 의사 높음"
+  },
+  {
+    product: "통영 바다장어",
+    title: "손질되어 있어 저녁 준비가 정말 빨랐어요",
+    copy: "초벌 없이 바로 구워도 비린내가 적고 양념 없이도 담백했습니다.",
+    meta: "조리 간편 · 당일 출고"
+  },
+  {
+    product: "통영 참소라",
+    title: "제철 느낌이 확실해서 술안주로 좋았습니다",
+    copy: "쫄깃한 식감이 살아 있고 배송 상태도 차갑게 잘 유지됐습니다.",
+    meta: "제철상품 · 신선 포장"
+  }
+];
+
 export function HomeSections() {
   const month = new Date().getMonth() + 1;
+  const shelves = buildHomeShelves(products);
 
   return (
     <>
@@ -93,6 +117,39 @@ export function HomeSections() {
           <div className="product-grid">{products.map((product) => <ProductCard key={product.slug} product={product} />)}</div>
         </div>
       </section>
+
+      <section className="section home-shelves-section" aria-label="쇼핑 추천 영역">
+        <div className="shell">
+          <div className="section-heading fade-up">
+            <div>
+              <span className="eyebrow">SHOPPING GUIDE</span>
+              <h2>고르기 쉽게 모아봤어요</h2>
+              <p>처음 방문한 고객도 바로 상품을 비교할 수 있도록 목적별로 다시 묶었습니다.</p>
+            </div>
+            <Link href="/products" className="text-link">상품 전체 보기</Link>
+          </div>
+          <div className="home-shelf-list">
+            {shelves.map((shelf) => (
+              <article className="home-shelf" key={shelf.key}>
+                <div className="home-shelf-head">
+                  <div>
+                    <strong>{shelf.title}</strong>
+                    <p>{shelf.description}</p>
+                  </div>
+                  <Link href={`/products?sort=${shelf.key === "best" ? "discount-high" : "recommended"}`}>더 보기</Link>
+                </div>
+                <div className="product-grid featured-grid">
+                  {shelf.products.map((product) => (
+                    <ProductCard key={`${shelf.key}-${product.slug}`} product={product} compact />
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <RecentViewedProducts products={products} />
 
       <section className="section season-section" id="season">
         <div className="shell">
@@ -153,6 +210,30 @@ export function HomeSections() {
                 <div className="trust-card-image"><Image src={image} alt={title} fill sizes="(max-width: 700px) 50vw, 25vw" loading="eager" /></div>
                 <div><h3>{title}</h3><p>{copy}</p></div>
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section review-section" id="reviews">
+        <div className="shell">
+          <div className="section-heading fade-up">
+            <div>
+              <span className="eyebrow">CUSTOMER VOICE</span>
+              <h2>구매 전 확인하는 생생한 반응</h2>
+              <p>실제 리뷰 기능 연동 전까지는 운영 준비용 예시로 표시됩니다.</p>
+            </div>
+            <Link href="/products" className="text-link">후기 많은 상품 보기</Link>
+          </div>
+          <div className="review-highlight-grid fade-up">
+            {reviewHighlights.map((review) => (
+              <article className="review-highlight-card" key={review.title}>
+                <div className="review-stars" aria-label="별점 5점">★★★★★</div>
+                <strong>{review.title}</strong>
+                <p>{review.copy}</p>
+                <span>{review.product}</span>
+                <small>{review.meta}</small>
+              </article>
             ))}
           </div>
         </div>
