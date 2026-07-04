@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { CartProvider } from "@/components/cart/CartProvider";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pado-story.vercel.app";
@@ -32,5 +33,16 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="ko" data-scroll-behavior="smooth"><body><CartProvider><Header /><main>{children}</main><Footer /></CartProvider></body></html>;
+  return (
+    <html lang="ko" data-scroll-behavior="smooth">
+      <body>
+        <CartProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+          <MobileBottomNav />
+        </CartProvider>
+      </body>
+    </html>
+  );
 }

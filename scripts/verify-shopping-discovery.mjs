@@ -7,6 +7,8 @@ const files = {
   catalog: fs.readFileSync("components/products/ProductCatalog.tsx", "utf8"),
   categories: fs.readFileSync("lib/products/categories.ts", "utf8"),
   categoryPage: fs.readFileSync("app/categories/[category]/page.tsx", "utf8"),
+  layout: fs.readFileSync("app/layout.tsx", "utf8"),
+  bottomNav: fs.readFileSync("components/layout/MobileBottomNav.tsx", "utf8"),
   sitemap: fs.readFileSync("app/sitemap.ts", "utf8"),
   recentViewed: fs.readFileSync("components/products/RecentViewedProducts.tsx", "utf8"),
   productDetail: fs.readFileSync("app/products/[slug]/page.tsx", "utf8")
@@ -37,6 +39,9 @@ assert(files.recentViewed.includes("pado_recent_products"), "recent viewed produ
 assert(files.productDetail.includes("getRelatedProducts"), "product detail related recommendation is missing");
 assert(files.productDetail.includes("RecentViewedTracker"), "product detail should track recently viewed products");
 assert(files.sitemap.includes("CATEGORY_PAGES"), "sitemap should include category pages");
+assert(files.layout.includes("MobileBottomNav"), "root layout should render mobile bottom navigation");
+assert(files.bottomNav.includes("useCart"), "mobile bottom navigation should show real cart count");
+assert(files.bottomNav.includes("/categories/gift-set"), "mobile bottom navigation should include a category shortcut");
 
 console.log(
   JSON.stringify(
@@ -52,7 +57,8 @@ console.log(
         "product-search",
         "availability-filter",
         "recent-viewed-products",
-        "related-products"
+        "related-products",
+        "mobile-bottom-navigation"
       ]
     },
     null,
