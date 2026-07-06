@@ -18,6 +18,7 @@ const opsPages = [
   "app/admin/content/page.tsx",
   "app/admin/stats/page.tsx"
 ].map((file) => fs.readFileSync(file, "utf8")).join("\n");
+const statsPage = fs.readFileSync("app/admin/stats/page.tsx", "utf8");
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -67,6 +68,10 @@ assert(opsPages.includes("리뷰 관리"), "admin reviews page is missing");
 assert(opsPages.includes("쿠폰·배너 관리"), "admin marketing page is missing");
 assert(opsPages.includes("공지·FAQ 관리"), "admin content page is missing");
 assert(opsPages.includes("통계"), "admin stats page is missing");
+assert(statsPage.includes("rankProducts"), "admin stats product ranking is missing");
+assert(statsPage.includes("rankCategories"), "admin stats category ranking is missing");
+assert(statsPage.includes("일매출"), "admin stats daily revenue metric is missing");
+assert(statsPage.includes("월매출"), "admin stats monthly revenue metric is missing");
 
 console.log(
   JSON.stringify(
@@ -88,7 +93,8 @@ console.log(
         "operation-dashboard-kpis",
         "operation-dashboard-ranking",
         "operation-module-routes",
-        "mobile-admin-navigation"
+        "mobile-admin-navigation",
+        "admin-sales-statistics"
       ]
     },
     null,
