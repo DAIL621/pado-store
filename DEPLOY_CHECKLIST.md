@@ -146,3 +146,17 @@
 - [ ] Toss refund tested with a real test payment
 - [ ] Toss webhook URL registered in Toss Dashboard
 - [ ] Kakao Alimtalk/SMS/Email provider credentials registered
+
+## Phase 9 Open Readiness
+
+- [x] Supabase operation DB apply guide documented: `PHASE9_OPEN_READINESS.md`
+- [x] Vercel production environment checklist documented
+- [x] Full operation E2E scenario documented
+- [x] Admin operation manual documented
+- [x] Incident response guide documented
+- [x] Performance/security risk review documented
+- [x] Final open checklist documented
+- [ ] Supabase migration actually applied in production DB
+- [ ] Production `/api/health` verified after Vercel deploy
+- [ ] Real Toss test payment and refund rehearsal completed
+- [ ] Real device iPhone/Android rehearsal completed

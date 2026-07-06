@@ -425,3 +425,24 @@
 3. Toss Dashboard에 Webhook URL 등록 후 실 Webhook 이벤트 검증.
 4. Kakao 알림톡/SMS/Email Provider 벤더 선택 및 운영 키 등록.
 5. 환불 버튼을 관리자 주문 상세 UI에 연결하고 권한/확인 모달을 추가.
+## 2026-07-06 Phase 9 오픈 준비
+
+### 완료
+
+- 실제 오픈 준비 Runbook 작성.
+- Supabase 운영 DB 마이그레이션 적용 가이드 작성.
+- Vercel 운영 배포 점검표 작성.
+- 주문/결제/배송/리뷰/환불/재고 복원 E2E 검증 절차 작성.
+- 관리자 운영 매뉴얼 작성.
+- 장애 대응 가이드 작성.
+- 성능/보안 점검 및 우선순위 작성.
+
+### 오픈 전 필수
+
+1. Supabase 운영 DB에 Phase 8 마이그레이션 적용.
+2. Production 환경변수 전체 확인.
+3. Toss 테스트 결제/환불 리허설.
+4. Toss Webhook URL 등록.
+5. Kakao Redirect URI/Supabase Redirect URL 최종 확인.
+6. 개인정보처리방침/이용약관 준비.
+7. 실기기 iPhone/Android 최종 테스트.

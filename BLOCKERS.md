@@ -150,3 +150,12 @@ alter table products add column if not exists detail_json jsonb not null default
 - Kakao 알림톡/SMS/Email 실발송은 외부 Provider 계약, API 키, 템플릿 승인이 필요하다.
   - 환경변수: `PADO_NOTIFICATION_PROVIDER`, `KAKAO_ALIMTALK_WEBHOOK_URL`, `SMS_PROVIDER_WEBHOOK_URL`, `EMAIL_PROVIDER_WEBHOOK_URL` 등.
 - CJ대한통운 실제 배송 API 조회는 계약 API 키와 사용 정책 확인 후 Provider 교체가 필요하다.
+## 2026-07-06 Phase 9 오픈 전 외부 확인
+
+- Supabase 운영 DB 마이그레이션은 Dashboard SQL Editor 권한이 필요하다.
+- Vercel Production 환경변수는 Vercel Dashboard 권한이 필요하다.
+- Production `/api/health`는 실제 배포 URL 확인 후 검증 가능하다.
+- Toss 실결제/환불은 Toss 테스트 결제건과 Dashboard 설정이 필요하다.
+- Toss Webhook은 Toss Dashboard에 Production URL 등록이 필요하다.
+- Kakao 로그인은 Kakao Developers Redirect URI와 Supabase Auth Redirect URL 설정이 필요하다.
+- 개인정보처리방침/이용약관은 사업자 정책 문구 확정이 필요하다.

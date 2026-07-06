@@ -1834,3 +1834,24 @@
   - Toss Webhook: Toss 콘솔 Webhook URL 등록 필요.
   - Kakao 알림톡/SMS/Email 실발송: Provider 계약/API 키/템플릿 승인 필요.
   - Supabase 운영 DB 마이그레이션 실제 적용: Supabase SQL Editor 또는 CLI 권한 필요.
+## 2026-07-06 Phase 9 오픈 준비 검증
+
+- 문서 검증:
+  - `PHASE9_OPEN_READINESS.md` 생성.
+  - Supabase DB 적용/백업/롤백/확인 SQL 포함.
+  - Vercel Production 환경변수 체크리스트 포함.
+  - 운영 E2E 시나리오 포함.
+  - 관리자 운영 매뉴얼 포함.
+  - 장애 대응 가이드 포함.
+  - 성능/보안 리스크 포함.
+  - 최종 오픈 체크리스트 포함.
+- Health Check 개선:
+  - `notificationProvider`
+  - `kakaoAlimtalkWebhook`
+  - `smsProviderWebhook`
+  - `emailProviderWebhook`
+- 남은 실검증:
+  - Supabase 운영 DB 마이그레이션 실제 적용.
+  - Production `/api/health` 확인.
+  - 실제 Toss 테스트 결제/환불.
+  - 실기기 iPhone/Android 주문 흐름.

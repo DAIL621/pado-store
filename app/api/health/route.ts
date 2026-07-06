@@ -14,6 +14,10 @@ export function GET() {
       siteUrl: Boolean(process.env.NEXT_PUBLIC_SITE_URL),
       productImageStorage: process.env.PADO_PRODUCT_IMAGE_STORAGE || "local",
       supabaseProductImageBucket: process.env.PADO_PRODUCT_IMAGE_STORAGE === "supabase" ? Boolean(process.env.SUPABASE_PRODUCT_IMAGE_BUCKET) : "not-required",
+      notificationProvider: process.env.PADO_NOTIFICATION_PROVIDER || "mock",
+      kakaoAlimtalkWebhook: process.env.PADO_NOTIFICATION_PROVIDER === "kakao_alimtalk" ? Boolean(process.env.KAKAO_ALIMTALK_WEBHOOK_URL) : "not-required",
+      smsProviderWebhook: process.env.PADO_NOTIFICATION_PROVIDER === "sms" ? Boolean(process.env.SMS_PROVIDER_WEBHOOK_URL) : "not-required",
+      emailProviderWebhook: process.env.PADO_NOTIFICATION_PROVIDER === "email" ? Boolean(process.env.EMAIL_PROVIDER_WEBHOOK_URL) : "not-required",
       devAdminLoginDisabled: process.env.DEV_ADMIN_LOGIN_ENABLED !== "true"
     }
   });
