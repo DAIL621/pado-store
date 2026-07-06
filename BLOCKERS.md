@@ -159,3 +159,13 @@ alter table products add column if not exists detail_json jsonb not null default
 - Toss Webhook은 Toss Dashboard에 Production URL 등록이 필요하다.
 - Kakao 로그인은 Kakao Developers Redirect URI와 Supabase Auth Redirect URL 설정이 필요하다.
 - 개인정보처리방침/이용약관은 사업자 정책 문구 확정이 필요하다.
+## 2026-07-06 Phase 10 Production Launch Blockers
+
+- Supabase production DB migration requires Supabase Dashboard SQL Editor or CLI access.
+- Vercel Production environment variables require Vercel Dashboard access.
+- Toss live payment and refund rehearsal requires live/test payment credentials and a refundable test transaction.
+- Toss webhook registration requires Toss Dashboard access and the final production URL.
+- Kakao login production redirect requires Kakao Developers and Supabase Auth URL configuration.
+- Notification Provider production sending requires Kakao Alimtalk/SMS/Email provider credentials.
+- Supabase Storage production image upload requires bucket creation, policy confirmation, and Vercel env configuration.
+- Final domain, SSL, robots, sitemap, metadata checks require deployed production URL.

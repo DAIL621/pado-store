@@ -160,3 +160,23 @@
 - [ ] Production `/api/health` verified after Vercel deploy
 - [ ] Real Toss test payment and refund rehearsal completed
 - [ ] Real device iPhone/Android rehearsal completed
+## Phase 10 Production Launch Checklist
+
+- [x] Production launch runbook created: `PHASE10_PRODUCTION_LAUNCH.md`
+- [x] Production environment-variable checklist updated
+- [x] Supabase production migration order documented
+- [x] Production verification SQL documented
+- [x] Rollback procedure documented
+- [x] Full operation E2E scenario documented
+- [x] Admin launch monitoring widgets added
+- [x] SEO readiness checklist documented
+- [x] Performance readiness checklist documented
+- [x] Security readiness checklist documented
+- [ ] Supabase production migration applied
+- [ ] Vercel Production environment variables confirmed
+- [ ] Production `/api/health` returns all required checks
+- [ ] Toss live payment approval tested
+- [ ] Toss refund and stock restoration tested
+- [ ] Kakao production login redirect tested
+- [ ] Supabase Storage product upload tested
+- [ ] Domain, SSL, robots, sitemap, metadata confirmed on production URL

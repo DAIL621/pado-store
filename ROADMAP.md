@@ -446,3 +446,22 @@
 5. Kakao Redirect URI/Supabase Redirect URL 최종 확인.
 6. 개인정보처리방침/이용약관 준비.
 7. 실기기 iPhone/Android 최종 테스트.
+## Phase 10 - Production Launch
+
+### Completed
+
+- Production launch runbook prepared.
+- Production DB migration checklist prepared.
+- End-to-end operation scenario documented.
+- Admin launch monitoring added for payment failures, notification failures, and operation risk logs.
+- SEO, performance, security, backup, rollback, and incident response checklists documented.
+
+### Remaining Before Public Opening
+
+1. Apply Supabase operation automation migration to production DB.
+2. Confirm all Vercel Production environment variables.
+3. Run real Toss payment approval and refund tests.
+4. Confirm Supabase Storage production bucket and upload policy.
+5. Confirm Kakao login and Supabase Auth production redirect URLs.
+6. Confirm production domain, SSL, robots, sitemap, and metadata.
+7. Run full customer-to-admin E2E rehearsal on production URL.

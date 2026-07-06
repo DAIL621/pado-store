@@ -43,6 +43,22 @@ type DashboardProduct = {
   }>;
 };
 
+type DashboardOperationLog = {
+  id: string;
+  event_type: string | null;
+  summary: string | null;
+  created_at: string;
+};
+
+type DashboardNotificationEvent = {
+  id: string;
+  event: string | null;
+  status: string | null;
+  channel: string | null;
+  title: string | null;
+  created_at: string;
+};
+
 function startOfDay(date = new Date()) {
   const next = new Date(date);
   next.setHours(0, 0, 0, 0);
@@ -141,7 +157,7 @@ export default async function AdminDashboardPage() {
   const weekStart = startOfDay();
   weekStart.setDate(weekStart.getDate() - 6);
 
-  const [ordersResult, productsResult, memberCount] = await Promise.all([
+  const [ordersResult, productsResult, operationLogsResult, notificationEventsResult, memberCount] = await Promise.all([
     supabase
       .from("orders")
       .select("id, order_no, recipient_name, total_amount, status, created_at, order_items(product_slug, product_name, quantity, unit_price), shipments(carrier, tracking_number)")
@@ -152,18 +168,37 @@ export default async function AdminDashboardPage() {
       .select("id, slug, name, category, origin, base_price, is_active, created_at, product_options(id, name, stock)")
       .order("created_at", { ascending: false })
       .limit(200),
+    supabase
+      .from("operation_logs")
+      .select("id, event_type, summary, created_at")
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("notification_events")
+      .select("id, event, status, channel, title, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50),
     getProfileCount()
   ]);
 
   const orders = ((ordersResult.data ?? []) as DashboardOrder[]).filter(Boolean);
   const products = ((productsResult.data ?? []) as DashboardProduct[]).filter(Boolean);
+  const operationLogs = ((operationLogsResult.data ?? []) as DashboardOperationLog[]).filter(Boolean);
+  const notificationEvents = ((notificationEventsResult.data ?? []) as DashboardNotificationEvent[]).filter(Boolean);
   const todayOrders = orders.filter((order) => isAfter(order.created_at, today));
+  const todayOperationLogs = operationLogs.filter((log) => isAfter(log.created_at, today));
+  const todayNotificationEvents = notificationEvents.filter((event) => isAfter(event.created_at, today));
   const monthOrders = orders.filter((order) => isAfter(order.created_at, month));
   const weekOrders = orders.filter((order) => isAfter(order.created_at, weekStart));
   const todayRevenue = todayOrders.filter(isRevenueOrder).reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0);
   const monthRevenue = monthOrders.filter(isRevenueOrder).reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0);
   const cancelledOrders = todayOrders.filter((order) => order.status === "cancelled");
   const refundedOrders = todayOrders.filter((order) => order.status === "refunded");
+  const paymentFailedLogs = todayOperationLogs.filter((log) => log.event_type === "payment_failed");
+  const failedNotifications = todayNotificationEvents.filter((event) => event.status === "failed");
+  const recentRiskLogs = operationLogs
+    .filter((log) => ["payment_failed", "refund_completed"].includes(String(log.event_type ?? "")) || String(log.summary ?? "").toLowerCase().includes("fail"))
+    .slice(0, 6);
   const deliveryReadyOrders = orders.filter((order) => order.status === "paid" || order.status === "preparing" || order.status === "delivery_ready");
   const shippedOrders = orders.filter((order) => order.status === "shipped");
   const deliveredToday = todayOrders.filter((order) => order.status === "delivered");
@@ -181,10 +216,10 @@ export default async function AdminDashboardPage() {
       title="운영 대시보드"
       subtitle="주문, 매출, 배송, 환불, 재고를 한 화면에서 확인합니다"
     >
-      {(ordersResult.error || productsResult.error) && (
+      {(ordersResult.error || productsResult.error || operationLogsResult.error || notificationEventsResult.error) && (
         <div className="admin-alert-panel" role="status">
           <strong>일부 운영 데이터를 불러오지 못했습니다.</strong>
-          <span>{ordersResult.error?.message || productsResult.error?.message}</span>
+          <span>{ordersResult.error?.message || productsResult.error?.message || operationLogsResult.error?.message || notificationEventsResult.error?.message}</span>
         </div>
       )}
 
@@ -195,6 +230,9 @@ export default async function AdminDashboardPage() {
           { label: "이번달 매출", value: formatPrice(monthRevenue), unit: `${monthOrders.length}건 기준`, href: "/admin/stats" },
           { label: "취소", value: cancelledOrders.length, unit: "오늘", href: "/admin/orders" },
           { label: "환불", value: refundedOrders.length, unit: "오늘", href: "/admin/orders" },
+          { label: "결제 실패", value: paymentFailedLogs.length, unit: "오늘", href: "/admin/automation" },
+          { label: "알림 실패", value: failedNotifications.length, unit: "오늘", href: "/admin/automation" },
+          { label: "운영 로그", value: todayOperationLogs.length, unit: "오늘", href: "/admin/automation" },
           { label: "배송 준비", value: deliveryReadyOrders.length, unit: "결제완료·준비중", href: "/admin/deliveries" },
           { label: "배송 중", value: shippedOrders.length, unit: "송장 등록", href: "/admin/deliveries" },
           { label: "배송 완료", value: deliveredToday.length, unit: "오늘", href: "/admin/deliveries" },
@@ -211,6 +249,24 @@ export default async function AdminDashboardPage() {
       </section>
 
       <section className="admin-dashboard-grid">
+        <div className="admin-panel admin-dashboard-card">
+          <div>
+            <h2>오픈 모니터링</h2>
+            <Link href="/admin/automation">운영 로그 보기</Link>
+          </div>
+          <div className="admin-mini-list">
+            {recentRiskLogs.map((log) => (
+              <Link href="/admin/automation" key={log.id} className={log.event_type === "payment_failed" ? "danger" : ""}>
+                <strong>{log.event_type ?? "operation"}</strong>
+                <span>{log.summary ?? "요약 없음"}</span>
+                <em>{new Date(log.created_at).toLocaleString("ko-KR")}</em>
+              </Link>
+            ))}
+            {!recentRiskLogs.length && <p className="admin-empty-note">최근 결제 실패, 환불, 운영 오류 로그가 없습니다.</p>}
+            {operationLogsResult.error && <p className="admin-empty-note">운영 로그 테이블 적용 후 자동으로 표시됩니다.</p>}
+          </div>
+        </div>
+
         <div className="admin-panel admin-dashboard-card">
           <div>
             <h2>최근 7일 주문·매출 추이</h2>

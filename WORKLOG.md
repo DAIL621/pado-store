@@ -1765,3 +1765,17 @@
   - 오픈 가능 여부와 Top 10 과제.
 - `/api/health`에 Notification Provider 환경변수 상태를 추가했다.
 - Phase 9 기준 현재 오픈 준비율을 78%로 판정했다.
+## 2026-07-06 Phase 10 Production Launch
+
+- Added `PHASE10_PRODUCTION_LAUNCH.md` as the final launch runbook.
+  - Production environment-variable checklist.
+  - Supabase production migration order, backup, verification SQL, and rollback notes.
+  - Full operation E2E checklist from signup to refund and stock restoration.
+  - Admin launch monitoring plan.
+  - SEO, performance, and security readiness review.
+  - Go / No-Go launch decision and Top 10 pre-launch tasks.
+- Improved admin dashboard launch monitoring.
+  - Added payment failure KPI from `operation_logs`.
+  - Added notification failure KPI from `notification_events`.
+  - Added recent payment/refund/risk log panel.
+  - Kept operation table failures non-blocking so the dashboard remains usable before migration.

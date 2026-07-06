@@ -64,6 +64,11 @@ assert(adminDashboard.includes("최근 7일 주문·매출 추이"), "admin dash
 assert(adminDashboard.includes("재고 예측"), "admin dashboard stock forecast is missing");
 assert(adminDashboard.includes("상품별 판매량"), "admin dashboard product sales ranking is missing");
 assert(adminDashboard.includes("profiles"), "admin dashboard member count check is missing");
+assert(adminDashboard.includes("결제 실패"), "admin dashboard payment failure monitor is missing");
+assert(adminDashboard.includes("알림 실패"), "admin dashboard notification failure monitor is missing");
+assert(adminDashboard.includes("오픈 모니터링"), "admin dashboard launch monitoring panel is missing");
+assert(adminDashboard.includes("operation_logs"), "admin dashboard should read operation logs");
+assert(adminDashboard.includes("notification_events"), "admin dashboard should read notification events");
 
 ["/admin/members", "/admin/reviews", "/admin/marketing", "/admin/content", "/admin/stats", "/admin/automation"].forEach((href) => {
   assert(adminLayout.includes(href), `admin sidebar route is missing: ${href}`);
@@ -106,7 +111,8 @@ console.log(
         "admin-sales-statistics",
         "admin-member-purchase-summary",
         "admin-review-readiness",
-        "admin-operation-automation-route"
+        "admin-operation-automation-route",
+        "admin-launch-monitoring"
       ]
     },
     null,

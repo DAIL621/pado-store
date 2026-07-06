@@ -1855,3 +1855,22 @@
   - Production `/api/health` 확인.
   - 실제 Toss 테스트 결제/환불.
   - 실기기 iPhone/Android 주문 흐름.
+## 2026-07-06 Phase 10 Production Launch Verification
+
+- Scope:
+  - Production launch runbook documentation.
+  - Admin dashboard launch monitoring additions.
+  - Health check and operation automation verification.
+- Expected verification:
+  - `pnpm run build`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run verify:operations`: passed
+  - `pnpm run verify:admin-static`: passed, including `admin-launch-monitoring`
+  - `pnpm run verify:admin`: passed
+  - `pnpm run dev:ensure`
+- Manual production checks still required:
+  - Production `/api/health` on deployed Vercel URL.
+  - Supabase production migration verification SQL.
+  - Toss real payment approval/refund.
+  - Kakao login production redirect.
+  - Supabase Storage product image upload.
