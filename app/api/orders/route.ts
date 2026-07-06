@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { readJsonBody } from "@/lib/api/request";
 import { calculateShipping } from "@/lib/order/pricing";
+import { writeNotificationEventsBestEffort, writeOperationLogBestEffort } from "@/lib/operations/automation";
+import type { OperationEvent } from "@/lib/operations/events";
 import { isPublicProductSlug } from "@/lib/products/public-slug";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -176,6 +178,31 @@ export async function POST(request: Request) {
     await cleanupCreatedOrder(supabase, order.id);
     return NextResponse.json({ ok: false, message: paymentError.message }, { status: 500 });
   }
+
+  const operationEvents: OperationEvent[] = [
+    {
+      type: "order_created",
+      orderId: order.id,
+      orderNo,
+      actor: { id: userId, role: userId ? "customer" : "system" },
+      totalAmount
+    },
+    {
+      type: "notification_queued",
+      payload: {
+        event: "order.created",
+        orderId: order.id,
+        orderNo,
+        to: recipientPhone,
+        status: "pending",
+        title: "주문 접수 안내",
+        message: `주문 ${orderNo}이 접수되었습니다. 결제 완료 후 산지 출고가 준비됩니다.`,
+        variables: { orderNo, totalAmount }
+      }
+    }
+  ];
+  await writeOperationLogBestEffort(supabase, order.id, operationEvents);
+  await writeNotificationEventsBestEffort(supabase, operationEvents);
 
   return NextResponse.json({ ok: true, mode: "db", order });
 }

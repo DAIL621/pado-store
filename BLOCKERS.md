@@ -136,3 +136,17 @@ alter table products add column if not exists detail_json jsonb not null default
 - 카카오 알림톡, SMS, Email 실제 발송은 외부 Provider 계약/키/템플릿 승인 후 연결 가능하다.
 - CJ대한통운 실제 API 연동은 계약 API 키와 송장 조회 정책 확인 후 Provider 교체가 필요하다.
 - Toss 환불 자동화는 운영 환불 정책과 Toss API 권한 확인 후 `PaymentProvider.refund` 구현이 필요하다.
+## 2026-07-06 Phase 8 외부 권한 필요
+
+- Supabase 운영 DB 마이그레이션 실제 적용 필요.
+  - 파일: `supabase/migrations/202607060400_operation_automation.sql`
+  - 현재 코드와 관리자 화면은 준비됐지만, 운영 DB에 테이블이 없으면 `/admin/automation`에서 누락 테이블 안내가 표시된다.
+- Toss Payments 실환불 검증 필요.
+  - `/api/admin/payments/refund`는 구현됨.
+  - 실제 검증에는 운영/테스트 `payment_key`, Toss Secret Key, 환불 가능 결제건이 필요하다.
+- Toss Webhook 등록 필요.
+  - 엔드포인트: `/api/payments/toss/webhook`
+  - Toss Dashboard에서 Webhook URL 등록 후 이벤트 검증 필요.
+- Kakao 알림톡/SMS/Email 실발송은 외부 Provider 계약, API 키, 템플릿 승인이 필요하다.
+  - 환경변수: `PADO_NOTIFICATION_PROVIDER`, `KAKAO_ALIMTALK_WEBHOOK_URL`, `SMS_PROVIDER_WEBHOOK_URL`, `EMAIL_PROVIDER_WEBHOOK_URL` 등.
+- CJ대한통운 실제 배송 API 조회는 계약 API 키와 사용 정책 확인 후 Provider 교체가 필요하다.

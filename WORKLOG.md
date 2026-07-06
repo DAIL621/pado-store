@@ -1712,3 +1712,40 @@
   - footer: screenshots/detail/detail-pado-gift-set-footer.png
   - seoPreview: reports/seo-preview-pado-gift-set.json
   - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png
+## 2026-07-06 Phase 8 운영 자동화 실사용 준비
+
+- Supabase 운영 자동화 마이그레이션 파일을 생성했다.
+  - `supabase/migrations/202607060400_operation_automation.sql`
+  - `operation_logs`
+  - `order_status_history`
+  - `notification_events`
+  - `review_requests`
+  - `inventory_logs`
+  - PK, FK, index, `created_at`, `updated_at`, RLS, 관리자 정책 포함.
+- 운영 로그 실사용 경로를 연결했다.
+  - 주문 생성 시 `order_created` 로그 및 주문 접수 알림 큐 생성.
+  - 결제 승인 시 `payment_approved` 로그 및 결제 완료 알림 큐 생성.
+  - 결제 실패 시 `payment_failed` 로그 생성.
+  - 주문 상태 변경 시 `order_status_changed`, `delivery_updated`, 알림 큐, 리뷰 요청 예약 생성.
+  - 환불 성공 시 `refund_completed`, 상태 이력, 알림 큐, 재고 복구 로그 생성.
+- Toss 운영 확장 API를 추가했다.
+  - `/api/admin/payments/refund`: 전액/부분 환불, Toss cancel API 호출, 재고 복구, 로그 기록.
+  - `/api/payments/toss/webhook`: Toss Webhook 이벤트 수신 및 운영 로그 기록.
+- Notification Provider 구조를 확장했다.
+  - `MockNotificationProvider`
+  - `HttpNotificationProvider`
+  - `createNotificationProvider`
+  - `PADO_NOTIFICATION_PROVIDER=mock|kakao_alimtalk|sms|email`
+- 관리자 대시보드를 운영 현황 중심으로 업그레이드했다.
+  - 오늘 주문/매출/취소/환불/배송준비/배송중/배송완료.
+  - 최근 7일 주문·매출 추이.
+  - 상품별 판매량.
+  - 품절 임박.
+  - 재고 예측: 일평균 판매량, 예상 품절일, 권장 발주수량.
+- `/admin/automation` 화면을 실제 데이터 조회 화면으로 개선했다.
+  - 최근 운영 로그.
+  - 상태 변경 이력.
+  - 알림 이벤트 큐.
+  - 리뷰 요청 예약.
+  - 재고 변경 로그.
+  - 테이블 미적용 시 누락 테이블 안내.

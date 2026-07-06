@@ -9,6 +9,39 @@ export type OperationActor = {
 
 export type OperationEvent =
   | {
+      type: "order_created";
+      orderId: string;
+      orderNo?: string | null;
+      actor: OperationActor;
+      totalAmount?: number | null;
+    }
+  | {
+      type: "payment_approved";
+      orderId: string;
+      orderNo?: string | null;
+      actor: OperationActor;
+      amount?: number | null;
+      provider?: string | null;
+    }
+  | {
+      type: "payment_failed";
+      orderId?: string | null;
+      orderNo?: string | null;
+      actor: OperationActor;
+      amount?: number | null;
+      provider?: string | null;
+      reason?: string | null;
+    }
+  | {
+      type: "refund_completed";
+      orderId: string;
+      orderNo?: string | null;
+      actor: OperationActor;
+      amount?: number | null;
+      provider?: string | null;
+      reason?: string | null;
+    }
+  | {
       type: "order_status_changed";
       orderId: string;
       orderNo?: string | null;
@@ -46,6 +79,18 @@ export type OperationEvent =
     };
 
 export function describeOperationEvent(event: OperationEvent) {
+  if (event.type === "order_created") {
+    return `주문 생성: ${event.orderNo ?? event.orderId}`;
+  }
+  if (event.type === "payment_approved") {
+    return `결제 승인: ${event.orderNo ?? event.orderId}`;
+  }
+  if (event.type === "payment_failed") {
+    return `결제 실패: ${event.orderNo ?? event.orderId ?? "주문번호 미확인"}`;
+  }
+  if (event.type === "refund_completed") {
+    return `환불 완료: ${event.orderNo ?? event.orderId}`;
+  }
   if (event.type === "order_status_changed") {
     return `주문 상태: ${orderStatusLabels[event.from]} -> ${orderStatusLabels[event.to]}`;
   }

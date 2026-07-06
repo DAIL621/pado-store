@@ -136,3 +136,13 @@
 - [ ] Operation log tables applied in Supabase production DB
 - [ ] Real Kakao Alimtalk/SMS/Email provider connected
 - [ ] Real delivery tracking API provider connected
+- [x] Operation automation migration file exists
+- [x] Operation logs/status history/notification/review/inventory tables are specified
+- [x] Toss refund API route builds
+- [x] Toss webhook route builds
+- [x] HTTP notification provider structure exists
+- [x] Admin dashboard refund/trend/stock forecast widgets build
+- [ ] Supabase operation migration applied to production DB
+- [ ] Toss refund tested with a real test payment
+- [ ] Toss webhook URL registered in Toss Dashboard
+- [ ] Kakao Alimtalk/SMS/Email provider credentials registered

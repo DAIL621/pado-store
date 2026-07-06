@@ -70,6 +70,77 @@ export class MockNotificationProvider implements NotificationProvider {
   }
 }
 
+export class HttpNotificationProvider implements NotificationProvider {
+  readonly name: string;
+  private readonly endpoint: string;
+  private readonly apiKey?: string;
+  private readonly channel: OperationNotificationChannel;
+
+  constructor({
+    name,
+    endpoint,
+    apiKey,
+    channel
+  }: {
+    name: string;
+    endpoint: string;
+    apiKey?: string;
+    channel: OperationNotificationChannel;
+  }) {
+    this.name = name;
+    this.endpoint = endpoint;
+    this.apiKey = apiKey;
+    this.channel = channel;
+  }
+
+  async send(payload: OperationNotificationPayload): Promise<OperationProviderResult> {
+    const response = await fetch(this.endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {})
+      },
+      body: JSON.stringify({ channel: this.channel, ...payload })
+    });
+    const result = await response.json().catch(() => ({}));
+    return {
+      ok: response.ok,
+      provider: this.name,
+      externalId: typeof result.id === "string" ? result.id : undefined,
+      message: result.message ?? (response.ok ? "notification sent" : "notification failed")
+    };
+  }
+}
+
+export function createNotificationProvider(): NotificationProvider {
+  const provider = process.env.PADO_NOTIFICATION_PROVIDER ?? "mock";
+  if (provider === "kakao_alimtalk" && process.env.KAKAO_ALIMTALK_WEBHOOK_URL) {
+    return new HttpNotificationProvider({
+      name: "kakao-alimtalk",
+      endpoint: process.env.KAKAO_ALIMTALK_WEBHOOK_URL,
+      apiKey: process.env.KAKAO_ALIMTALK_API_KEY,
+      channel: "kakao_alimtalk"
+    });
+  }
+  if (provider === "sms" && process.env.SMS_PROVIDER_WEBHOOK_URL) {
+    return new HttpNotificationProvider({
+      name: "sms",
+      endpoint: process.env.SMS_PROVIDER_WEBHOOK_URL,
+      apiKey: process.env.SMS_PROVIDER_API_KEY,
+      channel: "sms"
+    });
+  }
+  if (provider === "email" && process.env.EMAIL_PROVIDER_WEBHOOK_URL) {
+    return new HttpNotificationProvider({
+      name: "email",
+      endpoint: process.env.EMAIL_PROVIDER_WEBHOOK_URL,
+      apiKey: process.env.EMAIL_PROVIDER_API_KEY,
+      channel: "email"
+    });
+  }
+  return new MockNotificationProvider();
+}
+
 export const cjKoreaExpressProvider: DeliveryProvider = {
   name: "cj-korea-express",
   buildTrackingUrl(carrier, trackingNumber) {

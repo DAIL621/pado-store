@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/admin-api";
 import { readJsonBody } from "@/lib/api/request";
-import { buildOrderStatusAutomation, writeOperationLogBestEffort, writeOrderStatusHistoryBestEffort } from "@/lib/operations/automation";
+import {
+  buildOrderStatusAutomation,
+  writeNotificationEventsBestEffort,
+  writeOperationLogBestEffort,
+  writeOrderStatusHistoryBestEffort,
+  writeReviewRequestsBestEffort
+} from "@/lib/operations/automation";
 import { canChangeOrderStatus, isOperationOrderStatus, needsTrackingNumber, type OperationOrderStatus } from "@/lib/operations/status";
 import { isValidTrackingNumber, TRACKING_NUMBER_MESSAGE } from "@/lib/shipping/tracking";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -22,7 +28,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const { data: currentOrder, error: orderError } = await supabase
     .from("orders")
-    .select("id, order_no, status, recipient_phone, shipments(carrier, tracking_number)")
+    .select("id, order_no, status, recipient_phone, user_id, shipments(carrier, tracking_number)")
     .eq("id", id)
     .single();
 
@@ -99,6 +105,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const log = await writeOperationLogBestEffort(supabase, id, automation.events);
   const statusEvent = automation.events.find((event) => event.type === "order_status_changed");
   const statusHistory = statusEvent ? await writeOrderStatusHistoryBestEffort(supabase, statusEvent) : { ok: false, skipped: true };
+  const notifications = await writeNotificationEventsBestEffort(supabase, automation.events);
+  const reviewRequests = await writeReviewRequestsBestEffort(supabase, automation.events, currentOrder.user_id);
 
-  return NextResponse.json({ ok: true, automation, operationLog: log, statusHistory });
+  return NextResponse.json({ ok: true, automation, operationLog: log, statusHistory, notifications, reviewRequests });
 }

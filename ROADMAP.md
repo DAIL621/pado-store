@@ -407,3 +407,21 @@
 3. 주문 취소/반품/환불 전용 관리자 UI와 재고 복구 정책 연결.
 4. Mock NotificationProvider를 Kakao Alimtalk/SMS/Email Provider로 교체 가능한 설정 화면 추가.
 5. 배송완료 후 리뷰 요청 예약 큐와 리뷰 작성 가능 상태를 실제 리뷰 DB와 연결.
+## 2026-07-06 Phase 8 운영 자동화 실사용 준비
+
+### 완료
+
+- 운영 자동화 DB 마이그레이션 파일 생성.
+- 주문 생성/결제 승인/결제 실패/상태 변경/환불/리뷰 요청/재고 로그 코드 연결.
+- Toss 환불 API와 Webhook 수신 API 추가.
+- Mock/HTTP 기반 알림 Provider 선택 구조 추가.
+- 관리자 자동화 화면에서 실제 운영 테이블 조회 준비.
+- 관리자 대시보드에 환불 KPI, 7일 추이, 재고 예측 추가.
+
+### 다음 우선순위
+
+1. Supabase 운영 DB에 `202607060400_operation_automation.sql` 적용.
+2. 운영 DB 적용 후 실제 주문 생성 → 결제 승인 → 배송완료 → 리뷰 요청 → 환불 흐름 E2E 검증.
+3. Toss Dashboard에 Webhook URL 등록 후 실 Webhook 이벤트 검증.
+4. Kakao 알림톡/SMS/Email Provider 벤더 선택 및 운영 키 등록.
+5. 환불 버튼을 관리자 주문 상세 UI에 연결하고 권한/확인 모달을 추가.

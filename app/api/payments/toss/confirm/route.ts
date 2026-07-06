@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/api/request";
-import { buildInventoryAutomation, writeOperationLogBestEffort } from "@/lib/operations/automation";
+import {
+  buildInventoryAutomation,
+  writeInventoryLogsBestEffort,
+  writeNotificationEventsBestEffort,
+  writeOperationLogBestEffort
+} from "@/lib/operations/automation";
+import type { OperationEvent } from "@/lib/operations/events";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 
 type OrderItemForStock = {
@@ -169,12 +175,40 @@ export async function POST(request: Request) {
       body: JSON.stringify({ paymentKey, orderId, amount: paymentAmount })
     });
   } catch {
+    if (supabase) {
+      const failureEvents: OperationEvent[] = [
+        {
+          type: "payment_failed",
+          orderId: order?.id ?? null,
+          orderNo: orderId,
+          actor: { role: "system" },
+          amount: paymentAmount,
+          provider: "toss",
+          reason: "confirm_request_failed"
+        }
+      ];
+      await writeOperationLogBestEffort(supabase, order?.id ?? null, failureEvents);
+    }
     if (stockReserved && supabase && order) await restoreOrderStock(supabase, order.id);
     return NextResponse.json({ ok: false, message: "결제 승인 요청 중 오류가 발생했습니다." }, { status: 502 });
   }
 
   const payment = await response.json();
   if (!response.ok) {
+    if (supabase) {
+      const failureEvents: OperationEvent[] = [
+        {
+          type: "payment_failed",
+          orderId: order?.id ?? null,
+          orderNo: orderId,
+          actor: { role: "system" },
+          amount: paymentAmount,
+          provider: "toss",
+          reason: payment.message ?? "payment_confirm_failed"
+        }
+      ];
+      await writeOperationLogBestEffort(supabase, order?.id ?? null, failureEvents);
+    }
     if (stockReserved && supabase && order) await restoreOrderStock(supabase, order.id);
     return NextResponse.json({ ok: false, message: payment.message ?? "결제 승인에 실패했습니다.", payment }, { status: 400 });
   }
@@ -193,6 +227,30 @@ export async function POST(request: Request) {
         .eq("order_id", order.id);
 
       const { error: orderUpdateError } = await supabase.from("orders").update({ status: "paid" }).eq("id", order.id);
+      const paymentEvents: OperationEvent[] = [
+        {
+          type: "payment_approved",
+          orderId: order.id,
+          orderNo: orderId,
+          actor: { role: "system" },
+          amount: paymentAmount,
+          provider: "toss"
+        },
+        {
+          type: "notification_queued",
+          payload: {
+            event: "order.paid",
+            orderId: order.id,
+            orderNo: orderId,
+            status: "paid",
+            title: "결제 완료 안내",
+            message: `주문 ${orderId}의 결제가 완료되었습니다. 산지에서 상품 준비를 시작합니다.`,
+            variables: { orderNo: orderId, amount: paymentAmount }
+          }
+        }
+      ];
+      await writeOperationLogBestEffort(supabase, order.id, paymentEvents);
+      await writeNotificationEventsBestEffort(supabase, paymentEvents);
       const inventoryAutomation = await Promise.all(
         stockAdjustments.map((adjustment) =>
           buildInventoryAutomation({
@@ -206,7 +264,11 @@ export async function POST(request: Request) {
         )
       );
       await Promise.all(
-        inventoryAutomation.map((automation) => writeOperationLogBestEffort(supabase, order.id, automation.events))
+        inventoryAutomation.map(async (automation) => {
+          await writeOperationLogBestEffort(supabase, order.id, automation.events);
+          await writeInventoryLogsBestEffort(supabase, order.id, automation.events);
+          await writeNotificationEventsBestEffort(supabase, automation.events);
+        })
       );
 
       if (paymentUpdateError || orderUpdateError) {

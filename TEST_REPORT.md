@@ -1809,3 +1809,28 @@
   - footer: screenshots/detail/detail-pado-gift-set-footer.png
   - seoPreview: reports/seo-preview-pado-gift-set.json
   - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png
+## 2026-07-06 Phase 8 운영 자동화 실사용 검증
+
+- 검증 명령:
+  - `pnpm run build`: 성공.
+  - `pnpm run lint`: 성공.
+  - `pnpm run verify:operations`: 성공.
+  - `pnpm run verify:admin-static`: 성공.
+  - `pnpm run verify:admin`: 성공.
+- 확인된 항목:
+  - 운영 자동화 마이그레이션 파일 존재.
+  - `operation_logs`, `order_status_history`, `notification_events`, `review_requests`, `inventory_logs` 생성 SQL 포함.
+  - RLS 및 관리자 정책 포함.
+  - 주문 생성 로그/알림 큐 코드 연결.
+  - 결제 승인/실패 로그 코드 연결.
+  - Toss 환불 API 추가.
+  - Toss Webhook 수신 API 추가.
+  - 재고 복구/재고 로그 코드 연결.
+  - 배송완료 시 리뷰 요청 예약 코드 연결.
+  - 관리자 자동화 화면에서 운영 로그/상태 이력/알림/리뷰/재고 로그 조회 구조 확인.
+  - 관리자 대시보드 7일 추이/재고 예측/환불 KPI 정적 검증 통과.
+- 실제 외부 연동 미검증 항목:
+  - Toss 실환불: 운영 payment_key와 Toss API 권한 필요.
+  - Toss Webhook: Toss 콘솔 Webhook URL 등록 필요.
+  - Kakao 알림톡/SMS/Email 실발송: Provider 계약/API 키/템플릿 승인 필요.
+  - Supabase 운영 DB 마이그레이션 실제 적용: Supabase SQL Editor 또는 CLI 권한 필요.

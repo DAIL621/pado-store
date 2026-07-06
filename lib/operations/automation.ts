@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describeOperationEvent, serializeOperationEvent, type OperationActor, type OperationEvent } from "./events";
 import type { DeliveryProvider, OperationNotificationPayload } from "./providers";
-import { cjKoreaExpressProvider, MockNotificationProvider } from "./providers";
+import { cjKoreaExpressProvider, createNotificationProvider } from "./providers";
 import {
   isReviewEligibleStatus,
   isStockReleaseStatus,
@@ -42,7 +42,7 @@ export type InventoryAutomationInput = {
   actor: OperationActor;
 };
 
-const notificationProvider = new MockNotificationProvider();
+const notificationProvider = createNotificationProvider();
 
 function buildStatusNotification(input: OrderAutomationInput): OperationNotificationPayload {
   const title = `${orderStatusLabels[input.toStatus]} 안내`;
@@ -194,15 +194,86 @@ export function buildDeliveryTrackingContext(carrier: string, trackingNumber: st
 
 export async function writeOperationLogBestEffort(
   supabase: Pick<SupabaseClient, "from">,
-  orderId: string,
+  orderId: string | null,
   events: OperationEvent[]
 ) {
+  if (!events.length) return { ok: true as const };
   const rows = events.map((event) => ({
     order_id: orderId,
+    actor: "actor" in event ? event.actor ?? {} : {},
     ...serializeOperationEvent(event)
   }));
 
   const { error } = await supabase.from("operation_logs").insert(rows);
+  if (error) return { ok: false as const, message: error.message, skipped: true };
+  return { ok: true as const };
+}
+
+export async function writeNotificationEventsBestEffort(
+  supabase: Pick<SupabaseClient, "from">,
+  events: OperationEvent[]
+) {
+  const rows = events
+    .filter((event): event is Extract<OperationEvent, { type: "notification_queued" }> => event.type === "notification_queued")
+    .map((event) => ({
+      order_id: event.payload.orderId ?? null,
+      event: event.payload.event,
+      channel: "mock",
+      recipient: event.payload.to ?? null,
+      title: event.payload.title,
+      message: event.payload.message,
+      payload: event.payload,
+      status: "queued",
+      provider: notificationProvider.name
+    }));
+
+  if (!rows.length) return { ok: true as const };
+  const { error } = await supabase.from("notification_events").insert(rows);
+  if (error) return { ok: false as const, message: error.message, skipped: true };
+  return { ok: true as const };
+}
+
+export async function writeReviewRequestsBestEffort(
+  supabase: Pick<SupabaseClient, "from">,
+  events: OperationEvent[],
+  userId?: string | null
+) {
+  const rows = events
+    .filter((event): event is Extract<OperationEvent, { type: "review_request_scheduled" }> => event.type === "review_request_scheduled")
+    .map((event) => ({
+      order_id: event.orderId,
+      user_id: userId ?? null,
+      status: "scheduled",
+      scheduled_at: event.scheduledAt,
+      channel: "mock",
+      payload: event
+    }));
+
+  if (!rows.length) return { ok: true as const };
+  const { error } = await supabase.from("review_requests").insert(rows);
+  if (error) return { ok: false as const, message: error.message, skipped: true };
+  return { ok: true as const };
+}
+
+export async function writeInventoryLogsBestEffort(
+  supabase: Pick<SupabaseClient, "from">,
+  orderId: string | null,
+  events: OperationEvent[]
+) {
+  const rows = events
+    .filter((event): event is Extract<OperationEvent, { type: "inventory_adjusted" }> => event.type === "inventory_adjusted")
+    .map((event) => ({
+      option_id: event.optionId,
+      order_id: orderId,
+      previous_stock: event.previousStock,
+      next_stock: event.nextStock,
+      delta: event.nextStock - event.previousStock,
+      reason: event.reason,
+      actor: event.actor
+    }));
+
+  if (!rows.length) return { ok: true as const };
+  const { error } = await supabase.from("inventory_logs").insert(rows);
   if (error) return { ok: false as const, message: error.message, skipped: true };
   return { ok: true as const };
 }
@@ -223,22 +294,70 @@ export async function writeOrderStatusHistoryBestEffort(
 }
 
 export const operationAutomationSchemaSql = `
+-- Full version: supabase/migrations/202607060400_operation_automation.sql
 create table if not exists operation_logs (
   id uuid primary key default gen_random_uuid(),
-  order_id uuid null,
+  order_id uuid references orders(id) on delete set null,
   event_type text not null,
   summary text not null,
+  actor jsonb not null default '{}'::jsonb,
   payload jsonb not null default '{}'::jsonb,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists order_status_history (
   id uuid primary key default gen_random_uuid(),
-  order_id uuid not null,
+  order_id uuid not null references orders(id) on delete cascade,
   from_status text not null,
   to_status text not null,
   actor jsonb not null default '{}'::jsonb,
   note text null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists notification_events (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid references orders(id) on delete set null,
+  event text not null,
+  channel text not null default 'mock',
+  recipient text,
+  title text not null,
+  message text not null,
+  payload jsonb not null default '{}'::jsonb,
+  status text not null default 'queued',
+  provider text,
+  provider_message text,
+  sent_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists review_requests (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references orders(id) on delete cascade,
+  user_id uuid references profiles(id) on delete set null,
+  status text not null default 'scheduled',
+  scheduled_at timestamptz not null,
+  sent_at timestamptz,
+  channel text not null default 'mock',
+  payload jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists inventory_logs (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid references products(id) on delete set null,
+  option_id uuid references product_options(id) on delete set null,
+  order_id uuid references orders(id) on delete set null,
+  previous_stock integer not null,
+  next_stock integer not null,
+  delta integer not null,
+  reason text not null,
+  actor jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 `;
