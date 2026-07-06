@@ -169,3 +169,9 @@ alter table products add column if not exists detail_json jsonb not null default
 - Notification Provider production sending requires Kakao Alimtalk/SMS/Email provider credentials.
 - Supabase Storage production image upload requires bucket creation, policy confirmation, and Vercel env configuration.
 - Final domain, SSL, robots, sitemap, metadata checks require deployed production URL.
+
+### Automated checks prepared
+
+- `pnpm run verify:production-launch` now checks required env keys, production URL shape, migration coverage, redirect URL values, Toss route readiness, Storage env readiness, SEO route readiness, and Go/No-Go score.
+- `supabase/phase10-production-verification.sql` now provides the exact SQL to confirm operation tables, indexes, policies, triggers, foreign keys, and `products.detail_json`.
+- External console actions remain blockers only until the user applies/verifies them in Supabase, Vercel, Toss, Kakao, and Storage dashboards.

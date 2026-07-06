@@ -172,6 +172,12 @@
 - [x] SEO readiness checklist documented
 - [x] Performance readiness checklist documented
 - [x] Security readiness checklist documented
+- [x] Production launch verification script added: `pnpm run verify:production-launch`
+- [x] Production DB verification SQL added: `supabase/phase10-production-verification.sql`
+- [x] Redirect URL checklist automated through production launch verifier output
+- [x] Toss payment/refund rehearsal procedure documented
+- [x] Supabase Storage production bucket checklist documented
+- [x] Go/No-Go scoring table documented
 - [ ] Supabase production migration applied
 - [ ] Vercel Production environment variables confirmed
 - [ ] Production `/api/health` returns all required checks

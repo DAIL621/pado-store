@@ -4,9 +4,9 @@ Last updated: 2026-07-06
 
 ## Launch Decision
 
-- Current launch readiness: 84%
-- Production readiness: 82%
-- Go / No-Go: Conditional Go
+- Current launch readiness: 95% after all automated checks and external console confirmations pass
+- Production readiness: 95% after all automated checks and external console confirmations pass
+- Go / No-Go: Go when `pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true` passes and the external console checklist below is completed
 - Recommended launch window: D+1 after production DB migration, Toss real-payment refund test, and production environment-variable confirmation.
 
 This phase does not add new shopping features. It converts the completed system into an operating service that customers can use and admins can run daily.
@@ -44,6 +44,32 @@ This phase does not add new shopping features. It converts the completed system 
    - `siteUrl` is `true`
    - `devAdminLoginDisabled` is `true`
    - If `PADO_PRODUCT_IMAGE_STORAGE=supabase`, `supabaseProductImageBucket` is `true`
+
+### Automated Production Readiness Check
+
+Run locally after setting the same environment values that will be used in Vercel Production:
+
+```bash
+pnpm run verify:production-launch
+```
+
+Run against the deployed production URL:
+
+```bash
+pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true
+```
+
+The script checks:
+
+- Required Vercel environment variables.
+- `DEV_ADMIN_LOGIN_ENABLED=false`.
+- Production HTTPS site URL.
+- Supabase Storage mode and bucket env.
+- Operation migration tables, indexes, triggers, RLS, and foreign keys.
+- Kakao/Supabase/Toss redirect URL values.
+- Toss confirm/refund/webhook code paths.
+- `/api/health`, `/robots.txt`, `/sitemap.xml`, and metadata when a production URL is provided.
+- Go/No-Go readiness score.
 
 ## 2. Production DB Migration Support
 
@@ -137,6 +163,12 @@ where trigger_schema = 'public'
 order by event_object_table, trigger_name;
 ```
 
+The same SQL is saved as:
+
+```text
+supabase/phase10-production-verification.sql
+```
+
 ### Rollback Plan
 
 Only use rollback before public launch or after confirming no production events must be preserved.
@@ -169,6 +201,60 @@ If production events already exist, do not drop tables. Disable dependent UI and
 | 12. 리뷰 요청 | `review_requests` scheduled | Delivered status automation |
 | 13. 환불 | Toss cancel succeeds, order/payment updated | Toss secret, payment key, refund amount |
 | 14. 재고 복원 | Inventory increases, `inventory_logs` records delta | Refund route, option id, stock update |
+
+### Toss Real Payment / Refund Rehearsal
+
+Use a low-price test product and a refundable test payment.
+
+1. Confirm Vercel Production has:
+   - `NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY`
+   - `TOSS_PAYMENTS_SECRET_KEY`
+   - `NEXT_PUBLIC_SITE_URL`
+2. Create or use a low-price visible product.
+3. Place one order as a customer.
+4. Complete Toss payment.
+5. Confirm:
+   - Order status becomes `paid`.
+   - Payment row is updated.
+   - Product option stock is decreased.
+   - `operation_logs` includes `payment_approved`.
+   - `inventory_logs` includes stock decrease.
+6. In admin, run refund through `/api/admin/payments/refund` flow.
+7. Confirm:
+   - Toss cancel succeeds.
+   - Order/payment refund state is reflected.
+   - Stock is restored.
+   - `operation_logs` includes `refund_completed`.
+   - `inventory_logs` includes stock restoration.
+8. If refund fails:
+   - Check Toss payment key.
+   - Check Toss secret key scope.
+   - Check amount and refund reason.
+   - Check Vercel function logs.
+
+### Redirect URL Checklist
+
+Register or verify these exact URLs in external consoles:
+
+| Console | URL |
+| --- | --- |
+| Kakao Developers Redirect URI | `https://YOUR_DOMAIN/auth/callback` |
+| Supabase Auth Redirect URL | `https://YOUR_DOMAIN/auth/callback` |
+| Toss Success URL | `https://YOUR_DOMAIN/payments/toss/success` |
+| Toss Fail URL | `https://YOUR_DOMAIN/payments/toss/fail` |
+| Toss Webhook URL | `https://YOUR_DOMAIN/api/payments/toss/webhook` |
+
+The automated script prints the expected values based on `NEXT_PUBLIC_SITE_URL`.
+
+### Supabase Storage Production Bucket Checklist
+
+1. Create bucket, recommended name: `product-images`.
+2. Set Vercel Production:
+   - `PADO_PRODUCT_IMAGE_STORAGE=supabase`
+   - `SUPABASE_PRODUCT_IMAGE_BUCKET=product-images`
+3. Confirm upload from `/admin/new`.
+4. Confirm product image URL renders on public product detail page.
+5. Confirm bucket policy does not expose write access to anonymous users.
 
 ## 4. Admin Monitoring
 
@@ -305,3 +391,31 @@ Use these documents for launch operation:
 9. Confirm robots/sitemap/metadata on production URL.
 10. Run full E2E order-to-refund test with admin dashboard monitoring.
 
+## 11. Automated Go / No-Go Score
+
+| Area | Weight | Pass condition |
+| --- | ---: | --- |
+| Required environment variables | High | All required values set and not placeholder values |
+| Production safety | High | `DEV_ADMIN_LOGIN_ENABLED` is not `true` |
+| Production URL | High | `NEXT_PUBLIC_SITE_URL` is HTTPS and not localhost |
+| Supabase operation DB | High | Migration and verification SQL include all operation tables |
+| RLS / FK / Index / Trigger | High | Migration contains admin policies, indexes, FK, updated_at triggers |
+| Toss readiness | High | Confirm, refund, webhook routes exist and log operation events |
+| Redirect URL readiness | Medium | Kakao/Supabase/Toss URLs resolve from production site URL |
+| Supabase Storage readiness | Medium | Production storage mode is `supabase` and bucket env is set |
+| SEO endpoint readiness | Medium | Robots and sitemap routes exist; live URL check returns 200 |
+| Notification readiness | Low | Non-mock provider selected for full public launch |
+
+Score interpretation:
+
+- 95-100: Go
+- 85-94: Conditional Go
+- 0-84: No-Go
+
+External console confirmations still required even when the automated score is Go:
+
+1. Supabase SQL migration applied to the correct production project.
+2. Vercel Production env values entered in the Production scope.
+3. Toss live/test payment approval and refund rehearsal completed.
+4. Kakao Developers and Supabase Auth redirect URLs match the production domain.
+5. Supabase Storage bucket policy confirmed.

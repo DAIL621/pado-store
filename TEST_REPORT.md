@@ -1874,3 +1874,22 @@
   - Toss real payment approval/refund.
   - Kakao login production redirect.
   - Supabase Storage product image upload.
+
+## 2026-07-06 Phase 10 Blocker Automation Verification
+
+- `pnpm run verify:production-launch`: passed as non-strict local verification.
+  - Local development score: 70%.
+  - Expected reason: current `.env.local` is still configured for development testing.
+  - Current local blockers found by script:
+    - `NEXT_PUBLIC_SITE_URL` missing.
+    - `NEXT_PUBLIC_KAKAO_CLIENT_ID` missing.
+    - `DEV_ADMIN_LOGIN_ENABLED=true`.
+    - `PADO_PRODUCT_IMAGE_STORAGE=local`.
+    - `PADO_NOTIFICATION_PROVIDER=mock`.
+    - Production URL was not supplied, so live robots/sitemap/metadata/SSL checks were skipped.
+- Production Go command:
+  - `pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true`
+- Production Go target:
+  - 95%+ readiness.
+  - No critical failures.
+  - `Go` result.

@@ -1779,3 +1779,19 @@
   - Added notification failure KPI from `notification_events`.
   - Added recent payment/refund/risk log panel.
   - Kept operation table failures non-blocking so the dashboard remains usable before migration.
+
+## 2026-07-06 Phase 10 Blocker Removal Automation
+
+- Added `supabase/phase10-production-verification.sql`.
+  - Confirms operation automation tables, indexes, RLS policies, triggers, foreign keys, and `products.detail_json`.
+- Added `pnpm run verify:production-launch`.
+  - Checks required Production environment variables.
+  - Checks `DEV_ADMIN_LOGIN_ENABLED=false`.
+  - Checks production HTTPS site URL.
+  - Checks Supabase Storage mode and bucket env.
+  - Checks Kakao/Supabase/Toss redirect URL values.
+  - Checks Toss confirm/refund/webhook readiness.
+  - Checks robots/sitemap/metadata/health on a supplied Production URL.
+  - Calculates automated Go / No-Go score.
+- Updated `.env.example` with Production Storage variables.
+- Updated Phase 10 runbook with Toss payment/refund rehearsal, Redirect URL checklist, Storage bucket checklist, and automated scoring.

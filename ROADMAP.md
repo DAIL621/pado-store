@@ -465,3 +465,10 @@
 5. Confirm Kakao login and Supabase Auth production redirect URLs.
 6. Confirm production domain, SSL, robots, sitemap, and metadata.
 7. Run full customer-to-admin E2E rehearsal on production URL.
+
+### Automated Launch Readiness Added
+
+- Run `pnpm run verify:production-launch` for local production-readiness scoring.
+- Run `pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true` for final Go / No-Go verification.
+- Run `supabase/phase10-production-verification.sql` in Supabase SQL Editor after applying migrations.
+- Target: 95%+ readiness and zero critical failures before public opening.
