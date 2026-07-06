@@ -1813,3 +1813,19 @@
 - Added role structure for hero, origin, size comparison, freshness, package, shipping, cooking, components, detail, and unknown images.
 - Added `AI_OPERATION_CENTER.md` and updated `PADO_AI_GUIDE.md`.
 - Added `pnpm run verify:ai-operation-center` and included it in `verify:admin`.
+
+## 2026-07-06 AI Image Analysis to Product Registration v2
+
+- Added `상품등록으로 보내기` action in `/admin/ai/images`.
+- AI analysis results are stored in localStorage under `pado-ai-image-analysis-draft`.
+- `/admin/new` now automatically imports AI image draft data.
+- Imported draft fills:
+  - representative images,
+  - packaging,
+  - recipes,
+  - components,
+  - extra sections,
+  - image title/description/caption metadata.
+- Product registration shows `AI 사진분석 결과를 불러왔습니다.`
+- Added `AI draft 초기화` action in product registration.
+- Added `pnpm run verify:ai-draft-flow` and included it in `verify:admin`.

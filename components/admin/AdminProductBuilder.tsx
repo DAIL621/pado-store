@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent, MouseEvent, PointerEvent } from "react";
 import { ProductDetailEditor } from "@/components/admin/ProductDetailEditor";
 import { ProductDetailPreview } from "@/components/admin/ProductDetailPreview";
+import { AI_IMAGE_ANALYSIS_DRAFT_KEY, type AiImageAnalysisDraft } from "@/lib/admin/ai-image-analysis";
 import { generateProductDescription, generateProductDetailDraft } from "@/lib/admin/ai-product-drafts";
 import { PRODUCT_DETAIL_PRESET_OPTIONS, buildProductDetailPreset, type ProductPresetId } from "@/lib/admin/product-detail-presets";
 import { createProductDetailFormValue, type ProductDetail } from "@/lib/products/detail";
@@ -184,6 +185,7 @@ export function AdminProductBuilder({
   const [draftStatus, setDraftStatus] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [draftReady, setDraftReady] = useState(!draftStorageKey);
+  const [aiDraftLoaded, setAiDraftLoaded] = useState(false);
   const [submitDebug, setSubmitDebug] = useState<SubmitDebugState>({ mountedAt: "-", clickCount: 0 });
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const showSubmitDebug = process.env.NODE_ENV !== "production";
@@ -195,9 +197,42 @@ export function AdminProductBuilder({
 
   useEffect(() => {
     updateSubmitDebug({ mountedAt: debugTime(), apiStatus: "hydrated" });
-    if (!draftStorageKey) return;
 
     try {
+      let loadedAiDraft = false;
+      const aiRaw = window.localStorage.getItem(AI_IMAGE_ANALYSIS_DRAFT_KEY);
+      if (aiRaw) {
+        const aiDraft = JSON.parse(aiRaw) as AiImageAnalysisDraft;
+        if (aiDraft.detailJson) {
+          setDetailJson((current) =>
+            createProductDetailFormValue({
+              ...current,
+              ...aiDraft.detailJson,
+              heroImages: aiDraft.detailJson.heroImages?.length ? aiDraft.detailJson.heroImages : current.heroImages,
+              journey: aiDraft.detailJson.journey?.length ? aiDraft.detailJson.journey : current.journey,
+              packaging: aiDraft.detailJson.packaging?.length ? aiDraft.detailJson.packaging : current.packaging,
+              recipes: aiDraft.detailJson.recipes?.length ? aiDraft.detailJson.recipes : current.recipes,
+              components: aiDraft.detailJson.components?.length ? aiDraft.detailJson.components : current.components,
+              extraSections: aiDraft.detailJson.extraSections?.length ? aiDraft.detailJson.extraSections : current.extraSections
+            })
+          );
+        }
+        setForm((current) => ({
+          ...current,
+          category: current.category || aiDraft.category || "",
+          imageUrl:
+            !current.imageUrl || current.imageUrl === initialForm.imageUrl
+              ? aiDraft.detailJson.heroImages?.[0]?.url || current.imageUrl
+              : current.imageUrl
+        }));
+        setAiDraftLoaded(true);
+        loadedAiDraft = true;
+        setMessage("AI 사진분석 결과를 불러왔습니다. 대표사진과 상세페이지 초안을 확인한 뒤 수정할 수 있습니다.");
+        setDraftStatus("AI 사진분석 결과를 불러왔습니다.");
+      }
+
+      if (!draftStorageKey) return;
+      if (loadedAiDraft) return;
       const raw = window.localStorage.getItem(draftStorageKey);
       if (raw) {
         const draft = JSON.parse(raw) as Partial<AdminProductBuilderPayload> & { savedAt?: string };
@@ -401,6 +436,14 @@ export function AdminProductBuilder({
       faq: current.faq.some((item) => item.question || item.answer) ? current.faq : draft.faq
     }));
     setMessage("상품명과 산지를 기준으로 상세페이지 초안을 채웠습니다.");
+  };
+
+  const clearAiDraft = () => {
+    window.localStorage.removeItem(AI_IMAGE_ANALYSIS_DRAFT_KEY);
+    setAiDraftLoaded(false);
+    setDraftStatus("AI 사진분석 draft를 초기화했습니다.");
+    setToastMessage("AI draft 초기화 완료");
+    window.setTimeout(() => setToastMessage(""), 2200);
   };
 
   const applyPreset = (presetId: ProductPresetId) => {
@@ -614,6 +657,13 @@ export function AdminProductBuilder({
           <h2>{title}</h2>
           <span className="admin-message">{message}</span>
           {draftStatus && <small className="admin-draft-status">{draftStatus}</small>}
+          {aiDraftLoaded && (
+            <div className="admin-ai-draft-notice" role="status" data-testid="admin-ai-draft-notice">
+              <strong>AI 사진분석 결과를 불러왔습니다.</strong>
+              <span>대표사진, 포장/배송, 조리법, 구성품, 추가 섹션 초안이 detail_json에 반영되었습니다.</span>
+              <button type="button" data-testid="admin-ai-draft-clear" onClick={clearAiDraft}>AI draft 초기화</button>
+            </div>
+          )}
           {duplicateSlug && (
             <div className="admin-duplicate-slug-action" role="status">
               <span>같은 URL이 이미 있습니다. 상세페이지 디자인 확인용 테스트 URL로 바꿔 저장할 수 있습니다.</span>

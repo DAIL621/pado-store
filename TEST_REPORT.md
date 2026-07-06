@@ -1914,3 +1914,22 @@
   - `pnpm run verify:admin`: passed
   - `pnpm run dev:ensure`: passed
   - `/admin/ai/images` unauthenticated route protection: 307 redirect, expected
+
+## 2026-07-06 AI Image Analysis Draft Flow v2 Verification
+
+- Added:
+  - `pnpm run verify:ai-draft-flow`
+- Passed checks:
+  - AI image page access after dev admin login.
+  - AI draft localStorage handoff.
+  - `/admin/new` AI draft loaded notice.
+  - Hero image prefill into detail_json.
+  - Packaging text prefill into detail_json.
+  - AI gallery extra section saved into product registration draft.
+  - AI draft clear action removes localStorage draft.
+- Full verification:
+  - `pnpm run build`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:ai-operation-center`: passed
+  - `pnpm run verify:ai-draft-flow`: passed

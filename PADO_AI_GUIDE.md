@@ -80,6 +80,9 @@ If data is missing, do not invent operational facts. Use safe placeholders such 
 - Mock image role analysis
 - Editable title/description/role/section fields
 - `convertImageAnalysisToDetailJson()` preview
+- Send analysis result into `/admin/new`
+- Auto-import AI image draft into product registration
+- Clear AI draft from product registration
 
 ### AI API Replacement Rule
 
@@ -91,4 +94,3 @@ Replace only the provider behind:
 - `analyzeImagesWithMockEngine()`
 
 The returned shape must remain compatible with `AiImageAnalysisResult`.
-

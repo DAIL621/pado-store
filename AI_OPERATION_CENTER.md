@@ -105,6 +105,43 @@ Current mapping:
 
 The current v1 screen previews the converted JSON. Saving into product detail data will be handled in the next phase.
 
+## v2 Product Registration Draft Flow
+
+The AI image analysis result can now be sent into product registration.
+
+Flow:
+
+1. Open `/admin/ai/images`.
+2. Upload images.
+3. Run analysis.
+4. Click `상품등록으로 보내기`.
+5. The browser stores an AI draft in `localStorage`.
+6. `/admin/new` opens and automatically imports the AI draft.
+7. The product registration screen shows `AI 사진분석 결과를 불러왔습니다.`
+8. Admin can edit every imported field before saving.
+9. Admin can clear the AI draft with `AI draft 초기화`.
+
+Storage key:
+
+```ts
+AI_IMAGE_ANALYSIS_DRAFT_KEY = "pado-ai-image-analysis-draft";
+```
+
+Imported fields:
+
+- Representative images
+- Packaging
+- Recipes
+- Components
+- Extra sections
+- Image titles/descriptions/captions through `ai-gallery` metadata
+
+Verification:
+
+```bash
+pnpm run verify:ai-draft-flow
+```
+
 ## Future AI Provider Plan
 
 Mock engine can later be replaced by:
@@ -131,4 +168,3 @@ Run:
 pnpm run verify:ai-operation-center
 pnpm run verify:admin
 ```
-

@@ -1,5 +1,7 @@
 import type { ProductDetail } from "@/lib/products/detail";
 
+export const AI_IMAGE_ANALYSIS_DRAFT_KEY = "pado-ai-image-analysis-draft";
+
 export type AiImageRole =
   | "hero"
   | "origin"
@@ -38,6 +40,14 @@ export type AiImageAnalysisResult = {
   recommendedSection: AiImageRecommendedSection;
   qualityScore: number;
   warningMessage: string;
+};
+
+export type AiImageAnalysisDraft = {
+  source: "ai-image-analysis";
+  category: string;
+  results: AiImageAnalysisResult[];
+  detailJson: Partial<ProductDetail>;
+  savedAt: string;
 };
 
 const ROLE_COPY: Record<AiImageRole, { title: string; description: string; section: AiImageRecommendedSection }> = {
@@ -235,7 +245,26 @@ export function convertImageAnalysisToDetailJson(results: AiImageAnalysisResult[
     .filter((item) => item.suggestedRole === "components")
     .map((item) => item.title);
 
+  const galleryItems = results
+    .filter((item) => item.recommendedSection === "gallery" || item.suggestedRole === "detail" || item.suggestedRole === "freshness" || item.suggestedRole === "sizeComparison")
+    .map((item) => ({
+      imageUrl: item.imageUrl,
+      title: item.title,
+      description: item.description,
+      caption: `${item.title} · 신뢰도 ${item.confidence}%`,
+      role: item.suggestedRole
+    }));
+
   const extraSections = [
+    ...(galleryItems.length
+      ? [
+          {
+            type: "ai-gallery",
+            title: "AI 추천 갤러리",
+            items: galleryItems
+          }
+        ]
+      : []),
     {
       type: "ai-image-analysis",
       title: "AI 사진 분석 결과",
@@ -285,4 +314,3 @@ export const AI_IMAGE_SECTION_OPTIONS: Array<{ value: AiImageRecommendedSection;
   { value: "components", label: "구성품" },
   { value: "extraSections", label: "추가 섹션" }
 ];
-

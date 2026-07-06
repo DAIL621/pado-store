@@ -3,6 +3,7 @@
 import type { DragEvent } from "react";
 import { useMemo, useState } from "react";
 import {
+  AI_IMAGE_ANALYSIS_DRAFT_KEY,
   AI_IMAGE_ROLE_OPTIONS,
   AI_IMAGE_SECTION_OPTIONS,
   analyzeImagesWithMockEngine,
@@ -29,11 +30,20 @@ const CATEGORIES = [
   { value: "seafood", label: "기타 수산물" }
 ];
 
-function createDraft(file: File): ImageDraft {
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function createDraft(file: File): Promise<ImageDraft> {
   return {
     id: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
     file,
-    imageUrl: URL.createObjectURL(file),
+    imageUrl: await fileToDataUrl(file),
     originalName: file.name
   };
 }
@@ -47,20 +57,20 @@ export function AdminAiImageAnalyzer() {
 
   const convertedDetailJson = useMemo(() => convertImageAnalysisToDetailJson(results), [results]);
 
-  const addFiles = (files: File[]) => {
+  const addFiles = async (files: File[]) => {
     const images = files.filter((file) => file.type.startsWith("image/"));
     if (!images.length) {
       setMessage("이미지 파일만 업로드할 수 있습니다.");
       return;
     }
-    setDrafts((current) => [...current, ...images.map(createDraft)]);
+    const nextDrafts = await Promise.all(images.map(createDraft));
+    setDrafts((current) => [...current, ...nextDrafts]);
     setMessage(`${images.length}장의 사진이 추가되었습니다. 분석 시작 버튼을 눌러 역할을 추천받으세요.`);
   };
 
   const removeDraft = (id: string) => {
     setDrafts((current) => {
       const target = current.find((item) => item.id === id);
-      if (target) URL.revokeObjectURL(target.imageUrl);
       return current.filter((item) => item.id !== id);
     });
     setResults((current) => current.filter((item) => item.imageUrl !== drafts.find((draft) => draft.id === id)?.imageUrl));
@@ -80,7 +90,7 @@ export function AdminAiImageAnalyzer() {
     event.preventDefault();
     setDragOver(false);
     const files = Array.from(event.dataTransfer.files ?? []);
-    addFiles(files);
+    void addFiles(files);
   };
 
   const startAnalysis = () => {
@@ -98,6 +108,32 @@ export function AdminAiImageAnalyzer() {
     );
     setResults(nextResults);
     setMessage(`${nextResults.length}장의 사진 분석이 완료되었습니다. 운영자가 역할과 문구를 수정할 수 있습니다.`);
+  };
+
+  const sendToProductRegistration = () => {
+    if (!results.length) {
+      setMessage("상품등록으로 보내기 전에 분석을 먼저 실행해주세요.");
+      return;
+    }
+    const detailJson = convertImageAnalysisToDetailJson(results);
+    try {
+      window.localStorage.setItem(
+        AI_IMAGE_ANALYSIS_DRAFT_KEY,
+        JSON.stringify({
+          source: "ai-image-analysis",
+          category,
+          results,
+          detailJson,
+          savedAt: new Date().toISOString()
+        })
+      );
+      setMessage("AI 사진분석 결과를 상품등록 draft로 저장했습니다. 상품등록 화면으로 이동합니다.");
+      window.setTimeout(() => {
+        window.location.href = "/admin/new?source=ai-images";
+      }, 450);
+    } catch {
+      setMessage("브라우저 저장 공간 부족으로 AI 분석 결과를 상품등록으로 보낼 수 없습니다.");
+    }
   };
 
   const updateResult = <K extends keyof AiImageAnalysisResult>(index: number, key: K, value: AiImageAnalysisResult[K]) => {
@@ -151,7 +187,7 @@ export function AdminAiImageAnalyzer() {
           multiple
           aria-label="AI 분석용 사진 업로드"
           onChange={(event) => {
-            addFiles(Array.from(event.target.files ?? []));
+            void addFiles(Array.from(event.target.files ?? []));
             event.currentTarget.value = "";
           }}
         />
@@ -180,6 +216,9 @@ export function AdminAiImageAnalyzer() {
 
       <div className="admin-ai-action-row">
         <button type="button" className="button teal" onClick={startAnalysis}>분석 시작</button>
+        <button type="button" className="button coral" onClick={sendToProductRegistration} disabled={!results.length}>
+          상품등록으로 보내기
+        </button>
         <span>현재 {drafts.length}장 준비됨</span>
       </div>
 
@@ -242,4 +281,3 @@ export function AdminAiImageAnalyzer() {
     </div>
   );
 }
-

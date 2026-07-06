@@ -481,11 +481,14 @@
 - Mock image role analysis engine.
 - Editable image analysis result UI.
 - `detail_json` conversion preparation through `convertImageAnalysisToDetailJson()`.
+- AI analysis result handoff to `/admin/new`.
+- AI draft auto-import into product registration.
+- AI draft clear action.
 
 ### Next
 
-1. Save AI analysis result into product draft.
-2. Connect AI image analysis result to product registration form.
-3. Add OpenAI Vision provider behind the current Mock provider interface.
-4. Add AI SEO generation screen.
-5. Add AI detail page generation screen.
+1. Save AI analysis result into persistent product draft records.
+2. Add OpenAI Vision provider behind the current Mock provider interface.
+3. Add AI SEO generation screen.
+4. Add AI detail page generation screen.
+5. Add one-click product registration from AI draft.
