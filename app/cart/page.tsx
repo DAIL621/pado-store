@@ -4,7 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CartItem, useCart } from "@/components/cart/CartProvider";
-import { formatPrice } from "@/data/products";
+import { ProductCard } from "@/components/products/ProductCard";
+import { formatPrice, products } from "@/data/products";
+import { getBestProducts } from "@/lib/products/discovery";
 import { calculateFreeShippingProgress, calculateRemainingForFreeShipping, calculateShipping } from "@/lib/order/pricing";
 
 export default function CartPage() {
@@ -16,6 +18,7 @@ export default function CartPage() {
   const freeShippingProgress = calculateFreeShippingProgress(subtotal);
   const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
   const canCheckout = items.length > 0 && unavailableItems.length === 0;
+  const recommendedProducts = getBestProducts(products, 4);
 
   const removeWithUndo = (item: CartItem) => {
     setRemovedItem(item);
@@ -58,12 +61,26 @@ export default function CartPage() {
             </div>
           )}
           {items.length === 0 ? (
-            <div className="empty-cart">
-              <span aria-hidden="true">CART</span>
-              <h2>장바구니가 비어 있습니다</h2>
-              <p>오늘 산지에서 도착한 신선한 상품을 만나보세요.</p>
-              <Link href="/products" className="button teal">상품 보러 가기</Link>
-            </div>
+            <>
+              <div className="empty-cart">
+                <span aria-hidden="true">CART</span>
+                <h2>장바구니가 비어 있습니다</h2>
+                <p>오늘 산지에서 도착한 신선한 상품을 만나보세요.</p>
+                <Link href="/products" className="button teal">상품 보러 가기</Link>
+              </div>
+              <div className="cart-empty-recommend">
+                <div>
+                  <span className="eyebrow">RECOMMEND</span>
+                  <h2>처음 담기 좋은 상품</h2>
+                  <p>할인율과 재고를 기준으로 먼저 보기 좋은 상품을 모았습니다.</p>
+                </div>
+                <div className="product-grid featured-grid">
+                  {recommendedProducts.map((product) => (
+                    <ProductCard key={product.slug} product={product} compact />
+                  ))}
+                </div>
+              </div>
+            </>
           ) : (
             items.map((item) => {
               const stock = Number(item.stock ?? Infinity);

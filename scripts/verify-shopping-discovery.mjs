@@ -9,6 +9,7 @@ const files = {
   categoryPage: fs.readFileSync("app/categories/[category]/page.tsx", "utf8"),
   layout: fs.readFileSync("app/layout.tsx", "utf8"),
   bottomNav: fs.readFileSync("components/layout/MobileBottomNav.tsx", "utf8"),
+  cartPage: fs.readFileSync("app/cart/page.tsx", "utf8"),
   sitemap: fs.readFileSync("app/sitemap.ts", "utf8"),
   recentViewed: fs.readFileSync("components/products/RecentViewedProducts.tsx", "utf8"),
   productDetail: fs.readFileSync("app/products/[slug]/page.tsx", "utf8")
@@ -42,6 +43,8 @@ assert(files.sitemap.includes("CATEGORY_PAGES"), "sitemap should include categor
 assert(files.layout.includes("MobileBottomNav"), "root layout should render mobile bottom navigation");
 assert(files.bottomNav.includes("useCart"), "mobile bottom navigation should show real cart count");
 assert(files.bottomNav.includes("/categories/gift-set"), "mobile bottom navigation should include a category shortcut");
+assert(files.cartPage.includes("cart-empty-recommend"), "cart empty state should recommend products");
+assert(files.cartPage.includes("getBestProducts"), "cart empty recommendations should use product discovery helper");
 
 console.log(
   JSON.stringify(
@@ -58,7 +61,8 @@ console.log(
         "availability-filter",
         "recent-viewed-products",
         "related-products",
-        "mobile-bottom-navigation"
+        "mobile-bottom-navigation",
+        "cart-empty-recommendations"
       ]
     },
     null,
