@@ -20,6 +20,7 @@ const opsPages = [
 ].map((file) => fs.readFileSync(file, "utf8")).join("\n");
 const statsPage = fs.readFileSync("app/admin/stats/page.tsx", "utf8");
 const membersPage = fs.readFileSync("app/admin/members/page.tsx", "utf8");
+const reviewsPage = fs.readFileSync("app/admin/reviews/page.tsx", "utf8");
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -76,6 +77,9 @@ assert(statsPage.includes("월매출"), "admin stats monthly revenue metric is m
 assert(membersPage.includes("profiles"), "admin members page should read profiles");
 assert(membersPage.includes("구매횟수"), "admin members purchase count is missing");
 assert(membersPage.includes("누적구매"), "admin members revenue table is missing");
+assert(reviewsPage.includes("getReviewReadiness"), "admin reviews readiness check is missing");
+assert(reviewsPage.includes("상품별 리뷰 준비도"), "admin reviews product readiness table is missing");
+assert(reviewsPage.includes("구매 인증 기준"), "admin reviews operation policy note is missing");
 
 console.log(
   JSON.stringify(
@@ -99,7 +103,8 @@ console.log(
         "operation-module-routes",
         "mobile-admin-navigation",
         "admin-sales-statistics",
-        "admin-member-purchase-summary"
+        "admin-member-purchase-summary",
+        "admin-review-readiness"
       ]
     },
     null,
