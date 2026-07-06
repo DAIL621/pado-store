@@ -1663,3 +1663,52 @@
   - 자동화 이벤트 흐름 표시.
 - 관리자 공통 레이아웃의 깨진 메뉴 문구를 정상 한글로 정리하고 운영 자동화 메뉴를 추가했다.
 - `verify:operations` 검증 스크립트를 추가했다.
+
+## 2026-07-06T03:00:21.470Z 상세페이지 품질 점수
+
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 품질 점수: 100/100
+- 결과 파일: reports/detail-quality-pado-gift-set.json
+  - PASS Hero value and product image: 8/8 (Hero and primary image are visible.)
+  - PASS Purchase CTA: 9/9 (Option and purchase actions are visible.)
+  - PASS Brand hero: 5/5 (PADO STORY brand hero is visible.)
+  - PASS Brand story: 5/5 (Brand story section is visible.)
+  - PASS Why PADO STORY cards: 6/6 (6 trust cards found.)
+  - PASS Photo gallery: 6/6 (1 gallery images found.)
+  - PASS Gallery captions and badges: 4/4 (Captions and badges are visible.)
+  - PASS Footer purchase CTA: 5/5 (Footer CTA is visible.)
+  - PASS Mobile layout stability: 8/8 (scrollWidth=393, innerWidth=393)
+  - PASS SEO basics: 8/8 (title=선물세트 | 산지 혼합 산지직송 수산물 | 파도스토리; description=감사한 마음을 전하는 파도스토리 구성 명절과 감사 선물에 맞춰 구성할 수 있는 선물세트 기본 구조입니다. 실제 구성품과 패키지 사진이 준비되면 교체합니다. 산지 혼합 산지 기준으로 선별해 신선 포장합니다.)
+  - PASS Section layout diversity: 8/8 (5 layout types found.)
+  - PASS Conversion CTA count: 5/5 (5 CTA elements found.)
+  - PASS Review highlight: 5/5 (Review highlight section is visible.)
+  - PASS Story flow order: 5/5 (Hero, story, layout, gallery, review, final CTA order checked.)
+  - PASS Section balance: 4/4 (21 top-level detail sections found.)
+  - PASS Image-to-story ratio: 4/4 (Image sections cover at least 35% of story sections.)
+  - PASS Typography rhythm: 3/3 (Headings use readable line-height and enough hierarchy.)
+  - PASS Accessibility basics: 2/2 (Images and interactive controls have accessible text.)
+## 2026-07-06T03:00:54.673Z 상세페이지 자동 캡처
+- 대상 slug: pado-gift-set
+- 상세페이지 URL: http://127.0.0.1:3000/products/pado-gift-set
+- 응답 상태: 200
+- 캡처 모드: customer
+- 사유: public product
+- 캡처 파일:
+  - desktop: screenshots/detail/detail-pado-gift-set-desktop-full.png
+  - tablet: screenshots/detail/detail-pado-gift-set-tablet-full.png
+  - mobile: screenshots/detail/detail-pado-gift-set-mobile-full.png
+  - hero: screenshots/detail/detail-pado-gift-set-hero.png
+  - story: screenshots/detail/detail-pado-gift-set-story.png
+  - cta: screenshots/detail/detail-pado-gift-set-cta.png
+  - gallery: screenshots/detail/detail-pado-gift-set-gallery.png
+  - timeline: screenshots/detail/detail-pado-gift-set-timeline.png
+  - banner: screenshots/detail/detail-pado-gift-set-banner.png
+  - review: screenshots/detail/detail-pado-gift-set-review.png
+  - finalCta: screenshots/detail/detail-pado-gift-set-finalCta.png
+  - shipping: screenshots/detail/detail-pado-gift-set-shipping.png
+  - faq: screenshots/detail/detail-pado-gift-set-faq.png
+  - recommend: screenshots/detail/detail-pado-gift-set-recommend.png
+  - footer: screenshots/detail/detail-pado-gift-set-footer.png
+  - seoPreview: reports/seo-preview-pado-gift-set.json
+  - adminPreview: screenshots/detail/admin-preview-pado-gift-set.png
