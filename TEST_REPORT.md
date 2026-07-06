@@ -1672,3 +1672,33 @@
   - Hero: `screenshots/before-after/before-hero.png` -> `screenshots/before-after/after-hero.png`
   - Gallery: `screenshots/before-after/before-gallery.png` -> `screenshots/before-after/after-gallery.png`
   - CTA: `screenshots/before-after/before-cta.png` -> `screenshots/before-after/after-cta.png`
+
+## 2026-07-04 운영 쇼핑몰 탐색 UX 검증
+
+- 검증 범위:
+  - 메인페이지 추천 shelf
+  - 카테고리 페이지 자동 생성
+  - 상품 목록 검색/정렬/판매 가능 필터
+  - 상세페이지 관련상품/최근 본 상품
+  - 모바일 하단 내비게이션
+  - 장바구니 빈 상태 추천 상품
+- 검증 결과:
+  - `pnpm run verify:shopping`: 성공
+  - `pnpm run lint`: 성공
+  - `pnpm run build`: 성공
+  - `pnpm run verify:detail-json`: 성공
+  - `pnpm run verify:detail-template`: 성공
+  - `pnpm run verify:admin`: 성공
+- `verify:shopping` 체크 항목:
+  - category-pages
+  - category-sitemap
+  - home-campaign-category-links
+  - mobile-menu-category-links
+  - home-shopping-shelves
+  - home-review-highlights
+  - product-search
+  - availability-filter
+  - recent-viewed-products
+  - related-products
+  - mobile-bottom-navigation
+  - cart-empty-recommendations

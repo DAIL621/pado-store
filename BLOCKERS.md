@@ -108,3 +108,10 @@ alter table products add column if not exists detail_json jsonb not null default
 - `pado-gift-set`의 포장/배송, FAQ detail_json 데이터가 비어 있어 해당 섹션 캡처가 fallback으로 생성됩니다. 실제 상품 데이터 입력 후 재캡처가 필요합니다.
 - Lighthouse Performance `69`는 로컬 dev server 기준입니다. 실제 배포 URL 또는 `next start` 기준 production 서버에서 재측정해야 최종 성능 판단이 가능합니다.
 - Admin Preview 캡처는 `pado-gift-set`이 static/public 상품이라 관리자 DB row를 찾지 못해 `/admin/new` fallback으로 생성됐습니다. 관리자 DB에 등록된 상품 slug 기준으로 다시 캡처하면 실제 Preview 일치성을 더 정확히 확인할 수 있습니다.
+
+## 2026-07-04 외부 확인 필요 항목
+
+- Vercel Dashboard에서 최신 커밋 `f97e824` 자동 배포 완료 여부 확인 필요.
+- 모바일 하단 내비게이션은 로컬 빌드 검증을 통과했지만, 실제 iPhone Safari / Android Chrome에서 safe-area, 상세페이지 Sticky 구매바와의 겹침 여부 최종 확인 필요.
+- 카테고리 페이지 대표 이미지와 SEO 문구는 실제 판매 상품 사진이 더 확보되면 운영 기준으로 재보강 필요.
+- 최근 본 상품과 관련상품 추천은 현재 브라우저 localStorage/상품 데이터 기준이며, 실제 주문·조회 데이터 기반 추천은 추후 운영 데이터 권한이 필요.

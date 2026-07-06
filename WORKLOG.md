@@ -1574,3 +1574,21 @@
   - `screenshots/before-after/after-gallery.png`
   - `screenshots/before-after/before-cta.png`
   - `screenshots/before-after/after-cta.png`
+
+## 2026-07-04 운영 쇼핑몰 탐색 UX 개선
+
+- 메인페이지에 목적별 상품 추천 shelf를 추가해 BEST, MD 추천, 선물/간편식 상품을 빠르게 비교할 수 있게 했다.
+- 상품 상세페이지에 관련상품과 최근 본 상품 추적/표시를 연결해 상세페이지 이탈 후 재탐색 흐름을 보강했다.
+- `/categories/[category]` 자동 카테고리 페이지를 추가했다.
+  - 전복, 장어, 문어, 굴·조개, 생선, 새우, 선물세트, 밀키트
+  - 상품이 없는 카테고리는 추천 상품과 준비중 Empty State를 표시한다.
+- 상품 목록에 검색, 추천 검색어, 최근 검색어, 판매 가능 상품 필터, 정렬 UX를 추가했다.
+- 모바일 헤더/홈 기획전의 선물세트·밀키트 링크를 단일 상품이 아닌 카테고리 페이지로 변경했다.
+- 메인페이지에 리뷰 placeholder 하이라이트를 추가해 실제 리뷰 기능 도입 전 신뢰 요소를 보강했다.
+- 모바일 하단 내비게이션을 추가해 홈, 상품, 선물, 장바구니, 마이페이지로 즉시 이동할 수 있게 했다.
+- 장바구니 빈 상태에 추천 상품을 노출해 빈 장바구니가 구매 흐름의 막다른 길이 되지 않도록 개선했다.
+- `pnpm run verify:shopping` 검증 스크립트를 추가해 쇼핑 탐색 라우트/검색/추천/모바일 하단 내비게이션/장바구니 빈 상태를 정적 검증한다.
+- Git Commit:
+  - `cb8271b` Improve shopping discovery experience
+  - `57375bb` Add mobile shopping bottom navigation
+  - `f97e824` Improve empty cart product discovery

@@ -65,6 +65,10 @@
 - [ ] Product detail MASTER template sections render from `detail_json`
 - [ ] Product detail trust signals render correctly on mobile
 - [ ] Product detail gallery hides naturally when no detail images exist
+- [x] Category pages for major seafood groups are generated
+- [x] Product listing search/sort/availability filter works in local build
+- [x] Mobile bottom navigation is available for home/products/gift/cart/mypage
+- [x] Empty cart guides customers back to recommended products
 - [ ] Kakao login
 - [ ] Product option selection
 - [ ] Product detail prevents adding more than remaining stock after cart quantity
