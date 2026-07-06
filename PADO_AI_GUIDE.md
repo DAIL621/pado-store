@@ -61,4 +61,34 @@ If data is missing, do not invent operational facts. Use safe placeholders such 
 - 상세 정보 준비중
 - 상품별 포장 기준 확인중
 - 실제 사진 업데이트 예정
+## AI Operation Center v1
+
+관리자 내부 AI 운영센터의 첫 구현 범위는 `AI 사진분석`입니다.
+
+- Route: `/admin/ai/images`
+- Engine: `lib/admin/ai-image-analysis.ts`
+- UI: `components/admin/AdminAiImageAnalyzer.tsx`
+- Guide: `AI_OPERATION_CENTER.md`
+
+### Current Behavior
+
+- Multiple image upload
+- Drag & Drop
+- Preview
+- Delete
+- Reorder
+- Mock image role analysis
+- Editable title/description/role/section fields
+- `convertImageAnalysisToDetailJson()` preview
+
+### AI API Replacement Rule
+
+Do not rewrite the admin UI when connecting a real Vision API.
+
+Replace only the provider behind:
+
+- `analyzeImageWithMockEngine()`
+- `analyzeImagesWithMockEngine()`
+
+The returned shape must remain compatible with `AiImageAnalysisResult`.
 

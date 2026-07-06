@@ -1893,3 +1893,24 @@
   - 95%+ readiness.
   - No critical failures.
   - `Go` result.
+## 2026-07-06 AI Operation Center v1 Verification
+
+- Added verification script:
+  - `pnpm run verify:ai-operation-center`
+- The script checks:
+  - AI operation center admin menu.
+  - `/admin/ai/images` route.
+  - Admin auth guard.
+  - Multiple image upload UI.
+  - Drag & Drop UI.
+  - Preview, delete, reorder support.
+  - Mock analysis engine.
+  - Editable analysis result fields.
+  - `convertImageAnalysisToDetailJson()` converter.
+  - AI operation guide documentation.
+- Full verification target:
+  - `pnpm run build`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run dev:ensure`: passed
+  - `/admin/ai/images` unauthenticated route protection: 307 redirect, expected

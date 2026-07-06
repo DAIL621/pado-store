@@ -1795,3 +1795,21 @@
   - Calculates automated Go / No-Go score.
 - Updated `.env.example` with Production Storage variables.
 - Updated Phase 10 runbook with Toss payment/refund rehearsal, Redirect URL checklist, Storage bucket checklist, and automated scoring.
+## 2026-07-06 AI Operation Center v1
+
+- Added admin menu entry: `AI 운영센터`.
+- Added `/admin/ai/images` admin route.
+- Added `AdminAiImageAnalyzer` with:
+  - multiple image upload,
+  - drag and drop,
+  - preview,
+  - deletion,
+  - ordering,
+  - editable analysis results.
+- Added Mock image analysis engine:
+  - `analyzeImageWithMockEngine()`
+  - `analyzeImagesWithMockEngine()`
+  - `convertImageAnalysisToDetailJson()`
+- Added role structure for hero, origin, size comparison, freshness, package, shipping, cooking, components, detail, and unknown images.
+- Added `AI_OPERATION_CENTER.md` and updated `PADO_AI_GUIDE.md`.
+- Added `pnpm run verify:ai-operation-center` and included it in `verify:admin`.

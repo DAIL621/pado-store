@@ -16,7 +16,8 @@ type AdminNavKey =
   | "marketing"
   | "content"
   | "stats"
-  | "automation";
+  | "automation"
+  | "ai";
 
 export function AdminLayout({
   admin,
@@ -41,7 +42,8 @@ export function AdminLayout({
     { key: "marketing", label: "쿠폰·배너", href: "/admin/marketing" },
     { key: "content", label: "공지·FAQ", href: "/admin/content" },
     { key: "stats", label: "통계", href: "/admin/stats" },
-    { key: "automation", label: "운영 자동화", href: "/admin/automation" }
+    { key: "automation", label: "운영 자동화", href: "/admin/automation" },
+    { key: "ai", label: "AI 운영센터", href: "/admin/ai/images" }
   ];
 
   return (

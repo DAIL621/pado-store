@@ -472,3 +472,20 @@
 - Run `pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true` for final Go / No-Go verification.
 - Run `supabase/phase10-production-verification.sql` in Supabase SQL Editor after applying migrations.
 - Target: 95%+ readiness and zero critical failures before public opening.
+## AI Operation Center
+
+### v1 Completed
+
+- Admin route: `/admin/ai/images`
+- AI image analysis screen.
+- Mock image role analysis engine.
+- Editable image analysis result UI.
+- `detail_json` conversion preparation through `convertImageAnalysisToDetailJson()`.
+
+### Next
+
+1. Save AI analysis result into product draft.
+2. Connect AI image analysis result to product registration form.
+3. Add OpenAI Vision provider behind the current Mock provider interface.
+4. Add AI SEO generation screen.
+5. Add AI detail page generation screen.
