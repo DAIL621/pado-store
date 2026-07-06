@@ -130,3 +130,9 @@
 - [ ] 실제 상품별 포장/배송, FAQ, Journey, 조리법 detail_json 입력 후 fallback 없는 상세페이지 캡처 생성.
 - [ ] Vercel 배포 후 상세페이지 Hero 이미지 LCP 확인.
 - [ ] 모바일 Safari/Android Chrome 실기기에서 Sticky 구매 CTA와 옵션 선택 UX 확인.
+- [x] Operation automation engine local build
+- [x] Mock notification provider structure
+- [x] Delivery/payment/marketplace provider extension points
+- [ ] Operation log tables applied in Supabase production DB
+- [ ] Real Kakao Alimtalk/SMS/Email provider connected
+- [ ] Real delivery tracking API provider connected

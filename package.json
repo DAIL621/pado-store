@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "verify:admin-static": "node scripts/verify-admin-static.mjs",
+    "verify:operations": "node scripts/verify-operation-automation.mjs",
     "verify:detail-json": "node scripts/verify-detail-json-flow.mjs",
     "verify:admin-edit": "node scripts/verify-admin-product-edit.mjs",
     "verify:admin-upload": "node scripts/verify-admin-upload.mjs",

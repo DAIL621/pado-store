@@ -6,6 +6,18 @@ export type AdminUser = {
   role: "admin";
 };
 
+type AdminNavKey =
+  | "dashboard"
+  | "products"
+  | "orders"
+  | "shipments"
+  | "members"
+  | "reviews"
+  | "marketing"
+  | "content"
+  | "stats"
+  | "automation";
+
 export function AdminLayout({
   admin,
   active,
@@ -14,12 +26,12 @@ export function AdminLayout({
   children
 }: {
   admin: AdminUser;
-  active: "dashboard" | "products" | "orders" | "shipments" | "members" | "reviews" | "marketing" | "content" | "stats";
+  active: AdminNavKey;
   title: string;
   subtitle: string;
   children: React.ReactNode;
 }) {
-  const navItems = [
+  const navItems: { key: AdminNavKey; label: string; href: string }[] = [
     { key: "dashboard", label: "대시보드", href: "/admin" },
     { key: "products", label: "상품 관리", href: "/admin/products" },
     { key: "orders", label: "주문 관리", href: "/admin/orders" },
@@ -28,8 +40,9 @@ export function AdminLayout({
     { key: "reviews", label: "리뷰 관리", href: "/admin/reviews" },
     { key: "marketing", label: "쿠폰·배너", href: "/admin/marketing" },
     { key: "content", label: "공지·FAQ", href: "/admin/content" },
-    { key: "stats", label: "통계", href: "/admin/stats" }
-  ] as const;
+    { key: "stats", label: "통계", href: "/admin/stats" },
+    { key: "automation", label: "운영 자동화", href: "/admin/automation" }
+  ];
 
   return (
     <div className="admin-page">
@@ -54,7 +67,7 @@ export function AdminLayout({
             <span>{subtitle}</span>
             <h1>{title}</h1>
           </div>
-          <a className="button outline" href="/products" target="_blank">쇼핑몰 보기</a>
+          <a className="button outline" href="/products" target="_blank">라이브몰 보기</a>
         </div>
 
         <div className="admin-current-user">

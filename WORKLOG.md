@@ -1640,3 +1640,26 @@
   - `3ce478c` Add admin sales statistics page
   - `3c7506a` Add admin member purchase summary
   - `3d2d4d8` Add admin review readiness page
+## 2026-07-06 운영 자동화 엔진 구축
+
+- `lib/operations` 운영 자동화 계층을 추가했다.
+  - 주문 상태 전환 정책: 결제대기, 결제완료, 상품준비, 배송준비, 배송중, 배송완료, 주문취소, 반품요청, 반품완료, 환불완료.
+  - Mock 알림 Provider: 추후 카카오 알림톡, SMS, Email Provider 교체 구조.
+  - 배송 Provider: CJ대한통운 배송조회 URL 생성 구조.
+  - 결제/마켓플레이스 Provider 인터페이스: Toss, 스마트스토어, 쿠팡, ERP 확장 준비.
+  - 운영 이벤트: 주문 상태 변경, 배송 업데이트, 재고 변경, 리뷰 요청 예약, 알림 큐.
+- 관리자 주문 상태 변경 API(`/api/admin/orders/[id]`)에 자동화 결과를 연결했다.
+  - 상태 변경 후 자동화 summary 반환.
+  - `operation_logs` best-effort 기록.
+  - `order_status_history` best-effort 기록.
+  - 테이블이 없어도 주문 저장은 실패하지 않도록 처리.
+- Toss 결제 승인 재고 차감 흐름에 재고 자동화 이벤트를 연결했다.
+  - 옵션별 이전 재고/다음 재고 추적.
+  - 낮은 재고/품절 Mock 알림 이벤트 준비.
+  - 결제 실패 시 기존 rollback 흐름 유지.
+- `/admin/automation` 운영 자동화 관리자 페이지를 추가했다.
+  - 주문/재고/배송/알림/리뷰/로그/외부 연동 준비도 표시.
+  - 운영 DB 확장 SQL 안내.
+  - 자동화 이벤트 흐름 표시.
+- 관리자 공통 레이아웃의 깨진 메뉴 문구를 정상 한글로 정리하고 운영 자동화 메뉴를 추가했다.
+- `verify:operations` 검증 스크립트를 추가했다.

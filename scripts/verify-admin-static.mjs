@@ -16,7 +16,8 @@ const opsPages = [
   "app/admin/reviews/page.tsx",
   "app/admin/marketing/page.tsx",
   "app/admin/content/page.tsx",
-  "app/admin/stats/page.tsx"
+  "app/admin/stats/page.tsx",
+  "app/admin/automation/page.tsx"
 ].map((file) => fs.readFileSync(file, "utf8")).join("\n");
 const statsPage = fs.readFileSync("app/admin/stats/page.tsx", "utf8");
 const membersPage = fs.readFileSync("app/admin/members/page.tsx", "utf8");
@@ -60,7 +61,7 @@ assert(adminDashboard.includes("배송 준비"), "admin dashboard delivery-ready
 assert(adminDashboard.includes("재고 부족"), "admin dashboard low-stock metric is missing");
 assert(adminDashboard.includes("인기상품 / 판매순위"), "admin dashboard top product ranking is missing");
 assert(adminDashboard.includes("profiles"), "admin dashboard member count check is missing");
-["/admin/members", "/admin/reviews", "/admin/marketing", "/admin/content", "/admin/stats"].forEach((href) => {
+["/admin/members", "/admin/reviews", "/admin/marketing", "/admin/content", "/admin/stats", "/admin/automation"].forEach((href) => {
   assert(adminLayout.includes(href), `admin sidebar route is missing: ${href}`);
 });
 assert(adminLayout.includes("admin-mobile-nav"), "admin mobile navigation is missing");
@@ -104,7 +105,8 @@ console.log(
         "mobile-admin-navigation",
         "admin-sales-statistics",
         "admin-member-purchase-summary",
-        "admin-review-readiness"
+        "admin-review-readiness",
+        "admin-operation-automation-route"
       ]
     },
     null,

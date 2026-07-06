@@ -124,3 +124,15 @@ alter table products add column if not exists detail_json jsonb not null default
 - 배너/공지/FAQ/팝업은 운영 테이블 스키마와 노출기간 정책 확정 필요.
 - 회원 탈퇴 처리는 개인정보 보관 기간, 주문 이력 보존 정책, 감사 로그 기준 확정 필요.
 - 관리자 통계의 전환율은 방문/상세조회/장바구니/결제시작 이벤트 수집 정책이 필요.
+## 2026-07-06 운영 자동화 외부/DB 확인 필요
+
+- 운영 로그 저장을 실제 DB에 남기려면 Supabase SQL Editor에서 아래 테이블 적용이 필요하다.
+  - `operation_logs`
+  - `order_status_history`
+  - `notification_events`
+  - `review_requests`
+  - `inventory_logs`
+- 현재 코드는 테이블이 없으면 best-effort 실패를 응답에 남기고 주문 처리는 계속한다.
+- 카카오 알림톡, SMS, Email 실제 발송은 외부 Provider 계약/키/템플릿 승인 후 연결 가능하다.
+- CJ대한통운 실제 API 연동은 계약 API 키와 송장 조회 정책 확인 후 Provider 교체가 필요하다.
+- Toss 환불 자동화는 운영 환불 정책과 Toss API 권한 확인 후 `PaymentProvider.refund` 구현이 필요하다.

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/api/request";
+import { buildInventoryAutomation, writeOperationLogBestEffort } from "@/lib/operations/automation";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 
 type OrderItemForStock = {
@@ -49,7 +50,7 @@ async function decrementOrderStock(supabase: ReturnType<typeof createAdminClient
   const requirements = await getOrderStockRequirements(supabase, orderId);
   if (!requirements.ok) return requirements;
 
-  const decremented: { optionId: string; previousStock: number; nextStock: number }[] = [];
+  const decremented: { optionId: string; previousStock: number; nextStock: number; productName: string }[] = [];
   for (const [optionId, item] of requirements.quantities) {
     const { data: option, error: optionError } = await supabase
       .from("product_options")
@@ -81,10 +82,10 @@ async function decrementOrderStock(supabase: ReturnType<typeof createAdminClient
       return { ok: false as const, message: `${item.label} 재고가 동시에 변경되었습니다. 다시 확인해주세요.` };
     }
 
-    decremented.push({ optionId, previousStock, nextStock });
+    decremented.push({ optionId, previousStock, nextStock, productName: item.label });
   }
 
-  return { ok: true as const };
+  return { ok: true as const, adjustments: decremented };
 }
 
 async function restoreOrderStock(supabase: ReturnType<typeof createAdminClient>, orderId: string) {
@@ -146,12 +147,14 @@ export async function POST(request: Request) {
   }
 
   let stockReserved = false;
+  let stockAdjustments: { optionId: string; previousStock: number; nextStock: number; productName: string }[] = [];
   if (supabase && order) {
     const stockResult = await decrementOrderStock(supabase, order.id);
     if (!stockResult.ok) {
       return NextResponse.json({ ok: false, message: stockResult.message }, { status: 409 });
     }
     stockReserved = true;
+    stockAdjustments = stockResult.adjustments;
   }
 
   const encryptedSecretKey = Buffer.from(`${secretKey}:`).toString("base64");
@@ -190,6 +193,21 @@ export async function POST(request: Request) {
         .eq("order_id", order.id);
 
       const { error: orderUpdateError } = await supabase.from("orders").update({ status: "paid" }).eq("id", order.id);
+      const inventoryAutomation = await Promise.all(
+        stockAdjustments.map((adjustment) =>
+          buildInventoryAutomation({
+            optionId: adjustment.optionId,
+            productName: adjustment.productName,
+            previousStock: adjustment.previousStock,
+            nextStock: adjustment.nextStock,
+            reason: "payment_confirmed",
+            actor: { role: "system" }
+          })
+        )
+      );
+      await Promise.all(
+        inventoryAutomation.map((automation) => writeOperationLogBestEffort(supabase, order.id, automation.events))
+      );
 
       if (paymentUpdateError || orderUpdateError) {
         return NextResponse.json({

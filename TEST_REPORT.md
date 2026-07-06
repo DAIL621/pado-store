@@ -1738,3 +1738,25 @@
   - 이미지 업로드 검증
   - 중복 slug 테스트 URL 생성
   - 관리자 검증/숨김 상품 상세 접근 정책
+## 2026-07-06 운영 자동화 엔진 검증
+
+- 검증 범위:
+  - 주문 상태 전환 정책.
+  - 반품/환불/배송준비 확장 상태.
+  - Mock 알림 Provider.
+  - 배송/결제/마켓플레이스 Provider 인터페이스.
+  - 운영 이벤트 직렬화.
+  - 주문 상태 변경 자동화 응답.
+  - 운영 로그 best-effort 기록 구조.
+  - 주문 상태 이력 best-effort 기록 구조.
+  - 재고 자동화 이벤트.
+  - 배송조회 컨텍스트 생성.
+  - 관리자 운영 자동화 페이지.
+- 검증 결과:
+  - `pnpm run verify:operations`: 성공.
+  - `pnpm run build`: 성공.
+- 다음 최종 검증 대상:
+  - `pnpm run lint`
+  - `pnpm run verify:admin-static`
+  - `pnpm run verify:admin`
+  - `pnpm run dev:ensure`

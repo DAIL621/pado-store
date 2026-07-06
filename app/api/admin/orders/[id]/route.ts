@@ -1,24 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/admin-api";
 import { readJsonBody } from "@/lib/api/request";
+import { buildOrderStatusAutomation, writeOperationLogBestEffort, writeOrderStatusHistoryBestEffort } from "@/lib/operations/automation";
+import { canChangeOrderStatus, isOperationOrderStatus, needsTrackingNumber, type OperationOrderStatus } from "@/lib/operations/status";
 import { isValidTrackingNumber, TRACKING_NUMBER_MESSAGE } from "@/lib/shipping/tracking";
 import { createAdminClient } from "@/lib/supabase/admin";
-
-const allowedStatuses = ["pending", "paid", "preparing", "shipped", "delivered", "cancelled"] as const;
-type OrderStatus = (typeof allowedStatuses)[number];
-
-const statusFlow: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["pending", "paid", "preparing", "cancelled"],
-  paid: ["paid", "preparing", "cancelled"],
-  preparing: ["preparing", "shipped", "cancelled"],
-  shipped: ["shipped", "delivered"],
-  delivered: ["delivered"],
-  cancelled: ["cancelled"]
-};
-
-function isOrderStatus(value: unknown): value is OrderStatus {
-  return typeof value === "string" && (allowedStatuses as readonly string[]).includes(value);
-}
 
 function cleanText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -36,7 +22,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const { data: currentOrder, error: orderError } = await supabase
     .from("orders")
-    .select("id, status, shipments(carrier, tracking_number)")
+    .select("id, order_no, status, recipient_phone, shipments(carrier, tracking_number)")
     .eq("id", id)
     .single();
 
@@ -44,7 +30,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ ok: false, message: orderError?.message ?? "주문을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  const currentStatus = currentOrder.status as OrderStatus;
+  if (!isOperationOrderStatus(currentOrder.status)) {
+    return NextResponse.json({ ok: false, message: `지원하지 않는 주문 상태입니다: ${currentOrder.status}` }, { status: 400 });
+  }
+
+  const currentStatus = currentOrder.status;
   const currentShipment = Array.isArray(currentOrder.shipments) ? currentOrder.shipments[0] : currentOrder.shipments;
   const nextStatus = body.status === undefined ? currentStatus : body.status;
   const nextCarrier = body.carrier === undefined ? cleanText(currentShipment?.carrier) : cleanText(body.carrier);
@@ -52,10 +42,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     body.trackingNumber === undefined ? cleanText(currentShipment?.tracking_number) : cleanText(body.trackingNumber);
 
   if (body.status !== undefined) {
-    if (!isOrderStatus(nextStatus)) {
+    if (!isOperationOrderStatus(nextStatus)) {
       return NextResponse.json({ ok: false, message: "올바르지 않은 주문 상태입니다." }, { status: 400 });
     }
-    if (!statusFlow[currentStatus].includes(nextStatus)) {
+    if (!canChangeOrderStatus(currentStatus, nextStatus)) {
       return NextResponse.json(
         { ok: false, message: `${currentStatus} 상태에서 ${nextStatus} 상태로 변경할 수 없습니다.` },
         { status: 400 }
@@ -63,7 +53,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
   }
 
-  if ((nextStatus === "shipped" || nextStatus === "delivered") && !nextTrackingNumber) {
+  if (needsTrackingNumber(nextStatus) && !nextTrackingNumber) {
     return NextResponse.json({ ok: false, message: "배송중 또는 배송완료 상태에는 송장번호가 필요합니다." }, { status: 400 });
   }
 
@@ -91,5 +81,24 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  const automation = await buildOrderStatusAutomation({
+    orderId: id,
+    orderNo: currentOrder.order_no,
+    recipientPhone: currentOrder.recipient_phone,
+    fromStatus: currentStatus,
+    toStatus: nextStatus,
+    carrier: nextCarrier,
+    trackingNumber: nextTrackingNumber,
+    actor: {
+      id: admin.session.user.id,
+      email: admin.session.user.email,
+      role: "admin"
+    },
+    note: cleanText(body.note)
+  });
+  const log = await writeOperationLogBestEffort(supabase, id, automation.events);
+  const statusEvent = automation.events.find((event) => event.type === "order_status_changed");
+  const statusHistory = statusEvent ? await writeOrderStatusHistoryBestEffort(supabase, statusEvent) : { ok: false, skipped: true };
+
+  return NextResponse.json({ ok: true, automation, operationLog: log, statusHistory });
 }

@@ -385,3 +385,25 @@
 3. 쿠폰은 Phase 2 정책 확정 후 발급/사용기한/자동발급 연결.
 4. 회원 등급/포인트/탈퇴는 개인정보·정산 정책 확정 후 구현.
 5. 주문 메모, 관리자 내부 메모, 주문별 CS 로그 구조 추가.
+## 2026-07-06 운영 자동화 엔진 반영
+
+### 완료
+
+- 주문 상태 자동화 엔진 1차 구축.
+- 관리자 주문 상태 변경 API에 자동화 summary, Mock 알림, 로그 기록 후보 반환 연결.
+- 결제 승인 재고 차감 흐름에 재고 자동화 이벤트 연결.
+- 운영 Provider 인터페이스 구축.
+  - NotificationProvider
+  - DeliveryProvider
+  - PaymentProvider
+  - MarketplaceProvider
+- `/admin/automation` 운영 자동화 준비도 페이지 추가.
+- 운영 로그/주문 상태 이력 저장용 SQL 초안 준비.
+
+### 다음 우선순위
+
+1. Supabase 운영 DB에 `operation_logs`, `order_status_history`, `notification_events`, `review_requests`, `inventory_logs` 테이블 적용.
+2. 관리자 주문/배송 화면에서 자동화 summary를 사람이 읽기 좋은 Toast/History 패널로 표시.
+3. 주문 취소/반품/환불 전용 관리자 UI와 재고 복구 정책 연결.
+4. Mock NotificationProvider를 Kakao Alimtalk/SMS/Email Provider로 교체 가능한 설정 화면 추가.
+5. 배송완료 후 리뷰 요청 예약 큐와 리뷰 작성 가능 상태를 실제 리뷰 DB와 연결.
