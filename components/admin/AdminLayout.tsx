@@ -14,7 +14,7 @@ export function AdminLayout({
   children
 }: {
   admin: AdminUser;
-  active: "dashboard" | "products" | "orders" | "shipments";
+  active: "dashboard" | "products" | "orders" | "shipments" | "members" | "reviews" | "marketing" | "content" | "stats";
   title: string;
   subtitle: string;
   children: React.ReactNode;
@@ -23,7 +23,12 @@ export function AdminLayout({
     { key: "dashboard", label: "대시보드", href: "/admin" },
     { key: "products", label: "상품 관리", href: "/admin/products" },
     { key: "orders", label: "주문 관리", href: "/admin/orders" },
-    { key: "shipments", label: "배송 관리", href: "/admin/deliveries" }
+    { key: "shipments", label: "배송 관리", href: "/admin/deliveries" },
+    { key: "members", label: "회원 관리", href: "/admin/members" },
+    { key: "reviews", label: "리뷰 관리", href: "/admin/reviews" },
+    { key: "marketing", label: "쿠폰·배너", href: "/admin/marketing" },
+    { key: "content", label: "공지·FAQ", href: "/admin/content" },
+    { key: "stats", label: "통계", href: "/admin/stats" }
   ] as const;
 
   return (
@@ -57,6 +62,14 @@ export function AdminLayout({
           <strong>{admin.name || admin.email || "관리자"}</strong>
           <em>{admin.email ?? "이메일 정보 없음"} · role: {admin.role}</em>
         </div>
+
+        <nav className="admin-mobile-nav" aria-label="모바일 관리자 메뉴">
+          {navItems.map((item) => (
+            <Link className={active === item.key ? "active" : ""} href={item.href} key={item.key}>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
         {children}
       </section>

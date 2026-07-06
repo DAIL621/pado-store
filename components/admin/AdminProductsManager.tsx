@@ -88,6 +88,18 @@ const toOptionForms = (product: AdminProduct): AdminProductOptionForm[] =>
     stock: String(option.stock)
   }));
 
+const createCopySlug = (slug: string) => {
+  const now = new Date();
+  const stamp = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+    String(now.getHours()).padStart(2, "0"),
+    String(now.getMinutes()).padStart(2, "0")
+  ].join("");
+  return `${slug}-copy-${stamp}`;
+};
+
 export function AdminProductsManager() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [query, setQuery] = useState("");
@@ -240,6 +252,47 @@ export function AdminProductsManager() {
       return;
     }
     setMessage(`${product.name} 상품을 숨김 처리했습니다.`);
+    await loadProducts();
+  };
+
+  const duplicateProduct = async (product: AdminProduct) => {
+    const nextSlug = createCopySlug(product.slug);
+    if (!window.confirm(`${product.name} 상품을 복사해 새 상품 초안을 만들까요?\n\n새 URL: ${nextSlug}`)) return;
+
+    setMessage(`${product.name} 상품을 복사하는 중입니다...`);
+    const response = await fetch("/api/admin/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: `${product.name} 복사본`,
+        slug: nextSlug,
+        origin: product.origin,
+        category: product.category,
+        subtitle: product.subtitle ?? `${product.name} 복사본`,
+        description: product.description ?? "",
+        basePrice: product.base_price,
+        imageUrl: product.image_url,
+        badge: product.badge,
+        highlights: (product.highlights ?? []).join(", "),
+        detailJson: product.detail_json ?? {},
+        options: toOptionForms(product)
+      })
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      setMessage(result.message ?? "상품 복사에 실패했습니다.");
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem(
+        "pado-admin-last-created-product",
+        JSON.stringify({ id: result.productId, slug: result.productSlug })
+      );
+    } catch {}
+    setHighlightedProduct({ id: result.productId, slug: result.productSlug });
+    setSortMode("recent");
+    setMessage(`상품 복사 완료: ${result.productSlug}`);
     await loadProducts();
   };
 
@@ -418,6 +471,7 @@ export function AdminProductsManager() {
                     <td className="admin-actions">
                       <a href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세보기</a>
                       <button type="button" onClick={() => copyDetailUrl(product)}>URL 복사</button>
+                      <button type="button" onClick={() => duplicateProduct(product)}>복사</button>
                       <button type="button" onClick={() => setEditing(product)}>수정</button>
                       {status === "hidden" ? (
                         <button type="button" onClick={() => recover(product)}>다시 판매하기</button>
