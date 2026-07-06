@@ -1592,3 +1592,51 @@
   - `cb8271b` Improve shopping discovery experience
   - `57375bb` Add mobile shopping bottom navigation
   - `f97e824` Improve empty cart product discovery
+
+## 2026-07-06 관리자 운영 시스템 고도화
+
+- `/admin` 대시보드를 운영 지표 중심으로 재구성했다.
+  - 오늘 주문
+  - 오늘 매출
+  - 이번달 매출
+  - 배송 준비
+  - 배송 완료
+  - 취소 주문
+  - 신규 회원 수
+  - 재고 부족
+  - 인기상품/판매순위
+- 관리자 좌측 메뉴에 운영 모듈을 확장했다.
+  - 회원 관리
+  - 리뷰 관리
+  - 쿠폰·배너
+  - 공지·FAQ
+  - 통계
+- 모바일 관리자 상단 가로 메뉴를 추가해 사이드바가 숨겨지는 화면에서도 운영 메뉴 접근이 가능하게 했다.
+- 상품관리 운영 기능을 보강했다.
+  - 기존 상품 복사 기능 추가
+  - 자동 `-copy-YYYYMMDDHHMM` slug 생성
+  - 복사 후 목록 최상단 강조 흐름 유지
+- 주문관리 운영 기능을 보강했다.
+  - 현재 검색/필터 결과 CSV 다운로드 추가
+  - Excel에서 열 수 있도록 UTF-8 BOM 포함
+- 회원관리 페이지를 실제 profiles/orders 기반 집계 화면으로 개선했다.
+  - 전체 회원
+  - 구매 회원
+  - 구매횟수
+  - 누적 구매금액
+- 통계 페이지를 실제 orders/order_items/products 기반 집계 화면으로 개선했다.
+  - 일매출
+  - 월매출
+  - 누적 매출
+  - 객단가
+  - 상품별 판매순위
+  - 카테고리별 매출
+- 리뷰관리 페이지를 상품별 리뷰 준비도 화면으로 개선했다.
+  - 대표사진/장점/FAQ 기준으로 후기 노출 준비도 표시
+  - 실제 리뷰 DB 도입 전 필요한 운영 정책 안내
+- `verify:admin-static`에 운영 대시보드, 주문 CSV, 상품 복사, 운영 모듈 라우트, 모바일 관리자 메뉴, 통계, 회원, 리뷰 준비도 검증 항목을 추가했다.
+- Git Commit:
+  - `4e3ec48` Improve admin operation system
+  - `3ce478c` Add admin sales statistics page
+  - `3c7506a` Add admin member purchase summary
+  - `3d2d4d8` Add admin review readiness page

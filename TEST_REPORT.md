@@ -1702,3 +1702,39 @@
   - related-products
   - mobile-bottom-navigation
   - cart-empty-recommendations
+
+## 2026-07-06 관리자 운영 시스템 검증
+
+- 검증 범위:
+  - 관리자 운영 대시보드 KPI
+  - 관리자 운영 모듈 라우트
+  - 모바일 관리자 메뉴
+  - 상품 복사
+  - 주문 CSV 다운로드
+  - 회원 구매 요약
+  - 리뷰 준비도
+  - 매출 통계
+- 검증 결과:
+  - `pnpm run build`: 성공
+  - `pnpm run lint`: 성공
+  - `pnpm run verify:admin-static`: 성공
+  - `pnpm run verify:admin`: 성공
+- `verify:admin-static` 추가 체크 항목:
+  - order-csv-download
+  - product-duplicate
+  - operation-dashboard-kpis
+  - operation-dashboard-ranking
+  - operation-module-routes
+  - mobile-admin-navigation
+  - admin-sales-statistics
+  - admin-member-purchase-summary
+  - admin-review-readiness
+- `verify:admin` 실제 흐름:
+  - 상품 등록 필수값 차단
+  - 저장 중/등록완료 버튼 UX
+  - 상품 등록 후 목록 최상단 표시
+  - detail_json 저장 및 상세페이지 200
+  - 관리자 상품 수정
+  - 이미지 업로드 검증
+  - 중복 slug 테스트 URL 생성
+  - 관리자 검증/숨김 상품 상세 접근 정책

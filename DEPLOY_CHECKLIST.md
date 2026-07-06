@@ -82,6 +82,12 @@
 - [ ] MyPage order history
 - [ ] MyPage CJ tracking link opens with invoice number when available
 - [ ] Admin product management
+- [x] Admin operation dashboard local build
+- [x] Admin product duplicate action local build
+- [x] Admin order CSV download local build
+- [x] Admin member purchase summary local build
+- [x] Admin sales statistics local build
+- [x] Admin mobile navigation local build
 - [ ] Admin product image upload
 - [ ] Admin product detail presets and live preview
 - [ ] Admin product option removal no longer leaves stale extra options
