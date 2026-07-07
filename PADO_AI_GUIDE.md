@@ -184,3 +184,30 @@ Do not judge AI quality only by one manual image. Compare:
 
 Misclassified examples are stored in `reports/ai-errors`.
 Evaluation history is stored in `reports/prompt-history`.
+
+## Review Center Rule
+
+AI should not ask the operator to review every image.
+
+The operating policy is:
+
+1. High confidence images are auto approved.
+2. Ambiguous images enter the review queue.
+3. Operator corrections become rules.
+4. Operator rules are applied before Vision/mock/fallback.
+5. Repeated corrections should become suggested rules.
+
+Use these commands:
+
+```bash
+pnpm run verify:ai-review-center
+pnpm run score:review-center
+```
+
+Review Center output should be judged by:
+
+- Auto approval rate
+- Operator correction rate
+- Rule usage rate
+- Average confidence
+- Misclassification count

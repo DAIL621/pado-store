@@ -309,3 +309,38 @@ Reports:
 - `reports/prompt-history`
 
 The current system uses fixture labels first. Real product images can be added later without changing the label schema.
+
+## AI Review Center V1
+
+The AI Operation Center now includes a confidence-based review layer.
+
+Admin route:
+
+- `/admin/ai/review`
+
+Commands:
+
+```bash
+pnpm run verify:ai-review-center
+pnpm run score:review-center
+```
+
+Core operating flow:
+
+1. AI image analysis returns role, section, confidence, quality score, title, and description.
+2. Confidence policy classifies each image into auto approved, review recommended, needs review, or operator required.
+3. Operator rules are applied before Vision/mock/fallback output.
+4. Repeated operator corrections are grouped into rule suggestions.
+5. Review metrics are written to `reports/ai-review-center`.
+
+Confidence policy:
+
+- `95-100`: auto approved.
+- `90-95`: review recommended.
+- `70-90`: needs review.
+- `<70`: operator required.
+
+Production note:
+
+- V1 is file-backed and fixture-driven.
+- Production should store review queue, operator corrections, rules, and prompt versions in Supabase.

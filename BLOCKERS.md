@@ -187,3 +187,9 @@ alter table products add column if not exists detail_json jsonb not null default
 - Current local verification uses fixture/static/mock scoring; live Vision output should be reviewed with real abalone/eel/oyster/shrimp/fish/gift photos before production use.
 - Dataset V1 is fixture-based. Production-grade accuracy requires human-labeled real image batches for each seafood category.
 - Current admin Label Editor is read-only fixture review. DB-backed label create/update/delete requires a future persistence layer.
+
+## 2026-07-07 AI Review Center V1
+
+- Review queue, rule history, and rule suggestions are file/fixture-backed in V1.
+- Production use requires Supabase tables for `ai_review_queue`, `ai_review_rules`, `ai_review_history`, and `ai_prompt_versions`.
+- Real operator approve/change-role/hold actions are UI-disabled placeholders until DB persistence is added.

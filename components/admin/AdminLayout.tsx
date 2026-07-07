@@ -62,6 +62,7 @@ export function AdminLayout({
                   <Link href="/admin/ai/images">AI 사진분석</Link>
                   <Link href="/admin/ai/dataset">AI Dataset</Link>
                   <Link href="/admin/ai/dashboard">AI Dashboard</Link>
+                  <Link href="/admin/ai/review">AI Review Center</Link>
                 </span>
               )}
             </span>

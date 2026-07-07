@@ -63,3 +63,22 @@ For production use with real images:
 - Section Accuracy: 90%+
 - Hero Accuracy: 90%+
 
+## Review Center Scoring
+
+Dataset evaluation measures AI classification accuracy.
+
+Review Center scoring measures operating usefulness:
+
+```bash
+pnpm run score:review-center
+```
+
+Important review metrics:
+
+- Auto approval rate
+- Operator correction rate
+- Rule usage rate
+- Confidence accuracy
+- Average review time estimate
+
+Use dataset evaluation and review scoring together before changing prompts or rules.

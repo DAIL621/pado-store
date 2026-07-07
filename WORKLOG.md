@@ -1883,3 +1883,16 @@
   - `reports/ai-errors`
   - `reports/prompt-history`
 - Added `AI_DATASET_GUIDE.md` and `AI_EVALUATION_GUIDE.md`.
+
+## 2026-07-07 AI Review Center V1
+
+- Added `/admin/ai/review`.
+- Added confidence-based review queue classification.
+- Added operator-first AI review rule engine.
+- Added review history and rule suggestion structure.
+- Added review self-evaluation metrics.
+- Added `pnpm run verify:ai-review-center`.
+- Added `pnpm run score:review-center`.
+- Added report output location:
+  - `reports/ai-review-center`
+- Added `AI_REVIEW_CENTER.md` and `RULE_ENGINE_GUIDE.md`.

@@ -97,3 +97,17 @@ pnpm run verify:ai-dataset
 pnpm run evaluate:dataset
 ```
 
+## Connection To Review Center
+
+Dataset labels are also used to seed the AI Review Center.
+
+The Review Center compares:
+
+- human expected role
+- human expected section
+- AI suggested role
+- AI suggested section
+- confidence tier
+- applied operator rule
+
+This makes it possible to test whether operator rules improve the review queue before using real production photos.

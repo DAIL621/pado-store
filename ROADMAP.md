@@ -526,3 +526,20 @@
 2. Replace fixture-only labels with real human labels.
 3. Add DB-backed label editor save flow.
 4. Compare OpenAI Vision output against fixture and real-photo labels.
+
+### AI Review Center V1 Completed
+
+- Review queue route added: `/admin/ai/review`.
+- Confidence-based auto approval policy added.
+- Operator rule engine added.
+- Rule suggestions from repeated corrections added.
+- Review history structure added.
+- Review center score script added.
+
+### Next Review Center Work
+
+1. Move review queue, review rules, and review history to Supabase.
+2. Connect `/admin/ai/images` analysis results directly into the review queue.
+3. Add real operator approve/change-role/hold actions.
+4. Add prompt version A/B comparison against real datasets.
+5. Add review-to-product-registration one-click flow after operator approval.
