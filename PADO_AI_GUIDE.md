@@ -125,3 +125,37 @@ Output policy:
 - Keep descriptions trustworthy.
 - Include `reasoningSummary` so admins know why the role was recommended.
 - Preserve compatibility with `convertImageAnalysisToDetailJson()` and the `/admin/new` AI draft handoff.
+
+## Image Intelligence Quality Rules
+
+When analyzing product photos, classify by visible use in the shopping detail page:
+
+- Ice pack, cold box, delivery material -> `shipping` or `package`
+- Pouch, vacuum pack, product bag -> `package` or `components`
+- Porridge, grilled dish, soup, table-ready photo -> `cooking`
+- Seafood held in hand or next to a ruler -> `sizeComparison` or `freshness`
+- Workshop, cleaning, trimming, sorting -> `process` or `origin`
+- Appetizing plated product with clean composition -> `hero` or `cooking`
+- Blurry/dark/messy/watermarked image -> lower `qualityScore` and add `warningMessage`
+
+Hero candidate rules:
+
+- Product must be large and clear.
+- Background should not distract.
+- Avoid text-heavy or watermarked photos.
+- Prefer photos that make the product understandable and appetizing.
+- Assign `heroRank` to the top three candidates only.
+
+Quality score:
+
+- `90-100`: representative/core image.
+- `75-89`: usable image.
+- `60-74`: supporting image.
+- `0-59`: needs review.
+
+Draft generation:
+
+- Generate benefits only from analysis-safe facts.
+- Generate FAQ as a draft, not final truth.
+- Generate SEO draft without unsupported origin or harvest claims.
+- Preserve image title, description, caption, role, quality score, hero rank, and reasoning summary.

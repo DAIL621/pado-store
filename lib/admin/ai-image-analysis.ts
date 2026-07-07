@@ -11,6 +11,8 @@ export type AiImageRole =
   | "shipping"
   | "cooking"
   | "components"
+  | "process"
+  | "review"
   | "detail"
   | "unknown";
 
@@ -21,6 +23,7 @@ export type AiImageRecommendedSection =
   | "packaging"
   | "recipes"
   | "components"
+  | "process"
   | "extraSections";
 
 export type AiImageAnalysisInput = {
@@ -30,6 +33,18 @@ export type AiImageAnalysisInput = {
   category?: string;
 };
 
+export type AiImageQualityFactors = {
+  sharpness: number;
+  brightness: number;
+  composition: number;
+  productFocus: number;
+  backgroundCleanliness: number;
+  usability: number;
+  heroSuitability: number;
+  trustSignal: number;
+  penalty: number;
+};
+
 export type AiImageAnalysisResult = {
   imageUrl: string;
   originalName: string;
@@ -37,10 +52,13 @@ export type AiImageAnalysisResult = {
   confidence: number;
   title: string;
   description: string;
+  caption?: string;
   recommendedSection: AiImageRecommendedSection;
   qualityScore: number;
+  heroRank?: number;
   warningMessage: string;
   reasoningSummary?: string;
+  qualityFactors?: AiImageQualityFactors;
 };
 
 export type AiImageAnalysisDraft = {
@@ -51,147 +69,275 @@ export type AiImageAnalysisDraft = {
   savedAt: string;
 };
 
-const ROLE_COPY: Record<AiImageRole, { title: string; description: string; section: AiImageRecommendedSection }> = {
+const ROLE_COPY: Record<AiImageRole, { title: string; description: string; section: AiImageRecommendedSection; caption: string }> = {
   hero: {
     title: "대표 상품 사진",
-    description: "상세페이지 첫 화면에서 상품의 상태와 매력을 가장 먼저 보여주는 사진입니다.",
+    description: "상품이 가장 크게 보이는 사진입니다. 첫 화면 대표 이미지 후보로 적합합니다.",
+    caption: "상품의 첫인상을 만드는 대표 후보 사진입니다.",
     section: "heroImages"
   },
   origin: {
-    title: "산지 사진",
-    description: "상품이 어디에서 왔는지 신뢰감을 만드는 산지 또는 생산 과정 사진입니다.",
+    title: "산지와 생산 현장",
+    description: "산지, 바다, 생산자, 작업 환경을 보여주는 신뢰 사진입니다.",
+    caption: "상품이 준비되는 현장감을 보여줍니다.",
     section: "journey"
   },
   sizeComparison: {
     title: "크기 비교 사진",
-    description: "고객이 실제 크기와 구성을 이해하도록 돕는 비교 사진입니다.",
+    description: "손, 자, 접시 등과 함께 크기를 가늠할 수 있는 사진입니다.",
+    caption: "실제 크기감을 확인하는 데 도움을 줍니다.",
     section: "gallery"
   },
   freshness: {
     title: "신선도 확인 사진",
-    description: "질감, 윤기, 상태를 보여줘 구매 신뢰를 높이는 근접 사진입니다.",
+    description: "질감, 윤기, 단면, 표면 상태를 가까이에서 보여주는 사진입니다.",
+    caption: "상품의 질감과 상태를 가까이에서 확인할 수 있습니다.",
     section: "gallery"
   },
   package: {
-    title: "포장 사진",
-    description: "아이스팩, 진공포장, 박스 등 배송 신뢰를 만드는 사진입니다.",
+    title: "포장 상태 사진",
+    description: "박스, 포장재, 진공팩, 포장봉투 등 수령 상태를 설명하는 사진입니다.",
+    caption: "실제 포장 상태를 확인할 수 있습니다.",
     section: "packaging"
   },
   shipping: {
-    title: "배송 사진",
-    description: "냉장 배송과 출고 흐름을 보여주는 운영 신뢰 사진입니다.",
+    title: "배송 준비 사진",
+    description: "아이스팩, 냉장 포장, 배송 박스 등 신선 배송을 설명하는 사진입니다.",
+    caption: "신선도를 지키는 배송 준비 과정을 보여줍니다.",
     section: "packaging"
   },
   cooking: {
     title: "조리 예시 사진",
-    description: "고객이 식탁에서 먹는 모습을 상상하게 만드는 조리 또는 완성 사진입니다.",
+    description: "구이, 죽, 숙회, 찜 등 식탁에서 즐기는 방법을 보여주는 사진입니다.",
+    caption: "어떻게 먹으면 좋은지 한눈에 보여줍니다.",
     section: "recipes"
   },
   components: {
     title: "구성품 사진",
-    description: "실제로 받는 구성과 포함물을 명확하게 보여주는 사진입니다.",
+    description: "실제로 받는 상품 구성과 포함물을 설명하는 사진입니다.",
+    caption: "배송되는 구성품을 명확하게 확인할 수 있습니다.",
     section: "components"
+  },
+  process: {
+    title: "작업 공정 사진",
+    description: "선별, 손질, 세척, 작업장 등 생산 공정을 보여주는 사진입니다.",
+    caption: "상품이 준비되는 과정을 보여줍니다.",
+    section: "process"
+  },
+  review: {
+    title: "고객 후기형 사진",
+    description: "실제 수령 후 식탁, 언박싱, 후기 콘텐츠에 어울리는 사진입니다.",
+    caption: "고객 사용 장면처럼 자연스럽게 활용할 수 있습니다.",
+    section: "extraSections"
   },
   detail: {
     title: "상세 질감 사진",
-    description: "상품 표면, 손질 상태, 세부 품질을 보강하는 상세 사진입니다.",
+    description: "단면, 살결, 표면, 손질 상태 등 세부 품질을 보강하는 사진입니다.",
+    caption: "세부 상태를 자세히 확인할 수 있습니다.",
     section: "gallery"
   },
   unknown: {
-    title: "역할 확인 필요",
-    description: "사진의 역할이 명확하지 않습니다. 운영자가 제목과 배치 위치를 확인해주세요.",
+    title: "확인 필요 사진",
+    description: "상품 역할이 명확하지 않습니다. 운영자가 배치 위치를 확인해야 합니다.",
+    caption: "운영자 확인이 필요한 사진입니다.",
     section: "extraSections"
   }
 };
 
-const CATEGORY_KEYWORDS: Record<string, Partial<Record<AiImageRole, string[]>>> = {
+const PRODUCT_KEYWORDS: Record<string, Partial<Record<AiImageRole, string[]>>> = {
   abalone: {
-    hero: ["abalone", "전복", "wando"],
-    freshness: ["live", "fresh", "close", "freshness", "신선", "활"],
-    cooking: ["butter", "죽", "구이", "recipe", "cook"]
+    hero: ["abalone", "전복", "wando", "main", "대표"],
+    sizeComparison: ["size", "compare", "hand", "ruler", "크기", "비교", "손"],
+    freshness: ["live", "fresh", "close", "texture", "활", "신선", "단면", "살", "질감"],
+    cooking: ["butter", "porridge", "죽", "구이", "recipe", "cook", "조리"],
+    process: ["clean", "손질", "선별", "세척", "작업"]
   },
   eel: {
-    hero: ["eel", "장어", "anago"],
-    cooking: ["grill", "구이", "양념", "cook"]
+    hero: ["eel", "장어", "anago", "main", "대표"],
+    freshness: ["fillet", "살", "손질", "뼈", "bone"],
+    cooking: ["grill", "구이", "양념", "cook", "recipe"],
+    package: ["pack", "vacuum", "포장", "진공"]
   },
-  conch: {
-    hero: ["conch", "sora", "소라", "참소라"],
-    freshness: ["shell", "껍질", "fresh", "close"]
+  octopus: {
+    hero: ["octopus", "문어", "main"],
+    freshness: ["live", "boiled", "숙회", "삶은", "생물"],
+    sizeComparison: ["size", "hand", "크기", "손"],
+    cooking: ["sashimi", "숙회", "초장", "요리"],
+    process: ["clean", "손질", "세척"]
+  },
+  oyster: {
+    hero: ["oyster", "굴", "main"],
+    freshness: ["shell", "알굴", "껍질", "세척", "fresh"],
+    sizeComparison: ["size", "크기", "알"],
+    cooking: ["찜", "구이", "전", "요리"],
+    package: ["pack", "box", "ice", "포장"]
+  },
+  shrimp: {
+    hero: ["shrimp", "새우", "main"],
+    freshness: ["fresh", "close", "head", "shell", "신선"],
+    cooking: ["grill", "찜", "구이", "요리"],
+    package: ["pack", "ice", "box", "포장"]
   },
   fish: {
-    hero: ["fish", "갈치", "고등어", "생선"],
-    detail: ["slice", "fillet", "손질", "cut"]
+    hero: ["fish", "갈치", "고등어", "생선", "main"],
+    detail: ["slice", "fillet", "cut", "단면", "손질"],
+    freshness: ["fresh", "close", "살", "윤기"],
+    cooking: ["grill", "구이", "조림", "요리"]
   },
   mealKit: {
-    hero: ["meal", "kit", "밀키트"],
-    components: ["구성", "set", "ingredient"]
+    hero: ["meal", "kit", "밀키트", "main"],
+    components: ["구성", "set", "ingredient", "재료"],
+    cooking: ["cook", "recipe", "조리", "완성"]
   },
   gift: {
-    hero: ["gift", "선물", "세트"],
-    package: ["box", "package", "포장"]
+    hero: ["gift", "선물", "세트", "premium"],
+    package: ["box", "package", "포장", "패키지"],
+    components: ["구성", "set", "구성품"],
+    detail: ["ribbon", "고급", "명절"]
   }
 };
 
 const ROLE_KEYWORDS: Record<AiImageRole, string[]> = {
-  hero: ["main", "hero", "대표", "thumbnail", "cover"],
-  origin: ["origin", "sea", "boat", "producer", "farm", "산지", "바다", "어선", "생산자"],
-  sizeComparison: ["size", "scale", "compare", "hand", "ruler", "크기", "비교"],
-  freshness: ["fresh", "live", "texture", "close", "신선", "질감", "근접"],
-  package: ["pack", "package", "box", "ice", "vacuum", "포장", "박스", "아이스", "진공"],
-  shipping: ["ship", "delivery", "courier", "cj", "배송", "냉장"],
-  cooking: ["cook", "recipe", "grill", "dish", "table", "조리", "요리", "구이", "식탁"],
-  components: ["component", "set", "inside", "ingredient", "구성", "내용물", "재료"],
-  detail: ["detail", "cut", "slice", "손질", "상세", "단면"],
+  hero: ["main", "hero", "대표", "thumbnail", "cover", "plate", "접시"],
+  origin: ["origin", "sea", "boat", "producer", "farm", "산지", "바다", "어선", "생산자", "양식장"],
+  sizeComparison: ["size", "scale", "compare", "hand", "ruler", "크기", "비교", "손", "자"],
+  freshness: ["fresh", "live", "texture", "close", "신선", "질감", "근접", "살", "단면", "윤기"],
+  package: ["pack", "package", "pouch", "bag", "box", "vacuum", "포장", "봉투", "박스", "진공", "패키지"],
+  shipping: ["ship", "shipping", "delivery", "courier", "ice", "icepack", "cold", "cj", "배송", "냉장", "아이스팩", "보냉"],
+  cooking: ["cook", "recipe", "grill", "dish", "table", "porridge", "soup", "조리", "요리", "구이", "죽", "탕", "숙회", "식탁"],
+  components: ["component", "set", "inside", "ingredient", "구성", "내용물", "재료", "구성품"],
+  process: ["process", "factory", "workshop", "sorting", "cleaning", "trim", "선별", "손질", "세척", "작업장", "공정"],
+  review: ["review", "customer", "unboxing", "home", "후기", "수령", "언박싱"],
+  detail: ["detail", "cut", "slice", "fillet", "surface", "상세", "단면", "표면"],
   unknown: []
+};
+
+const ROLE_ORDER: Record<AiImageRole, number> = {
+  hero: 1,
+  freshness: 2,
+  sizeComparison: 3,
+  origin: 4,
+  process: 5,
+  package: 6,
+  shipping: 7,
+  cooking: 8,
+  components: 9,
+  detail: 10,
+  review: 11,
+  unknown: 12
 };
 
 function normalize(value: string) {
   return value.toLowerCase().replace(/[_-]+/g, " ");
 }
 
-function detectCategoryRole(name: string, category: string) {
-  const categoryRules = CATEGORY_KEYWORDS[category] ?? {};
-  for (const [role, keywords] of Object.entries(categoryRules) as Array<[AiImageRole, string[]]>) {
-    if (keywords.some((keyword) => name.includes(keyword.toLowerCase()))) return role;
+function hasAny(value: string, keywords: string[]) {
+  return keywords.some((keyword) => value.includes(keyword.toLowerCase()));
+}
+
+function detectRoleByKeywords(name: string, category: string) {
+  const productRules = PRODUCT_KEYWORDS[category] ?? {};
+  for (const [role, keywords] of Object.entries(productRules) as Array<[AiImageRole, string[]]>) {
+    if (hasAny(name, keywords)) return { role, confidence: 86 };
   }
-  return null;
+  for (const [role, keywords] of Object.entries(ROLE_KEYWORDS) as Array<[AiImageRole, string[]]>) {
+    if (hasAny(name, keywords)) return { role, confidence: 80 };
+  }
+  return { role: "unknown" as AiImageRole, confidence: 42 };
+}
+
+function inferQualityFactors(name: string, role: AiImageRole, index: number): AiImageQualityFactors {
+  const negative = {
+    blur: hasAny(name, ["blur", "blurry", "흐림", "흔들림"]),
+    dark: hasAny(name, ["dark", "어두움", "어둡"]),
+    watermark: hasAny(name, ["watermark", "logo", "text", "워터마크", "글자"]),
+    messy: hasAny(name, ["messy", "dirty", "background", "복잡", "지저분"])
+  };
+  const positive = {
+    clean: hasAny(name, ["clean", "white", "studio", "깔끔", "깨끗"]),
+    close: hasAny(name, ["close", "detail", "fresh", "근접", "상세", "신선"]),
+    main: role === "hero" || hasAny(name, ["main", "hero", "대표"]),
+    trust: role === "origin" || role === "process" || role === "package" || role === "shipping"
+  };
+  const penalty = (negative.blur ? 22 : 0) + (negative.dark ? 12 : 0) + (negative.watermark ? 16 : 0) + (negative.messy ? 10 : 0);
+
+  return {
+    sharpness: Math.max(35, 82 + (positive.close ? 8 : 0) - (negative.blur ? 28 : 0)),
+    brightness: Math.max(35, 80 + (positive.clean ? 8 : 0) - (negative.dark ? 22 : 0)),
+    composition: Math.max(35, 78 + (positive.main ? 10 : 0) - (negative.messy ? 18 : 0)),
+    productFocus: Math.max(35, 80 + (positive.main || positive.close ? 8 : 0) - (negative.messy ? 16 : 0)),
+    backgroundCleanliness: Math.max(35, 78 + (positive.clean ? 12 : 0) - (negative.messy ? 22 : 0)),
+    usability: Math.max(35, 78 + (role !== "unknown" ? 8 : -18) - (negative.blur ? 12 : 0)),
+    heroSuitability: Math.max(25, 58 + (role === "hero" ? 28 : 0) + (index === 0 ? 8 : 0) - penalty),
+    trustSignal: Math.max(35, 72 + (positive.trust ? 14 : 0) + (role === "freshness" ? 8 : 0) - (negative.watermark ? 16 : 0)),
+    penalty
+  };
+}
+
+function calculateQualityScore(factors: AiImageQualityFactors) {
+  const weighted =
+    factors.sharpness * 0.15 +
+    factors.brightness * 0.1 +
+    factors.composition * 0.12 +
+    factors.productFocus * 0.17 +
+    factors.backgroundCleanliness * 0.1 +
+    factors.usability * 0.18 +
+    factors.heroSuitability * 0.1 +
+    factors.trustSignal * 0.08 -
+    factors.penalty * 0.35;
+  return Math.min(100, Math.max(0, Math.round(weighted)));
+}
+
+function warningFor(score: number, role: AiImageRole, factors: AiImageQualityFactors) {
+  if (factors.penalty >= 30) return "흐림, 어두움, 워터마크, 복잡한 배경 요소가 있어 대표사진으로는 적합하지 않습니다.";
+  if (score < 60) return "상세페이지 핵심 이미지로 쓰기 전에 운영자 확인이 필요합니다.";
+  if (score < 75) return "보조 이미지로는 사용할 수 있지만 대표사진보다는 하단 갤러리에 적합합니다.";
+  if (role === "package" || role === "shipping") return "포장/배송 설명에는 좋지만 메인 대표사진으로는 약합니다.";
+  if (role === "cooking") return "조리 예시로 적합합니다. 대표사진보다 먹는 방법 섹션에 배치하세요.";
+  return "";
+}
+
+function recommendedRole(input: AiImageAnalysisInput) {
+  const name = normalize(input.originalName);
+  const detected = detectRoleByKeywords(name, input.category || "seafood");
+  if (detected.role !== "unknown") return detected;
+  if (input.index === 0) return { role: "hero" as AiImageRole, confidence: 74 };
+  if (input.index === 1) return { role: "sizeComparison" as AiImageRole, confidence: 60 };
+  if (input.index >= 4) return { role: "detail" as AiImageRole, confidence: 55 };
+  return detected;
+}
+
+export function sortAiImageAnalysisResults(results: AiImageAnalysisResult[]) {
+  return [...results].sort((a, b) => {
+    const roleDiff = ROLE_ORDER[a.suggestedRole] - ROLE_ORDER[b.suggestedRole];
+    if (roleDiff) return roleDiff;
+    return b.qualityScore - a.qualityScore;
+  });
+}
+
+export function applyHeroRanking(results: AiImageAnalysisResult[]) {
+  const heroCandidates = [...results]
+    .map((item) => ({
+      item,
+      score: item.qualityScore + (item.suggestedRole === "hero" ? 18 : 0) + (item.suggestedRole === "freshness" ? 8 : 0) + (item.qualityFactors?.heroSuitability ?? 0) * 0.2
+    }))
+    .filter(({ item }) => item.suggestedRole === "hero" || item.suggestedRole === "freshness" || item.recommendedSection === "heroImages")
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+  const rankByImage = new Map(heroCandidates.map(({ item }, index) => [item.imageUrl, index + 1]));
+  return results.map((item) => ({
+    ...item,
+    heroRank: rankByImage.get(item.imageUrl)
+  }));
 }
 
 export function analyzeImageWithMockEngine(input: AiImageAnalysisInput): AiImageAnalysisResult {
-  const name = normalize(input.originalName);
-  const category = input.category || "seafood";
-  let role = detectCategoryRole(name, category) ?? "unknown";
-  let confidence = role === "unknown" ? 42 : 82;
-
-  if (role === "unknown") {
-    for (const [candidate, keywords] of Object.entries(ROLE_KEYWORDS) as Array<[AiImageRole, string[]]>) {
-      if (keywords.some((keyword) => name.includes(keyword.toLowerCase()))) {
-        role = candidate;
-        confidence = 78;
-        break;
-      }
-    }
-  }
-
-  if (input.index === 0 && role === "unknown") {
-    role = "hero";
-    confidence = 74;
-  } else if (input.index === 1 && role === "unknown") {
-    role = "sizeComparison";
-    confidence = 58;
-  } else if (input.index >= 4 && role === "unknown") {
-    role = "detail";
-    confidence = 52;
-  }
-
+  const { role, confidence } = recommendedRole(input);
   const copy = ROLE_COPY[role];
-  const qualityScore = Math.min(100, Math.max(35, confidence + (input.imageUrl ? 8 : 0) - (role === "unknown" ? 10 : 0)));
-  const warningMessage =
-    role === "unknown"
-      ? "역할이 불명확합니다. 운영자가 제목과 배치 위치를 확인해주세요."
-      : qualityScore < 65
-        ? "상세페이지에 사용할 수 있지만 선명도나 역할 확인이 필요합니다."
-        : "";
+  const normalizedName = normalize(input.originalName);
+  const qualityFactors = inferQualityFactors(normalizedName, role, input.index);
+  const qualityScore = calculateQualityScore(qualityFactors);
+  const warningMessage = warningFor(qualityScore, role, qualityFactors);
 
   return {
     imageUrl: input.imageUrl,
@@ -200,20 +346,46 @@ export function analyzeImageWithMockEngine(input: AiImageAnalysisInput): AiImage
     confidence,
     title: copy.title,
     description: copy.description,
+    caption: copy.caption,
     recommendedSection: copy.section,
     qualityScore,
     warningMessage,
-    reasoningSummary: "파일명, 업로드 순서, 상품 카테고리를 기준으로 기본 역할을 추천했습니다."
+    reasoningSummary: "파일명, 업로드 순서, 상품군별 rule, 품질 점수 기준을 조합해 추천했습니다.",
+    qualityFactors
   };
 }
 
 export function analyzeImagesWithMockEngine(inputs: AiImageAnalysisInput[]) {
-  return inputs.map(analyzeImageWithMockEngine);
+  return applyHeroRanking(inputs.map(analyzeImageWithMockEngine));
+}
+
+export function summarizeAiImageAnalysis(results: AiImageAnalysisResult[]) {
+  const roleCounts = results.reduce<Record<string, number>>((acc, item) => {
+    acc[item.suggestedRole] = (acc[item.suggestedRole] ?? 0) + 1;
+    return acc;
+  }, {});
+  const needsReview = results.filter((item) => item.qualityScore < 75 || item.suggestedRole === "unknown" || item.warningMessage).length;
+  const heroCandidates = results.filter((item) => item.heroRank).sort((a, b) => (a.heroRank ?? 99) - (b.heroRank ?? 99));
+  const averageQuality = results.length ? Math.round(results.reduce((sum, item) => sum + item.qualityScore, 0) / results.length) : 0;
+  return {
+    total: results.length,
+    roleCounts,
+    needsReview,
+    heroCandidates,
+    averageQuality
+  };
+}
+
+function firstByRole(results: AiImageAnalysisResult[], roles: AiImageRole[]) {
+  return sortAiImageAnalysisResults(results).find((item) => roles.includes(item.suggestedRole));
 }
 
 export function convertImageAnalysisToDetailJson(results: AiImageAnalysisResult[]): Partial<ProductDetail> {
-  const heroImages = results
-    .filter((item) => item.recommendedSection === "heroImages" || item.suggestedRole === "hero")
+  const rankedResults = applyHeroRanking(results);
+  const sorted = sortAiImageAnalysisResults(rankedResults);
+  const heroImages = sorted
+    .filter((item) => item.recommendedSection === "heroImages" || item.suggestedRole === "hero" || item.heroRank)
+    .sort((a, b) => (a.heroRank ?? 99) - (b.heroRank ?? 99) || b.qualityScore - a.qualityScore)
     .slice(0, 6)
     .map((item) => ({
       label: item.title,
@@ -221,21 +393,21 @@ export function convertImageAnalysisToDetailJson(results: AiImageAnalysisResult[
       description: item.description
     }));
 
-  const journey = results
-    .filter((item) => item.suggestedRole === "origin")
+  const journey = sorted
+    .filter((item) => item.suggestedRole === "origin" || item.suggestedRole === "process")
     .slice(0, 5)
     .map((item, index) => ({
-      key: `ai-origin-${index + 1}`,
+      key: `ai-journey-${index + 1}`,
       title: item.title,
       image: item.imageUrl,
       description: item.description
     }));
 
-  const packaging = results
+  const packaging = sorted
     .filter((item) => item.suggestedRole === "package" || item.suggestedRole === "shipping")
     .map((item) => item.description);
 
-  const recipes = results
+  const recipes = sorted
     .filter((item) => item.suggestedRole === "cooking")
     .map((item) => ({
       title: item.title,
@@ -243,20 +415,37 @@ export function convertImageAnalysisToDetailJson(results: AiImageAnalysisResult[
       image: item.imageUrl
     }));
 
-  const components = results
+  const components = sorted
     .filter((item) => item.suggestedRole === "components")
     .map((item) => item.title);
 
-  const galleryItems = results
-    .filter((item) => item.recommendedSection === "gallery" || item.suggestedRole === "detail" || item.suggestedRole === "freshness" || item.suggestedRole === "sizeComparison")
+  const galleryItems = sorted
+    .filter((item) => item.recommendedSection === "gallery" || ["detail", "freshness", "sizeComparison", "review"].includes(item.suggestedRole))
     .map((item) => ({
       imageUrl: item.imageUrl,
       title: item.title,
       description: item.description,
-      caption: `${item.title} · 신뢰도 ${item.confidence}%`,
+      caption: item.caption || `${item.title} · 신뢰도 ${item.confidence}%`,
       role: item.suggestedRole,
+      qualityScore: item.qualityScore,
+      heroRank: item.heroRank,
       reasoningSummary: item.reasoningSummary
     }));
+
+  const processItems = sorted
+    .filter((item) => item.suggestedRole === "process")
+    .map((item) => ({
+      imageUrl: item.imageUrl,
+      title: item.title,
+      description: item.description,
+      caption: item.caption,
+      qualityScore: item.qualityScore
+    }));
+
+  const summary = summarizeAiImageAnalysis(rankedResults);
+  const hero = firstByRole(rankedResults, ["hero", "freshness"]);
+  const packageOrShipping = firstByRole(rankedResults, ["shipping", "package"]);
+  const cooking = firstByRole(rankedResults, ["cooking"]);
 
   const extraSections = [
     ...(galleryItems.length
@@ -268,30 +457,100 @@ export function convertImageAnalysisToDetailJson(results: AiImageAnalysisResult[
           }
         ]
       : []),
+    ...(processItems.length
+      ? [
+          {
+            type: "ai-process",
+            title: "AI 추천 작업 공정",
+            items: processItems
+          }
+        ]
+      : []),
+    {
+      type: "ai-quality-summary",
+      title: "AI 상세페이지 품질 요약",
+      items: [
+        {
+          averageQuality: summary.averageQuality,
+          totalImages: summary.total,
+          needsReview: summary.needsReview,
+          heroCandidateCount: summary.heroCandidates.length,
+          roleCounts: summary.roleCounts
+        }
+      ]
+    },
+    {
+      type: "ai-faq-draft",
+      title: "AI FAQ 초안",
+      items: [
+        {
+          question: "사진 속 상품 그대로 배송되나요?",
+          answer: "사진은 상품 이해를 돕기 위한 예시입니다. 실제 구성과 옵션은 상품 등록 정보 기준으로 확인해주세요."
+        },
+        {
+          question: "포장은 어떻게 오나요?",
+          answer: packageOrShipping?.description || "상품 특성에 맞는 냉장/보냉 포장 기준으로 발송됩니다."
+        },
+        {
+          question: "어떻게 먹으면 좋나요?",
+          answer: cooking?.description || "상품 상세의 조리 예시와 보관 안내를 함께 확인해주세요."
+        }
+      ]
+    },
+    {
+      type: "ai-seo-draft",
+      title: "AI SEO 초안",
+      items: [
+        {
+          title: hero?.title || "파도스토리 프리미엄 수산물",
+          description: hero?.description || "사진 분석 결과를 바탕으로 상세페이지 초안을 준비했습니다.",
+          keywords: Object.keys(summary.roleCounts)
+        }
+      ]
+    },
     {
       type: "ai-image-analysis",
       title: "AI 사진 분석 결과",
-      items: results.map((item) => ({
+      items: rankedResults.map((item) => ({
         imageUrl: item.imageUrl,
         originalName: item.originalName,
         suggestedRole: item.suggestedRole,
         confidence: item.confidence,
         title: item.title,
         description: item.description,
+        caption: item.caption,
         recommendedSection: item.recommendedSection,
         qualityScore: item.qualityScore,
+        heroRank: item.heroRank,
         warningMessage: item.warningMessage,
-        reasoningSummary: item.reasoningSummary
+        reasoningSummary: item.reasoningSummary,
+        qualityFactors: item.qualityFactors
       }))
     }
   ];
 
   return {
     heroImages,
+    benefits: [
+      hero ? "대표사진 후보 자동 선별" : "",
+      packageOrShipping ? "포장/배송 사진 확인 가능" : "",
+      cooking ? "조리 예시 제공" : "",
+      summary.averageQuality >= 75 ? "상세페이지 활용도 양호" : "운영자 품질 확인 필요"
+    ].filter(Boolean),
     journey,
     packaging,
     recipes,
     components,
+    faq: [
+      {
+        question: "사진 속 상품 그대로 배송되나요?",
+        answer: "사진은 상품 이해를 돕기 위한 예시입니다. 실제 구성과 옵션은 상품 등록 정보 기준으로 확인해주세요."
+      },
+      {
+        question: "포장은 어떻게 오나요?",
+        answer: packageOrShipping?.description || "상품 특성에 맞는 냉장/보냉 포장 기준으로 발송됩니다."
+      }
+    ],
     extraSections
   };
 }
@@ -305,6 +564,8 @@ export const AI_IMAGE_ROLE_OPTIONS: Array<{ value: AiImageRole; label: string }>
   { value: "shipping", label: "배송" },
   { value: "cooking", label: "조리" },
   { value: "components", label: "구성품" },
+  { value: "process", label: "공정" },
+  { value: "review", label: "후기형" },
   { value: "detail", label: "상세" },
   { value: "unknown", label: "확인 필요" }
 ];
@@ -316,5 +577,6 @@ export const AI_IMAGE_SECTION_OPTIONS: Array<{ value: AiImageRecommendedSection;
   { value: "packaging", label: "포장/배송" },
   { value: "recipes", label: "맛있게 먹는 방법" },
   { value: "components", label: "구성품" },
+  { value: "process", label: "공정" },
   { value: "extraSections", label: "추가 섹션" }
 ];

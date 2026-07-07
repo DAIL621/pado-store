@@ -500,3 +500,12 @@
 - `openai` Vision provider is prepared behind server API.
 - `/api/admin/ai/images/analyze` added for admin-only analysis.
 - `/admin/ai/images` now shows provider, fallback state, and reasoning summary.
+
+### Image Intelligence Quality Upgrade Completed
+
+- Product-group role rules added for seafood categories.
+- Quality score criteria added.
+- Hero ranking added.
+- Operator filters and summary added.
+- `detail_json` conversion now includes benefits, FAQ draft, SEO draft, process, gallery metadata, and quality summary.
+- `pnpm run score:ai-image-analysis` added with 90+ target scoring.

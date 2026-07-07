@@ -28,6 +28,10 @@ assert(aiComponent.includes("fetch(\"/api/admin/ai/images/analyze\""), "AI image
 assert(aiComponent.includes("Provider:"), "AI image analyzer should display provider");
 assert(aiComponent.includes("fallback 사용됨"), "AI image analyzer should display fallback state");
 assert(aiComponent.includes("reasoningSummary"), "AI image analyzer should display reasoning summary");
+assert(aiComponent.includes("resultFilter"), "AI image analyzer should include result filters");
+assert(aiComponent.includes("AI 추천 순서로 정렬"), "AI image analyzer should include AI recommendation sorting");
+assert(aiComponent.includes("summarizeAiImageAnalysis"), "AI image analyzer should show analysis summary");
+assert(aiComponent.includes("heroCandidates"), "AI image analyzer should show hero candidates");
 assert(aiComponent.includes("convertImageAnalysisToDetailJson"), "AI image analyzer should preview detail_json conversion");
 assert(aiComponent.includes("상품등록으로 보내기"), "AI image analyzer should send result to product registration");
 assert(aiComponent.includes("localStorage.setItem"), "AI image analyzer should store analysis draft");
@@ -41,9 +45,14 @@ assert(aiEngine.includes("recommendedSection"), "AI image analysis should includ
 assert(aiEngine.includes("qualityScore"), "AI image analysis should include qualityScore");
 assert(aiEngine.includes("warningMessage"), "AI image analysis should include warningMessage");
 assert(aiEngine.includes("reasoningSummary"), "AI image analysis should include reasoningSummary");
+assert(aiEngine.includes("qualityFactors"), "AI image analysis should include qualityFactors");
+assert(aiEngine.includes("heroRank"), "AI image analysis should include heroRank");
 assert(aiEngine.includes("analyzeImageWithMockEngine"), "Mock image analysis engine is missing");
 assert(aiEngine.includes("convertImageAnalysisToDetailJson"), "detail_json converter is missing");
 assert(aiEngine.includes("ai-gallery"), "detail_json converter should preserve gallery/caption metadata");
+assert(aiEngine.includes("ai-faq-draft"), "detail_json converter should create FAQ draft");
+assert(aiEngine.includes("ai-seo-draft"), "detail_json converter should create SEO draft");
+assert(aiEngine.includes("ai-quality-summary"), "detail_json converter should create quality summary");
 
 assert(aiProvider.includes("AiImageAnalysisProvider"), "AI image provider interface is missing");
 assert(aiProvider.includes("OpenAiVisionImageAnalysisProvider"), "OpenAI Vision provider is missing");
@@ -51,6 +60,8 @@ assert(aiProvider.includes("PADO_AI_IMAGE_PROVIDER"), "AI provider env var is mi
 assert(aiProvider.includes("OPENAI_API_KEY"), "OpenAI API key env var is missing");
 assert(aiProvider.includes("PADO_AI_IMAGE_MODEL"), "OpenAI model env var is missing");
 assert(aiProvider.includes("chat/completions"), "OpenAI Vision API call is missing");
+assert(aiProvider.includes("Category-specific criteria"), "OpenAI Vision prompt should include product-group criteria");
+assert(aiProvider.includes("qualityFactors"), "OpenAI Vision prompt should request qualityFactors");
 assert(aiProvider.includes("fallbackUsed"), "provider fallback response is missing");
 assert(aiProvider.includes("analyzeImagesWithSelectedProvider"), "provider selector function is missing");
 
@@ -66,8 +77,11 @@ assert(productBuilder.includes("clearAiDraft"), "product registration should exp
 assert(productBuilder.includes("createProductDetailFormValue"), "product registration should normalize AI detail_json draft");
 assert(productBuilder.includes("extraSections"), "product registration should preserve AI extra sections");
 
-["hero", "origin", "sizeComparison", "freshness", "package", "shipping", "cooking", "components", "detail", "unknown"].forEach((role) => {
+["hero", "origin", "sizeComparison", "freshness", "package", "shipping", "cooking", "components", "process", "review", "detail", "unknown"].forEach((role) => {
   assert(aiEngine.includes(`"${role}"`), `AI image role missing: ${role}`);
+});
+["sharpness", "brightness", "composition", "productFocus", "backgroundCleanliness", "usability", "heroSuitability", "trustSignal"].forEach((factor) => {
+  assert(aiEngine.includes(factor), `AI quality factor missing: ${factor}`);
 });
 
 assert(styles.includes(".admin-ai-page"), "AI operation center styles are missing");
@@ -89,6 +103,10 @@ console.log(
         "image-preview-delete-reorder",
         "server-provider-api",
         "openai-vision-provider",
+        "product-group-vision-prompt",
+        "quality-factor-scoring",
+        "hero-ranking",
+        "operator-summary-filters",
         "mock-fallback-provider",
         "editable-analysis-result",
         "analysis-to-registration-draft",

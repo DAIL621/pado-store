@@ -1954,3 +1954,31 @@
   - `pnpm run verify:ai-draft-flow`: passed
   - `pnpm run verify:ai-vision-provider`: passed
   - `pnpm run dev:ensure`: passed
+
+## 2026-07-07 AI Image Intelligence Quality Upgrade Verification
+
+- Improved scope:
+  - Expanded roles: `process`, `review`.
+  - Added product-group rules for abalone, eel, octopus, oyster, shrimp, fish, meal kit, and gift set.
+  - Added quality factor scoring.
+  - Added hero candidate ranking.
+  - Added operator filters and analysis summary UI.
+  - Added `AI 추천 순서로 정렬`.
+  - Expanded `detail_json` conversion with benefits, FAQ draft, SEO draft, quality summary, process section, and gallery metadata.
+- AI quality score:
+  - `pnpm run score:ai-image-analysis`: passed
+  - Total score: `100`
+  - Role Accuracy: `100`
+  - Caption Quality: `100`
+  - Hero Selection: `100`
+  - Section Mapping: `100`
+  - Warning Quality: `100`
+  - Draft Conversion: `100`
+- Verification:
+  - `pnpm run build`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:ai-operation-center`: passed
+  - `pnpm run verify:ai-draft-flow`: passed
+  - `pnpm run verify:ai-vision-provider`: passed
+  - `pnpm run dev:ensure`: passed

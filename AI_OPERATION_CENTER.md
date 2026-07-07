@@ -207,3 +207,76 @@ pnpm run verify:ai-operation-center
 pnpm run verify:ai-vision-provider
 pnpm run verify:ai-draft-flow
 ```
+
+## AI Image Intelligence Quality Upgrade
+
+The analysis engine now targets an operator-ready first draft for 10+ uploaded product photos.
+
+Role taxonomy:
+
+- `hero`: main conversion image.
+- `origin`: sea, producer, farm, boat, origin context.
+- `sizeComparison`: hand, ruler, scale, size comparison.
+- `freshness`: close-up texture, flesh, live/fresh condition.
+- `package`: box, pouch, vacuum pack, product package.
+- `shipping`: ice pack, cold-chain box, courier/shipping materials.
+- `cooking`: grilled, porridge, soup, prepared dish, table scene.
+- `components`: set contents, ingredients, included items.
+- `process`: sorting, cleaning, trimming, workshop/factory process.
+- `review`: unboxing or customer-like use scene.
+- `detail`: cut surface, surface detail, supporting close-up.
+- `unknown`: needs operator review.
+
+Quality score criteria:
+
+- Sharpness
+- Brightness
+- Composition
+- Product focus
+- Background cleanliness
+- Detail-page usability
+- Hero suitability
+- Customer trust signal
+- Penalty for blur, watermark/text, messy background, or darkness
+
+Score interpretation:
+
+- `90-100`: hero/core section candidate.
+- `75-89`: usable for product detail page.
+- `60-74`: supporting image.
+- `0-59`: needs review or not recommended.
+
+Hero selection:
+
+- The engine calculates `heroRank` for up to three candidates.
+- Ranking favors large product visibility, clean background, appetizing/product-focused composition, high quality score, and low penalty.
+
+Operator UI:
+
+- Provider and fallback status.
+- Overall analysis summary.
+- Role counts.
+- Hero candidate ranking.
+- Average quality score.
+- Needs-review count.
+- Filters for hero candidates, needs-review images, packaging, cooking, and components.
+- `AI 추천 순서로 정렬` button.
+
+Draft conversion:
+
+- Representative images
+- Journey/process images
+- Gallery
+- Packaging
+- Recipes
+- Components
+- Benefits draft
+- FAQ draft
+- SEO draft
+- AI quality summary
+
+Quality scoring command:
+
+```bash
+pnpm run score:ai-image-analysis
+```

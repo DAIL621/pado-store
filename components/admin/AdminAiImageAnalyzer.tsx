@@ -7,7 +7,10 @@ import {
   AI_IMAGE_ROLE_OPTIONS,
   AI_IMAGE_SECTION_OPTIONS,
   analyzeImagesWithMockEngine,
+  applyHeroRanking,
   convertImageAnalysisToDetailJson,
+  sortAiImageAnalysisResults,
+  summarizeAiImageAnalysis,
   type AiImageAnalysisResult,
   type AiImageRecommendedSection,
   type AiImageRole
@@ -26,14 +29,27 @@ type ProviderInfo = {
   fallbackReason?: string;
 };
 
+type ResultFilter = "all" | "hero" | "needsReview" | "package" | "cooking" | "components";
+
 const CATEGORIES = [
   { value: "abalone", label: "전복" },
-  { value: "conch", label: "참소라" },
-  { value: "eel", label: "장어/아나고" },
+  { value: "eel", label: "바다장어" },
+  { value: "octopus", label: "문어" },
+  { value: "oyster", label: "굴" },
+  { value: "shrimp", label: "새우" },
   { value: "fish", label: "생선" },
   { value: "mealKit", label: "밀키트" },
   { value: "gift", label: "선물세트" },
   { value: "seafood", label: "기타 수산물" }
+];
+
+const FILTERS: Array<{ value: ResultFilter; label: string }> = [
+  { value: "all", label: "전체" },
+  { value: "hero", label: "대표 후보" },
+  { value: "needsReview", label: "확인 필요" },
+  { value: "package", label: "포장/배송" },
+  { value: "cooking", label: "조리" },
+  { value: "components", label: "구성품" }
 ];
 
 function fileToDataUrl(file: File) {
@@ -54,17 +70,27 @@ async function createDraft(file: File): Promise<ImageDraft> {
   };
 }
 
+function filterResults(results: AiImageAnalysisResult[], filter: ResultFilter) {
+  if (filter === "hero") return results.filter((item) => item.heroRank || item.suggestedRole === "hero");
+  if (filter === "needsReview") return results.filter((item) => item.qualityScore < 75 || item.suggestedRole === "unknown" || item.warningMessage);
+  if (filter === "package") return results.filter((item) => item.suggestedRole === "package" || item.suggestedRole === "shipping");
+  if (filter === "cooking") return results.filter((item) => item.suggestedRole === "cooking");
+  if (filter === "components") return results.filter((item) => item.suggestedRole === "components");
+  return results;
+}
+
 export function AdminAiImageAnalyzer() {
   const [category, setCategory] = useState("abalone");
   const [drafts, setDrafts] = useState<ImageDraft[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [results, setResults] = useState<AiImageAnalysisResult[]>([]);
+  const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [providerInfo, setProviderInfo] = useState<ProviderInfo | null>(null);
-  const [message, setMessage] = useState(
-    "상품 사진을 올리면 AI가 역할, 품질 점수, 상세페이지 배치 위치를 추천합니다. API 키가 없으면 Mock 분석으로 안전하게 동작합니다."
-  );
+  const [message, setMessage] = useState("상품 사진을 올리면 AI가 역할, 품질 점수, 대표 후보, 상세페이지 배치 위치를 추천합니다.");
 
+  const summary = useMemo(() => summarizeAiImageAnalysis(results), [results]);
+  const filteredResults = useMemo(() => filterResults(results, resultFilter), [results, resultFilter]);
   const convertedDetailJson = useMemo(() => convertImageAnalysisToDetailJson(results), [results]);
 
   const addFiles = async (files: File[]) => {
@@ -92,6 +118,16 @@ export function AdminAiImageAnalyzer() {
       next.splice(toIndex, 0, item);
       return next;
     });
+  };
+
+  const sortByAiRecommendation = () => {
+    setResults((current) => sortAiImageAnalysisResults(applyHeroRanking(current)));
+    setDrafts((current) => {
+      const sortedResults = sortAiImageAnalysisResults(applyHeroRanking(results));
+      const order = new Map(sortedResults.map((item, index) => [item.imageUrl, index]));
+      return [...current].sort((a, b) => (order.get(a.imageUrl) ?? 999) - (order.get(b.imageUrl) ?? 999));
+    });
+    setMessage("AI 추천 순서로 정렬했습니다. 운영자가 다시 위/아래 버튼으로 조정할 수 있습니다.");
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
@@ -126,7 +162,8 @@ export function AdminAiImageAnalyzer() {
       const body = await response.json();
       if (!response.ok || !body.ok) throw new Error(body?.message || "AI 사진분석 API 요청에 실패했습니다.");
 
-      setResults(body.results);
+      const nextResults = applyHeroRanking(body.results);
+      setResults(nextResults);
       setProviderInfo({
         provider: body.provider || "mock",
         fallbackUsed: Boolean(body.fallbackUsed),
@@ -135,7 +172,7 @@ export function AdminAiImageAnalyzer() {
       setMessage(
         body.fallbackUsed
           ? "실제 AI 분석에 실패하여 기본 분석으로 대체했습니다. 운영자가 결과를 확인하고 수정할 수 있습니다."
-          : `${body.results.length}장의 사진 분석이 완료되었습니다. 운영자가 역할과 문구를 수정할 수 있습니다.`
+          : `${nextResults.length}장의 사진 분석이 완료되었습니다. 대표 후보와 확인 필요 항목을 검토하세요.`
       );
     } catch (error) {
       const nextResults = analyzeImagesWithMockEngine(inputs).map((item) => ({
@@ -191,7 +228,7 @@ export function AdminAiImageAnalyzer() {
         <span>PADO STORY AI CENTER</span>
         <h2>AI 사진분석</h2>
         <p>
-          상품 사진을 올리면 Vision Provider가 사진의 실제 내용을 보고 상세페이지 역할을 추천합니다. OpenAI 설정이 없거나 실패하면 Mock 분석으로 자동 대체됩니다.
+          상품 사진을 올리면 Vision Provider가 사진의 실제 내용과 파일명을 함께 보고 역할, 품질 점수, 대표 후보, 상세페이지 배치 위치를 추천합니다.
         </p>
         <div>
           <a className="button teal" href="#ai-image-upload">사진 업로드</a>
@@ -262,6 +299,9 @@ export function AdminAiImageAnalyzer() {
         <button type="button" className="button teal" onClick={() => void startAnalysis()} disabled={isAnalyzing}>
           {isAnalyzing ? "AI 분석 중..." : "분석 시작"}
         </button>
+        <button type="button" className="button outline" onClick={sortByAiRecommendation} disabled={!results.length || isAnalyzing}>
+          AI 추천 순서로 정렬
+        </button>
         <button type="button" className="button coral" onClick={sendToProductRegistration} disabled={!results.length || isAnalyzing}>
           상품등록으로 보내기
         </button>
@@ -271,7 +311,7 @@ export function AdminAiImageAnalyzer() {
       <section className="admin-panel" id="ai-analysis-result">
         <div>
           <h2>분석 결과</h2>
-          <span className="admin-message">AI 제안은 모두 수정할 수 있습니다. 저장 전 운영자가 최종 문구와 배치 위치를 확인합니다.</span>
+          <span className="admin-message">역할 요약, 대표 후보, 확인 필요 사진을 먼저 보고 운영자가 빠르게 수정할 수 있습니다.</span>
         </div>
 
         {providerInfo && (
@@ -282,22 +322,47 @@ export function AdminAiImageAnalyzer() {
           </div>
         )}
 
+        {results.length > 0 && (
+          <div className="admin-ai-summary">
+            <strong>전체 {summary.total}장 · 평균 품질 {summary.averageQuality}점 · 확인 필요 {summary.needsReview}장</strong>
+            <div>
+              {summary.heroCandidates.map((item) => (
+                <span key={item.imageUrl}>Hero {item.heroRank}순위: {item.originalName}</span>
+              ))}
+            </div>
+            <div>
+              {Object.entries(summary.roleCounts).map(([role, count]) => (
+                <span key={role}>{role}: {count}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="admin-ai-filter-row" aria-label="AI 분석 결과 필터">
+          {FILTERS.map((item) => (
+            <button type="button" className={resultFilter === item.value ? "active" : ""} key={item.value} onClick={() => setResultFilter(item.value)}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+
         <div className="admin-ai-result-list">
-          {results.map((result, index) => (
+          {filteredResults.map((result, index) => (
             <article className="admin-ai-result-card" key={`${result.originalName}-${index}`}>
               <div className="admin-ai-result-image">
                 <img src={result.imageUrl} alt={result.originalName} />
+                {result.heroRank && <em>Hero {result.heroRank}순위</em>}
               </div>
               <div className="admin-ai-result-fields">
                 <div>
                   <strong>{result.originalName}</strong>
-                  <span>신뢰도 {result.confidence}% · 품질 {result.qualityScore}점</span>
+                  <span>신뢰도 {result.confidence}% · 품질 {result.qualityScore}점 · {result.suggestedRole}</span>
                 </div>
                 {result.warningMessage && <p className="admin-ai-warning">{result.warningMessage}</p>}
                 {result.reasoningSummary && <p className="admin-ai-reasoning">{result.reasoningSummary}</p>}
                 <label>
                   추천 역할
-                  <select value={result.suggestedRole} onChange={(event) => updateResult(index, "suggestedRole", event.target.value as AiImageRole)}>
+                  <select value={result.suggestedRole} onChange={(event) => updateResult(results.indexOf(result), "suggestedRole", event.target.value as AiImageRole)}>
                     {AI_IMAGE_ROLE_OPTIONS.map((item) => (
                       <option value={item.value} key={item.value}>{item.label}</option>
                     ))}
@@ -305,7 +370,7 @@ export function AdminAiImageAnalyzer() {
                 </label>
                 <label>
                   상세페이지 배치 위치
-                  <select value={result.recommendedSection} onChange={(event) => updateResult(index, "recommendedSection", event.target.value as AiImageRecommendedSection)}>
+                  <select value={result.recommendedSection} onChange={(event) => updateResult(results.indexOf(result), "recommendedSection", event.target.value as AiImageRecommendedSection)}>
                     {AI_IMAGE_SECTION_OPTIONS.map((item) => (
                       <option value={item.value} key={item.value}>{item.label}</option>
                     ))}
@@ -313,23 +378,23 @@ export function AdminAiImageAnalyzer() {
                 </label>
                 <label>
                   자동 제목
-                  <input value={result.title} onChange={(event) => updateResult(index, "title", event.target.value)} />
+                  <input value={result.title} onChange={(event) => updateResult(results.indexOf(result), "title", event.target.value)} />
                 </label>
                 <label>
                   자동 설명
-                  <textarea value={result.description} onChange={(event) => updateResult(index, "description", event.target.value)} rows={3} />
+                  <textarea value={result.description} onChange={(event) => updateResult(results.indexOf(result), "description", event.target.value)} rows={3} />
                 </label>
               </div>
             </article>
           ))}
-          {!results.length && <p className="admin-empty-note">분석 시작 후 사진별 추천 역할과 상세페이지 배치 제안이 표시됩니다.</p>}
+          {!filteredResults.length && <p className="admin-empty-note">해당 필터에 표시할 분석 결과가 없습니다.</p>}
         </div>
       </section>
 
       <section className="admin-panel">
         <div>
           <h2>detail_json 연결 준비</h2>
-          <span className="admin-message">`convertImageAnalysisToDetailJson()` 변환 결과 미리보기입니다.</span>
+          <span className="admin-message">FAQ, 상품 장점, 갤러리, 포장, 레시피, 공정 섹션 초안까지 함께 생성됩니다.</span>
         </div>
         <pre className="admin-ai-json-preview">{JSON.stringify(convertedDetailJson, null, 2)}</pre>
       </section>

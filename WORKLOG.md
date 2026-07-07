@@ -1841,3 +1841,24 @@
 - Added provider/fallback/reasoning UI in the AI image analysis result screen.
 - Kept `convertImageAnalysisToDetailJson()` and `/admin/new` AI draft handoff compatible.
 - Added `pnpm run verify:ai-vision-provider`.
+
+## 2026-07-07 AI Image Intelligence Quality Upgrade
+
+- Expanded AI image role taxonomy:
+  - `process`
+  - `review`
+- Added product-group classification rules for:
+  - abalone, eel, octopus, oyster, shrimp, fish, meal kit, gift set.
+- Added quality score factors:
+  - sharpness, brightness, composition, product focus, background cleanliness, usability, hero suitability, trust signal, penalty.
+- Added hero ranking through `heroRank`.
+- Added analysis summary and operator filters in `/admin/ai/images`.
+- Added `AI 추천 순서로 정렬`.
+- Improved `detail_json` conversion:
+  - benefits draft,
+  - FAQ draft,
+  - SEO draft,
+  - AI quality summary,
+  - process section,
+  - richer gallery metadata.
+- Added fixture metadata structure and `pnpm run score:ai-image-analysis`.

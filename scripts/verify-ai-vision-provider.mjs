@@ -68,7 +68,7 @@ try {
   if (typeof apiResult.body.fallbackUsed !== "boolean") throw new Error("AI analyze API did not return fallbackUsed boolean.");
 
   const result = apiResult.body.results[0];
-  const requiredKeys = ["imageUrl", "originalName", "suggestedRole", "confidence", "qualityScore", "title", "description", "recommendedSection", "warningMessage"];
+  const requiredKeys = ["imageUrl", "originalName", "suggestedRole", "confidence", "qualityScore", "title", "description", "caption", "recommendedSection", "warningMessage", "reasoningSummary", "qualityFactors"];
   for (const key of requiredKeys) {
     if (!(key in result)) throw new Error(`AI analyze result missing ${key}`);
   }
@@ -76,6 +76,9 @@ try {
   if (process.env.PADO_AI_IMAGE_PROVIDER !== "openai" && apiResult.body.provider !== "mock") {
     throw new Error(`Expected mock provider without openai env, got ${apiResult.body.provider}`);
   }
+  if (!result.heroRank) throw new Error("AI analyze result should include heroRank for first hero fixture.");
+  if (result.suggestedRole !== "hero") throw new Error(`Expected hero role for hero fixture, got ${result.suggestedRole}`);
+  if (result.qualityScore < 75) throw new Error(`Expected usable quality score, got ${result.qualityScore}`);
 
   console.log(
     JSON.stringify(
@@ -89,6 +92,8 @@ try {
           "provider-returned",
           "fallback-flag-returned",
           "analysis-result-shape",
+          "quality-factor-shape",
+          "hero-ranking-returned",
           "mock-provider-default"
         ]
       },
