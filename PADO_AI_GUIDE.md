@@ -94,3 +94,34 @@ Replace only the provider behind:
 - `analyzeImagesWithMockEngine()`
 
 The returned shape must remain compatible with `AiImageAnalysisResult`.
+
+## AI Image Analysis Provider v3
+
+The AI Operation Center uses a provider model.
+
+- Default provider: `mock`
+- Optional provider: `openai`
+- Server API: `POST /api/admin/ai/images/analyze`
+
+Environment variables:
+
+```bash
+PADO_AI_IMAGE_PROVIDER=mock
+OPENAI_API_KEY=
+PADO_AI_IMAGE_MODEL=gpt-4o-mini
+```
+
+Safety policy:
+
+- Do not expose `OPENAI_API_KEY` to the browser.
+- Do not use `NEXT_PUBLIC_OPENAI_API_KEY`.
+- Vision calls can create API cost.
+- If OpenAI is not configured or fails, use Mock fallback.
+- Never infer invisible facts from photos. Avoid unsupported claims like domestic origin, Wando origin, same-day harvest, live status, or certification unless the image visibly proves it.
+
+Output policy:
+
+- Keep titles short.
+- Keep descriptions trustworthy.
+- Include `reasoningSummary` so admins know why the role was recommended.
+- Preserve compatibility with `convertImageAnalysisToDetailJson()` and the `/admin/new` AI draft handoff.

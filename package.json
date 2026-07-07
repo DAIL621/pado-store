@@ -12,6 +12,7 @@
     "verify:production-launch": "node scripts/verify-production-launch.mjs",
     "verify:ai-operation-center": "node scripts/verify-ai-operation-center.mjs",
     "verify:ai-draft-flow": "node scripts/verify-ai-draft-flow.mjs",
+    "verify:ai-vision-provider": "node scripts/verify-ai-vision-provider.mjs",
     "verify:detail-json": "node scripts/verify-detail-json-flow.mjs",
     "verify:admin-edit": "node scripts/verify-admin-product-edit.mjs",
     "verify:admin-upload": "node scripts/verify-admin-upload.mjs",

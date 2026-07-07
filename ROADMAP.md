@@ -488,7 +488,15 @@
 ### Next
 
 1. Save AI analysis result into persistent product draft records.
-2. Add OpenAI Vision provider behind the current Mock provider interface.
+2. Configure `PADO_AI_IMAGE_PROVIDER=openai`, `OPENAI_API_KEY`, and `PADO_AI_IMAGE_MODEL` in production when ready.
 3. Add AI SEO generation screen.
 4. Add AI detail page generation screen.
 5. Add one-click product registration from AI draft.
+
+### v3 Completed
+
+- Provider interface added for AI image analysis.
+- `mock` provider remains default and fallback.
+- `openai` Vision provider is prepared behind server API.
+- `/api/admin/ai/images/analyze` added for admin-only analysis.
+- `/admin/ai/images` now shows provider, fallback state, and reasoning summary.

@@ -168,3 +168,42 @@ Run:
 pnpm run verify:ai-operation-center
 pnpm run verify:admin
 ```
+
+## v3 Vision Provider Connection
+
+AI photo analysis now supports a provider architecture.
+
+Providers:
+
+- `mock`: default, file name/order/category based analysis.
+- `openai`: server-side OpenAI Vision analysis when configured.
+
+Environment variables:
+
+```bash
+PADO_AI_IMAGE_PROVIDER=mock
+OPENAI_API_KEY=
+PADO_AI_IMAGE_MODEL=gpt-4o-mini
+```
+
+Operational rules:
+
+- `OPENAI_API_KEY` is server-only. Never expose it with `NEXT_PUBLIC_`.
+- Vision API calls may incur cost.
+- If the provider is not configured, the API returns Mock analysis.
+- If OpenAI fails, parsing fails, or an image is too large, the UI does not stop. It falls back to Mock analysis and shows a fallback notice.
+- The Vision prompt must not infer facts that are not visible in the photo. Do not claim origin, domestic origin, Wando/Tongyeong, same-day harvest, live status, or certification unless visible.
+
+API:
+
+- `POST /api/admin/ai/images/analyze`
+- Requires admin session.
+- Returns `results`, `provider`, `fallbackUsed`, and optional `fallbackReason`.
+
+Verification:
+
+```bash
+pnpm run verify:ai-operation-center
+pnpm run verify:ai-vision-provider
+pnpm run verify:ai-draft-flow
+```

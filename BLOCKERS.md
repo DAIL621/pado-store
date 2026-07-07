@@ -175,3 +175,11 @@ alter table products add column if not exists detail_json jsonb not null default
 - `pnpm run verify:production-launch` now checks required env keys, production URL shape, migration coverage, redirect URL values, Toss route readiness, Storage env readiness, SEO route readiness, and Go/No-Go score.
 - `supabase/phase10-production-verification.sql` now provides the exact SQL to confirm operation tables, indexes, policies, triggers, foreign keys, and `products.detail_json`.
 - External console actions remain blockers only until the user applies/verifies them in Supabase, Vercel, Toss, Kakao, and Storage dashboards.
+
+## 2026-07-07 AI Vision Provider External Requirements
+
+- OpenAI Vision live analysis requires a server-side `OPENAI_API_KEY`.
+- Production must set `PADO_AI_IMAGE_PROVIDER=openai` only after API cost policy is confirmed.
+- `OPENAI_API_KEY` must never be exposed as a `NEXT_PUBLIC_` variable.
+- `PADO_AI_IMAGE_MODEL` should be confirmed before production usage. Current default is `gpt-4o-mini`.
+- Without these values, the AI Operation Center intentionally uses the safe Mock provider fallback.

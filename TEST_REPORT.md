@@ -1933,3 +1933,24 @@
   - `pnpm run verify:admin`: passed
   - `pnpm run verify:ai-operation-center`: passed
   - `pnpm run verify:ai-draft-flow`: passed
+
+## 2026-07-07 AI Vision Provider v3 Verification
+
+- Added:
+  - `POST /api/admin/ai/images/analyze`
+  - `pnpm run verify:ai-vision-provider`
+- Passed verification scope:
+  - Mock provider remains default.
+  - OpenAI provider is selected only when server env is configured.
+  - Missing `OPENAI_API_KEY` does not break the admin AI screen.
+  - API returns `results`, `provider`, `fallbackUsed`, and optional `fallbackReason`.
+  - Analysis results still convert into `detail_json`.
+  - Analysis results still transfer to `/admin/new` AI draft flow.
+- Results:
+  - `pnpm run build`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:ai-operation-center`: passed
+  - `pnpm run verify:ai-draft-flow`: passed
+  - `pnpm run verify:ai-vision-provider`: passed
+  - `pnpm run dev:ensure`: passed

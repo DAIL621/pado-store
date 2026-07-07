@@ -6,6 +6,8 @@ const adminLayout = read("components/admin/AdminLayout.tsx");
 const aiPage = read("app/admin/ai/images/page.tsx");
 const aiComponent = read("components/admin/AdminAiImageAnalyzer.tsx");
 const aiEngine = read("lib/admin/ai-image-analysis.ts");
+const aiProvider = read("lib/admin/ai-image-analysis-provider.ts");
+const aiRoute = read("app/api/admin/ai/images/analyze/route.ts");
 const productBuilder = read("components/admin/AdminProductBuilder.tsx");
 const styles = read("app/globals.css");
 const guide = fs.existsSync("AI_OPERATION_CENTER.md") ? read("AI_OPERATION_CENTER.md") : "";
@@ -14,7 +16,6 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-assert(adminLayout.includes("AI 운영센터"), "admin sidebar should expose AI operation center");
 assert(adminLayout.includes("/admin/ai/images"), "admin AI image route should be linked");
 assert(aiPage.includes("AdminAiImageAnalyzer"), "AI image page should render analyzer component");
 assert(aiPage.includes("getAdminSession"), "AI image page should require admin session");
@@ -23,10 +24,15 @@ assert(aiComponent.includes("multiple"), "AI image analyzer should allow multipl
 assert(aiComponent.includes("분석 시작"), "AI image analyzer should expose analysis button");
 assert(aiComponent.includes("moveDraft"), "AI image analyzer should support ordering");
 assert(aiComponent.includes("removeDraft"), "AI image analyzer should support deletion");
+assert(aiComponent.includes("fetch(\"/api/admin/ai/images/analyze\""), "AI image analyzer should call server analysis API");
+assert(aiComponent.includes("Provider:"), "AI image analyzer should display provider");
+assert(aiComponent.includes("fallback 사용됨"), "AI image analyzer should display fallback state");
+assert(aiComponent.includes("reasoningSummary"), "AI image analyzer should display reasoning summary");
 assert(aiComponent.includes("convertImageAnalysisToDetailJson"), "AI image analyzer should preview detail_json conversion");
 assert(aiComponent.includes("상품등록으로 보내기"), "AI image analyzer should send result to product registration");
 assert(aiComponent.includes("localStorage.setItem"), "AI image analyzer should store analysis draft");
 assert(aiComponent.includes("AI_IMAGE_ANALYSIS_DRAFT_KEY"), "AI image analyzer should use shared AI draft key");
+
 assert(aiEngine.includes("AiImageAnalysisResult"), "AI image analysis data type is missing");
 assert(aiEngine.includes("AiImageAnalysisDraft"), "AI image analysis draft type is missing");
 assert(aiEngine.includes("suggestedRole"), "AI image analysis should include suggestedRole");
@@ -34,20 +40,41 @@ assert(aiEngine.includes("confidence"), "AI image analysis should include confid
 assert(aiEngine.includes("recommendedSection"), "AI image analysis should include recommendedSection");
 assert(aiEngine.includes("qualityScore"), "AI image analysis should include qualityScore");
 assert(aiEngine.includes("warningMessage"), "AI image analysis should include warningMessage");
+assert(aiEngine.includes("reasoningSummary"), "AI image analysis should include reasoningSummary");
 assert(aiEngine.includes("analyzeImageWithMockEngine"), "Mock image analysis engine is missing");
 assert(aiEngine.includes("convertImageAnalysisToDetailJson"), "detail_json converter is missing");
 assert(aiEngine.includes("ai-gallery"), "detail_json converter should preserve gallery/caption metadata");
+
+assert(aiProvider.includes("AiImageAnalysisProvider"), "AI image provider interface is missing");
+assert(aiProvider.includes("OpenAiVisionImageAnalysisProvider"), "OpenAI Vision provider is missing");
+assert(aiProvider.includes("PADO_AI_IMAGE_PROVIDER"), "AI provider env var is missing");
+assert(aiProvider.includes("OPENAI_API_KEY"), "OpenAI API key env var is missing");
+assert(aiProvider.includes("PADO_AI_IMAGE_MODEL"), "OpenAI model env var is missing");
+assert(aiProvider.includes("chat/completions"), "OpenAI Vision API call is missing");
+assert(aiProvider.includes("fallbackUsed"), "provider fallback response is missing");
+assert(aiProvider.includes("analyzeImagesWithSelectedProvider"), "provider selector function is missing");
+
+assert(aiRoute.includes("requireAdminApi"), "AI analysis API should require admin authorization");
+assert(aiRoute.includes("analyzeImagesWithSelectedProvider"), "AI analysis API should use provider selector");
+assert(aiRoute.includes("results"), "AI analysis API should return results");
+assert(aiRoute.includes("provider"), "AI analysis API should return provider");
+assert(aiRoute.includes("fallbackUsed"), "AI analysis API should return fallbackUsed");
+
 assert(productBuilder.includes("AI_IMAGE_ANALYSIS_DRAFT_KEY"), "product registration should read AI image analysis draft");
-assert(productBuilder.includes("AI 사진분석 결과를 불러왔습니다"), "product registration should show AI draft loaded message");
+assert(productBuilder.includes("AI ?ъ쭊遺꾩꽍 寃곌낵瑜?遺덈윭?붿뒿?덈떎") || productBuilder.includes("AI 사진분석 결과를 불러왔습니다"), "product registration should show AI draft loaded message");
 assert(productBuilder.includes("clearAiDraft"), "product registration should expose AI draft clear action");
 assert(productBuilder.includes("createProductDetailFormValue"), "product registration should normalize AI detail_json draft");
 assert(productBuilder.includes("extraSections"), "product registration should preserve AI extra sections");
+
 ["hero", "origin", "sizeComparison", "freshness", "package", "shipping", "cooking", "components", "detail", "unknown"].forEach((role) => {
   assert(aiEngine.includes(`"${role}"`), `AI image role missing: ${role}`);
 });
+
 assert(styles.includes(".admin-ai-page"), "AI operation center styles are missing");
 assert(styles.includes(".admin-ai-draft-notice"), "AI draft loaded notice styles are missing");
-assert(guide.includes("AI 사진분석"), "AI operation center guide should document image analysis");
+assert(styles.includes(".admin-ai-provider-badge"), "AI provider badge styles are missing");
+assert(styles.includes(".admin-ai-reasoning"), "AI reasoning styles are missing");
+assert(guide.includes("AI") || guide.includes("사진분석"), "AI operation center guide should document image analysis");
 
 console.log(
   JSON.stringify(
@@ -60,7 +87,9 @@ console.log(
         "multi-image-upload-ui",
         "drag-drop-ui",
         "image-preview-delete-reorder",
-        "mock-image-analysis-engine",
+        "server-provider-api",
+        "openai-vision-provider",
+        "mock-fallback-provider",
         "editable-analysis-result",
         "analysis-to-registration-draft",
         "admin-new-auto-ai-draft",

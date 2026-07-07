@@ -20,6 +20,12 @@ type ImageDraft = {
   originalName: string;
 };
 
+type ProviderInfo = {
+  provider: string;
+  fallbackUsed: boolean;
+  fallbackReason?: string;
+};
+
 const CATEGORIES = [
   { value: "abalone", label: "전복" },
   { value: "conch", label: "참소라" },
@@ -53,7 +59,11 @@ export function AdminAiImageAnalyzer() {
   const [drafts, setDrafts] = useState<ImageDraft[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [results, setResults] = useState<AiImageAnalysisResult[]>([]);
-  const [message, setMessage] = useState("상품 사진을 여러 장 올리면 Mock AI가 역할과 상세페이지 배치 위치를 추천합니다.");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [providerInfo, setProviderInfo] = useState<ProviderInfo | null>(null);
+  const [message, setMessage] = useState(
+    "상품 사진을 올리면 AI가 역할, 품질 점수, 상세페이지 배치 위치를 추천합니다. API 키가 없으면 Mock 분석으로 안전하게 동작합니다."
+  );
 
   const convertedDetailJson = useMemo(() => convertImageAnalysisToDetailJson(results), [results]);
 
@@ -65,15 +75,13 @@ export function AdminAiImageAnalyzer() {
     }
     const nextDrafts = await Promise.all(images.map(createDraft));
     setDrafts((current) => [...current, ...nextDrafts]);
-    setMessage(`${images.length}장의 사진이 추가되었습니다. 분석 시작 버튼을 눌러 역할을 추천받으세요.`);
+    setMessage(`${images.length}장의 사진을 추가했습니다. 분석 시작 버튼을 눌러 역할을 추천받으세요.`);
   };
 
   const removeDraft = (id: string) => {
-    setDrafts((current) => {
-      const target = current.find((item) => item.id === id);
-      return current.filter((item) => item.id !== id);
-    });
-    setResults((current) => current.filter((item) => item.imageUrl !== drafts.find((draft) => draft.id === id)?.imageUrl));
+    const target = drafts.find((draft) => draft.id === id);
+    setDrafts((current) => current.filter((item) => item.id !== id));
+    if (target) setResults((current) => current.filter((item) => item.imageUrl !== target.imageUrl));
   };
 
   const moveDraft = (fromIndex: number, toIndex: number) => {
@@ -89,25 +97,62 @@ export function AdminAiImageAnalyzer() {
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setDragOver(false);
-    const files = Array.from(event.dataTransfer.files ?? []);
-    void addFiles(files);
+    void addFiles(Array.from(event.dataTransfer.files ?? []));
   };
 
-  const startAnalysis = () => {
+  const startAnalysis = async () => {
     if (!drafts.length) {
       setMessage("분석할 사진을 먼저 업로드해주세요.");
       return;
     }
-    const nextResults = analyzeImagesWithMockEngine(
-      drafts.map((draft, index) => ({
-        imageUrl: draft.imageUrl,
-        originalName: draft.originalName,
-        index,
-        category
-      }))
-    );
-    setResults(nextResults);
-    setMessage(`${nextResults.length}장의 사진 분석이 완료되었습니다. 운영자가 역할과 문구를 수정할 수 있습니다.`);
+
+    const inputs = drafts.map((draft, index) => ({
+      imageUrl: draft.imageUrl,
+      originalName: draft.originalName,
+      index,
+      category
+    }));
+
+    setIsAnalyzing(true);
+    setProviderInfo(null);
+    setMessage("AI가 사진을 분석 중입니다. 사진 내용과 파일명을 함께 확인하고 있습니다.");
+
+    try {
+      const response = await fetch("/api/admin/ai/images/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category, images: inputs })
+      });
+      const body = await response.json();
+      if (!response.ok || !body.ok) throw new Error(body?.message || "AI 사진분석 API 요청에 실패했습니다.");
+
+      setResults(body.results);
+      setProviderInfo({
+        provider: body.provider || "mock",
+        fallbackUsed: Boolean(body.fallbackUsed),
+        fallbackReason: body.fallbackReason
+      });
+      setMessage(
+        body.fallbackUsed
+          ? "실제 AI 분석에 실패하여 기본 분석으로 대체했습니다. 운영자가 결과를 확인하고 수정할 수 있습니다."
+          : `${body.results.length}장의 사진 분석이 완료되었습니다. 운영자가 역할과 문구를 수정할 수 있습니다.`
+      );
+    } catch (error) {
+      const nextResults = analyzeImagesWithMockEngine(inputs).map((item) => ({
+        ...item,
+        warningMessage: item.warningMessage || "서버 AI 분석에 실패하여 브라우저 기본 분석으로 대체했습니다.",
+        reasoningSummary: "서버 API 실패로 파일명/순서 기반 Mock 분석을 사용했습니다."
+      }));
+      setResults(nextResults);
+      setProviderInfo({
+        provider: "mock",
+        fallbackUsed: true,
+        fallbackReason: error instanceof Error ? error.message : "Unknown client fallback"
+      });
+      setMessage("실제 AI 분석에 실패하여 기본 분석으로 대체했습니다. 결과는 수정 후 상품등록으로 보낼 수 있습니다.");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const sendToProductRegistration = () => {
@@ -146,8 +191,7 @@ export function AdminAiImageAnalyzer() {
         <span>PADO STORY AI CENTER</span>
         <h2>AI 사진분석</h2>
         <p>
-          상품 사진을 올리면 파일명, 업로드 순서, 상품 카테고리를 기준으로 상세페이지에서 쓸 역할을 추천합니다.
-          실제 Vision API 연결 전에도 운영자가 사진 역할과 문구를 빠르게 정리할 수 있습니다.
+          상품 사진을 올리면 Vision Provider가 사진의 실제 내용을 보고 상세페이지 역할을 추천합니다. OpenAI 설정이 없거나 실패하면 Mock 분석으로 자동 대체됩니다.
         </p>
         <div>
           <a className="button teal" href="#ai-image-upload">사진 업로드</a>
@@ -179,7 +223,7 @@ export function AdminAiImageAnalyzer() {
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
       >
-        <strong>사진을 여기에 끌어다 놓으세요</strong>
+        <strong>사진을 여기에 끌어 놓으세요</strong>
         <span>또는 클릭해서 여러 장을 선택하세요. JPG, PNG, WebP 이미지를 권장합니다.</span>
         <input
           type="file"
@@ -215,8 +259,10 @@ export function AdminAiImageAnalyzer() {
       </section>
 
       <div className="admin-ai-action-row">
-        <button type="button" className="button teal" onClick={startAnalysis}>분석 시작</button>
-        <button type="button" className="button coral" onClick={sendToProductRegistration} disabled={!results.length}>
+        <button type="button" className="button teal" onClick={() => void startAnalysis()} disabled={isAnalyzing}>
+          {isAnalyzing ? "AI 분석 중..." : "분석 시작"}
+        </button>
+        <button type="button" className="button coral" onClick={sendToProductRegistration} disabled={!results.length || isAnalyzing}>
           상품등록으로 보내기
         </button>
         <span>현재 {drafts.length}장 준비됨</span>
@@ -225,8 +271,16 @@ export function AdminAiImageAnalyzer() {
       <section className="admin-panel" id="ai-analysis-result">
         <div>
           <h2>분석 결과</h2>
-          <span className="admin-message">AI 제안은 모두 수정 가능합니다. 저장 기능은 다음 단계에서 상품등록 흐름과 연결합니다.</span>
+          <span className="admin-message">AI 제안은 모두 수정할 수 있습니다. 저장 전 운영자가 최종 문구와 배치 위치를 확인합니다.</span>
         </div>
+
+        {providerInfo && (
+          <div className={`admin-ai-provider-badge ${providerInfo.fallbackUsed ? "fallback" : ""}`}>
+            <strong>Provider: {providerInfo.provider}</strong>
+            <span>{providerInfo.fallbackUsed ? "fallback 사용됨" : "실제 분석 흐름 정상"}</span>
+            {providerInfo.fallbackReason && <em>{providerInfo.fallbackReason}</em>}
+          </div>
+        )}
 
         <div className="admin-ai-result-list">
           {results.map((result, index) => (
@@ -240,6 +294,7 @@ export function AdminAiImageAnalyzer() {
                   <span>신뢰도 {result.confidence}% · 품질 {result.qualityScore}점</span>
                 </div>
                 {result.warningMessage && <p className="admin-ai-warning">{result.warningMessage}</p>}
+                {result.reasoningSummary && <p className="admin-ai-reasoning">{result.reasoningSummary}</p>}
                 <label>
                   추천 역할
                   <select value={result.suggestedRole} onChange={(event) => updateResult(index, "suggestedRole", event.target.value as AiImageRole)}>

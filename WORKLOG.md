@@ -1829,3 +1829,15 @@
 - Product registration shows `AI 사진분석 결과를 불러왔습니다.`
 - Added `AI draft 초기화` action in product registration.
 - Added `pnpm run verify:ai-draft-flow` and included it in `verify:admin`.
+## 2026-07-07 AI Vision Provider Connection v3
+
+- Added provider architecture for AI image analysis.
+  - `mock` provider remains the default fallback.
+  - `openai` provider is available when `PADO_AI_IMAGE_PROVIDER=openai` and `OPENAI_API_KEY` are configured.
+- Added `POST /api/admin/ai/images/analyze`.
+  - Requires admin session.
+  - Returns `results`, `provider`, `fallbackUsed`, and `fallbackReason`.
+- Connected `/admin/ai/images` analysis button to the server API.
+- Added provider/fallback/reasoning UI in the AI image analysis result screen.
+- Kept `convertImageAnalysisToDetailJson()` and `/admin/new` AI draft handoff compatible.
+- Added `pnpm run verify:ai-vision-provider`.
