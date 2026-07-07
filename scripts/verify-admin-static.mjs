@@ -70,7 +70,7 @@ assert(adminDashboard.includes("오픈 모니터링"), "admin dashboard launch m
 assert(adminDashboard.includes("operation_logs"), "admin dashboard should read operation logs");
 assert(adminDashboard.includes("notification_events"), "admin dashboard should read notification events");
 
-["/admin/members", "/admin/reviews", "/admin/marketing", "/admin/content", "/admin/stats", "/admin/automation", "/admin/ai/images"].forEach((href) => {
+["/admin/members", "/admin/reviews", "/admin/marketing", "/admin/content", "/admin/stats", "/admin/automation", "/admin/ai/images", "/admin/ai/dataset", "/admin/ai/dashboard"].forEach((href) => {
   assert(adminLayout.includes(href), `admin sidebar route is missing: ${href}`);
 });
 assert(adminLayout.includes("AI 운영센터"), "admin sidebar AI operation center label is missing");
@@ -114,7 +114,8 @@ console.log(
         "admin-review-readiness",
         "admin-operation-automation-route",
         "admin-launch-monitoring",
-        "admin-ai-operation-center-menu"
+        "admin-ai-operation-center-menu",
+        "admin-ai-dataset-menu"
       ]
     },
     null,

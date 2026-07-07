@@ -1,0 +1,16 @@
+[
+  {
+    "imageId": "gift-set-package-001",
+    "fileName": "premium-gift-set-package-box.jpg",
+    "productCategory": "gift",
+    "expectedRole": "package",
+    "expectedSection": "packaging",
+    "expectedHeroRank": null,
+    "expectedQualityScore": 82,
+    "expectedWarnings": [],
+    "expectedCaption": "실제 포장 상태를 확인할 수 있습니다.",
+    "expectedTitle": "포장 상태 사진",
+    "expectedDescription": "선물세트 패키지와 구성 고급감을 보여줍니다.",
+    "notes": "선물세트 포장"
+  }
+]

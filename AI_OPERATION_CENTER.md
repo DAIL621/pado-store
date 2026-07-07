@@ -280,3 +280,32 @@ Quality scoring command:
 ```bash
 pnpm run score:ai-image-analysis
 ```
+
+## Dataset & Evaluation System V1
+
+The AI Operation Center now has objective dataset evaluation.
+
+Admin routes:
+
+- `/admin/ai/dataset`
+- `/admin/ai/dashboard`
+
+Dataset structure:
+
+- `datasets/{category}/images`
+- `datasets/{category}/labels`
+- `datasets/{category}/metadata`
+
+Evaluation command:
+
+```bash
+pnpm run evaluate:dataset
+pnpm run verify:ai-dataset
+```
+
+Reports:
+
+- `reports/ai-errors`
+- `reports/prompt-history`
+
+The current system uses fixture labels first. Real product images can be added later without changing the label schema.

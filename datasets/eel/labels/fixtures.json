@@ -1,0 +1,30 @@
+[
+  {
+    "imageId": "eel-hero-001",
+    "fileName": "tongyeong-eel-main-hero.jpg",
+    "productCategory": "eel",
+    "expectedRole": "hero",
+    "expectedSection": "heroImages",
+    "expectedHeroRank": 1,
+    "expectedQualityScore": 85,
+    "expectedWarnings": [],
+    "expectedCaption": "상품의 첫인상을 만드는 대표 후보 사진입니다.",
+    "expectedTitle": "대표 상품 사진",
+    "expectedDescription": "바다장어 대표사진으로 활용합니다.",
+    "notes": "장어 대표"
+  },
+  {
+    "imageId": "eel-trim-001",
+    "fileName": "eel-fillet-trim-bone-flesh.jpg",
+    "productCategory": "eel",
+    "expectedRole": "freshness",
+    "expectedSection": "gallery",
+    "expectedHeroRank": null,
+    "expectedQualityScore": 78,
+    "expectedWarnings": [],
+    "expectedCaption": "상품의 질감과 상태를 가까이에서 확인할 수 있습니다.",
+    "expectedTitle": "신선도 확인 사진",
+    "expectedDescription": "손질 상태와 살 구성을 보여줍니다.",
+    "notes": "장어 손질 상태"
+  }
+]

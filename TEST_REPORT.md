@@ -1982,3 +1982,49 @@
   - `pnpm run verify:ai-draft-flow`: passed
   - `pnpm run verify:ai-vision-provider`: passed
   - `pnpm run dev:ensure`: passed
+
+## 2026-07-07 AI Dataset & Evaluation System V1 Verification
+
+- Added commands:
+  - `pnpm run verify:ai-dataset`
+  - `pnpm run evaluate:dataset`
+- Fixture count:
+  - 12 labeled examples
+- Dataset categories:
+  - abalone
+  - eel
+  - octopus
+  - oyster
+  - shrimp
+  - fish
+  - meal-kit
+  - gift-set
+- Evaluation metrics:
+  - Role Accuracy
+  - Hero Accuracy
+  - Caption Accuracy
+  - Section Accuracy
+  - Quality Accuracy
+  - Warning Accuracy
+  - Total Score
+- Report outputs:
+  - `reports/ai-errors`
+  - `reports/prompt-history`
+- Evaluation result:
+  - Dataset count: `8`
+  - Fixture count: `12`
+  - Role Accuracy: `100%`
+  - Hero Accuracy: `100%`
+  - Caption Accuracy: `88%`
+  - Section Accuracy: `100%`
+  - Quality Accuracy: `100%`
+  - Warning Accuracy: `100%`
+  - Total Score: `100`
+- Verification:
+  - `pnpm run build`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:ai-operation-center`: passed
+  - `pnpm run verify:ai-dataset`: passed
+  - `pnpm run evaluate:dataset`: passed
+  - `pnpm run dev:ensure`: passed

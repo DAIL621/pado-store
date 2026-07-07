@@ -1,0 +1,16 @@
+[
+  {
+    "imageId": "meal-kit-cooking-001",
+    "fileName": "meal-kit-cooking-finished-dish.jpg",
+    "productCategory": "mealKit",
+    "expectedRole": "cooking",
+    "expectedSection": "recipes",
+    "expectedHeroRank": null,
+    "expectedQualityScore": 80,
+    "expectedWarnings": [],
+    "expectedCaption": "어떻게 먹으면 좋은지 한눈에 보여줍니다.",
+    "expectedTitle": "조리 예시 사진",
+    "expectedDescription": "밀키트 완성 예시로 활용합니다.",
+    "notes": "밀키트 조리 완성"
+  }
+]

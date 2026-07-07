@@ -159,3 +159,28 @@ Draft generation:
 - Generate FAQ as a draft, not final truth.
 - Generate SEO draft without unsupported origin or harvest claims.
 - Preserve image title, description, caption, role, quality score, hero rank, and reasoning summary.
+
+## Dataset-First AI Improvement
+
+Future AI prompt or rule changes should be evaluated against the dataset before they are considered complete.
+
+Use:
+
+```bash
+pnpm run evaluate:dataset
+```
+
+Do not judge AI quality only by one manual image. Compare:
+
+- Human label
+- AI prediction
+- Role Accuracy
+- Hero Accuracy
+- Caption Accuracy
+- Section Accuracy
+- Quality Accuracy
+- Warning Accuracy
+- Misclassification report
+
+Misclassified examples are stored in `reports/ai-errors`.
+Evaluation history is stored in `reports/prompt-history`.

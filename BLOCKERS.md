@@ -185,3 +185,5 @@ alter table products add column if not exists detail_json jsonb not null default
 - Without these values, the AI Operation Center intentionally uses the safe Mock provider fallback.
 - Final real-photo quality tuning requires actual product photo batches and an OpenAI API key in a secure server environment.
 - Current local verification uses fixture/static/mock scoring; live Vision output should be reviewed with real abalone/eel/oyster/shrimp/fish/gift photos before production use.
+- Dataset V1 is fixture-based. Production-grade accuracy requires human-labeled real image batches for each seafood category.
+- Current admin Label Editor is read-only fixture review. DB-backed label create/update/delete requires a future persistence layer.

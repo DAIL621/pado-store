@@ -1,0 +1,16 @@
+[
+  {
+    "imageId": "shrimp-hero-001",
+    "fileName": "shrimp-main-fresh-hero.jpg",
+    "productCategory": "shrimp",
+    "expectedRole": "hero",
+    "expectedSection": "heroImages",
+    "expectedHeroRank": 1,
+    "expectedQualityScore": 85,
+    "expectedWarnings": [],
+    "expectedCaption": "상품의 첫인상을 만드는 대표 후보 사진입니다.",
+    "expectedTitle": "대표 상품 사진",
+    "expectedDescription": "새우 대표사진으로 활용합니다.",
+    "notes": "새우 대표"
+  }
+]

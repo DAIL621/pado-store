@@ -1,0 +1,16 @@
+[
+  {
+    "imageId": "fish-icepack-001",
+    "fileName": "icepack-cold-shipping-box.jpg",
+    "productCategory": "fish",
+    "expectedRole": "shipping",
+    "expectedSection": "packaging",
+    "expectedHeroRank": null,
+    "expectedQualityScore": 75,
+    "expectedWarnings": [],
+    "expectedCaption": "신선도를 지키는 배송 준비 과정을 보여줍니다.",
+    "expectedTitle": "배송 준비 사진",
+    "expectedDescription": "아이스팩과 보냉 포장 설명에 활용합니다.",
+    "notes": "아이스팩은 shipping/package"
+  }
+]

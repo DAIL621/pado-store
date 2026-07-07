@@ -53,9 +53,18 @@ export function AdminLayout({
         <span>STORE ADMIN</span>
         <nav>
           {navItems.map((item) => (
-            <Link className={active === item.key ? "active" : ""} href={item.href} key={item.key}>
-              {item.label}
-            </Link>
+            <span className="admin-nav-group" key={item.key}>
+              <Link className={active === item.key ? "active" : ""} href={item.href}>
+                {item.label}
+              </Link>
+              {item.key === "ai" && (
+                <span className="admin-ai-subnav">
+                  <Link href="/admin/ai/images">AI 사진분석</Link>
+                  <Link href="/admin/ai/dataset">AI Dataset</Link>
+                  <Link href="/admin/ai/dashboard">AI Dashboard</Link>
+                </span>
+              )}
+            </span>
           ))}
         </nav>
         <form action="/auth/logout" method="post">

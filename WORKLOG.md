@@ -1862,3 +1862,24 @@
   - process section,
   - richer gallery metadata.
 - Added fixture metadata structure and `pnpm run score:ai-image-analysis`.
+
+## 2026-07-07 AI Dataset & Evaluation System V1
+
+- Added `datasets/` folder structure for:
+  - abalone, eel, octopus, oyster, shrimp, fish, meal-kit, gift-set.
+- Added fixture label JSON files using the AI label schema.
+- Added `lib/admin/ai-dataset.ts` with:
+  - dataset loading,
+  - `scoreAiDataset()`,
+  - role/hero/caption/section/quality/warning scoring,
+  - misclassification collection.
+- Added admin pages:
+  - `/admin/ai/dataset`
+  - `/admin/ai/dashboard`
+- Added CLI:
+  - `pnpm run verify:ai-dataset`
+  - `pnpm run evaluate:dataset`
+- Added report output locations:
+  - `reports/ai-errors`
+  - `reports/prompt-history`
+- Added `AI_DATASET_GUIDE.md` and `AI_EVALUATION_GUIDE.md`.

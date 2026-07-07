@@ -1,0 +1,58 @@
+[
+  {
+    "imageId": "abalone-hero-001",
+    "fileName": "wando-abalone-main-clean-hero.jpg",
+    "productCategory": "abalone",
+    "expectedRole": "hero",
+    "expectedSection": "heroImages",
+    "expectedHeroRank": 1,
+    "expectedQualityScore": 90,
+    "expectedWarnings": [],
+    "expectedCaption": "상품의 첫인상을 만드는 대표 후보 사진입니다.",
+    "expectedTitle": "대표 상품 사진",
+    "expectedDescription": "상품이 가장 크게 보이는 사진입니다.",
+    "notes": "전복 대표 fixture"
+  },
+  {
+    "imageId": "abalone-size-001",
+    "fileName": "abalone-hand-size-compare.jpg",
+    "productCategory": "abalone",
+    "expectedRole": "sizeComparison",
+    "expectedSection": "gallery",
+    "expectedHeroRank": null,
+    "expectedQualityScore": 78,
+    "expectedWarnings": [],
+    "expectedCaption": "실제 크기감을 확인하는 데 도움을 줍니다.",
+    "expectedTitle": "크기 비교 사진",
+    "expectedDescription": "손과 함께 크기를 가늠할 수 있는 사진입니다.",
+    "notes": "손에 든 전복은 sizeComparison"
+  },
+  {
+    "imageId": "abalone-cooking-001",
+    "fileName": "abalone-porridge-cooking-recipe.jpg",
+    "productCategory": "abalone",
+    "expectedRole": "cooking",
+    "expectedSection": "recipes",
+    "expectedHeroRank": null,
+    "expectedQualityScore": 80,
+    "expectedWarnings": [],
+    "expectedCaption": "어떻게 먹으면 좋은지 한눈에 보여줍니다.",
+    "expectedTitle": "조리 예시 사진",
+    "expectedDescription": "전복죽 조리 예시로 활용합니다.",
+    "notes": "전복죽은 cooking"
+  },
+  {
+    "imageId": "abalone-blur-001",
+    "fileName": "blurry-dark-background-detail.jpg",
+    "productCategory": "abalone",
+    "expectedRole": "detail",
+    "expectedSection": "gallery",
+    "expectedHeroRank": null,
+    "expectedQualityScore": 45,
+    "expectedWarnings": ["blur", "dark"],
+    "expectedCaption": "운영자 확인이 필요한 보조 사진입니다.",
+    "expectedTitle": "상세 질감 사진",
+    "expectedDescription": "흐린 사진은 대표사진으로 쓰지 않습니다.",
+    "notes": "흐린 사진 warning fixture"
+  }
+]

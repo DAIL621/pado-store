@@ -509,3 +509,20 @@
 - Operator filters and summary added.
 - `detail_json` conversion now includes benefits, FAQ draft, SEO draft, process, gallery metadata, and quality summary.
 - `pnpm run score:ai-image-analysis` added with 90+ target scoring.
+
+### Dataset & Evaluation V1 Completed
+
+- Objective AI dataset folder structure added.
+- Label schema added through fixture JSON.
+- Dataset admin page added.
+- AI evaluation dashboard added.
+- Misclassification report path added.
+- Prompt history report path added.
+- `pnpm run evaluate:dataset` added.
+
+### Next Dataset Work
+
+1. Add real product images to `datasets/*/images`.
+2. Replace fixture-only labels with real human labels.
+3. Add DB-backed label editor save flow.
+4. Compare OpenAI Vision output against fixture and real-photo labels.
