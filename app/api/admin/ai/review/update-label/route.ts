@@ -23,6 +23,13 @@ function asSection(value: unknown, fallback: AiImageRecommendedSection): AiImage
   return SECTION_VALUES.has(String(value)) ? (String(value) as AiImageRecommendedSection) : fallback;
 }
 
+function scoreValue(value: unknown, fallback: number) {
+  const numeric = Number(value ?? fallback);
+  if (!Number.isFinite(numeric)) return fallback;
+  const normalized = numeric > 0 && numeric <= 1 ? numeric * 100 : numeric;
+  return Math.max(0, Math.min(100, Math.round(normalized)));
+}
+
 export async function POST(request: Request) {
   const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
@@ -34,11 +41,11 @@ export async function POST(request: Request) {
   const category = String(body.category || "");
   const fileName = String(body.fileName || "");
   if (!category || !fileName || fileName.includes("..")) {
-    return NextResponse.json({ ok: false, message: "Invalid label update request." }, { status: 400 });
+    return NextResponse.json({ ok: false, message: "라벨 저장 요청이 올바르지 않습니다." }, { status: 400 });
   }
 
   const current = readRealLabel(category, fileName);
-  if (!current) return NextResponse.json({ ok: false, message: "Label file not found." }, { status: 404 });
+  if (!current) return NextResponse.json({ ok: false, message: "라벨 파일을 찾을 수 없습니다." }, { status: 404 });
 
   const beforeRole = current.expectedRole;
   const beforeSection = current.expectedSection;
@@ -47,7 +54,7 @@ export async function POST(request: Request) {
     expectedRole: asRole(body.expectedRole, current.expectedRole),
     expectedSection: asSection(body.expectedSection, current.expectedSection),
     expectedHeroRank: body.expectedHeroRank === "" || body.expectedHeroRank === null ? null : Number(body.expectedHeroRank ?? current.expectedHeroRank),
-    expectedQualityScore: Math.max(0, Math.min(100, Math.round(Number(body.expectedQualityScore ?? current.expectedQualityScore)))),
+    expectedQualityScore: scoreValue(body.expectedQualityScore, current.expectedQualityScore),
     expectedCaption: String(body.expectedCaption ?? current.expectedCaption),
     expectedTitle: String(body.expectedTitle ?? current.expectedTitle),
     expectedDescription: String(body.expectedDescription ?? current.expectedDescription),

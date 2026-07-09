@@ -47,10 +47,10 @@ assert(engine.includes("captionAccuracy"), "caption accuracy calculation missing
 assert(engine.includes("errors"), "misclassification collection missing");
 assert(evaluateScript.includes("reports") && evaluateScript.includes("ai-errors"), "AI error report writing missing");
 assert(evaluateScript.includes("prompt-history"), "Prompt history writing missing");
-assert(datasetPage.includes("Label Editor"), "Dataset page label editor missing");
-assert(datasetPage.includes("Evaluation"), "Dataset page evaluation section missing");
-assert(dashboardPage.includes("Role Accuracy"), "AI dashboard role accuracy missing");
-assert(dashboardPage.includes("오분류"), "AI dashboard error section missing");
+assert(datasetPage.includes("데이터셋 목록"), "Dataset page label summary missing");
+assert(datasetPage.includes("오분류 확인"), "Dataset page evaluation section missing");
+assert(dashboardPage.includes("역할 정확도"), "AI dashboard role accuracy missing");
+assert(dashboardPage.includes("오분류 Top 10"), "AI dashboard error section missing");
 
 console.log(
   JSON.stringify(

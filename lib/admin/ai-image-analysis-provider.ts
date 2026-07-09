@@ -53,7 +53,8 @@ const SECTION_VALUES: AiImageRecommendedSection[] = [
 function clampScore(value: unknown, fallback: number) {
   const score = Number(value);
   if (!Number.isFinite(score)) return fallback;
-  return Math.min(100, Math.max(0, Math.round(score)));
+  const normalized = score > 0 && score <= 1 ? score * 100 : score;
+  return Math.min(100, Math.max(0, Math.round(normalized)));
 }
 
 function asRole(value: unknown): AiImageRole {

@@ -33,7 +33,7 @@ const layout = read("components/admin/AdminLayout.tsx");
 assert(layout.includes("/admin/ai/review"), "AdminLayout must include AI Review Center menu link");
 
 const page = read("app/admin/ai/review/page.tsx");
-for (const marker of ["AI Review Center", "Confidence policy", "AI Review Queue", "Operator Rules", "Rule suggestions"]) {
+for (const marker of ["AI 검수센터", "신뢰도 정책", "AI 검수 대기열", "운영 규칙", "규칙 제안"]) {
   assert(page.includes(marker), `review page is missing marker: ${marker}`);
 }
 

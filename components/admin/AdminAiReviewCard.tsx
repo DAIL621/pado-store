@@ -34,6 +34,20 @@ export type AdminAiReviewCardProps = {
   appliedRule?: string;
 };
 
+function categoryLabel(category: string) {
+  const labels: Record<string, string> = {
+    abalone: "전복",
+    eel: "바다장어",
+    octopus: "문어",
+    oyster: "굴",
+    shrimp: "새우",
+    fish: "생선",
+    "meal-kit": "밀키트",
+    "gift-set": "선물세트"
+  };
+  return labels[category] ?? category;
+}
+
 export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
   const [role, setRole] = useState<AiImageRole>(props.expectedRole);
   const [section, setSection] = useState<AiImageRecommendedSection>(props.expectedSection);
@@ -93,7 +107,7 @@ export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
         <div>
           <strong>{props.fileName}</strong>
           <span>
-            {props.category} / 신뢰도 {props.confidence}% / 품질 {props.qualityScore}점 / {message}
+            {categoryLabel(props.category)} / 신뢰도 {props.confidence}% / 품질 {props.qualityScore}점 / {message}
           </span>
         </div>
         <p className="admin-ai-reasoning">{props.reviewHint}</p>

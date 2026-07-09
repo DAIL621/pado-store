@@ -187,11 +187,17 @@ function normalizeAnalysis(raw, fallback) {
   const sectionValues = new Set(["heroImages", "journey", "gallery", "packaging", "recipes", "components", "process", "extraSections"]);
   const role = roleValues.has(raw.suggestedRole) ? raw.suggestedRole : fallback.suggestedRole;
   const section = sectionValues.has(raw.recommendedSection) ? raw.recommendedSection : fallback.recommendedSection;
+  const score = (value, fallbackValue) => {
+    const numeric = Number(value ?? fallbackValue);
+    if (!Number.isFinite(numeric)) return fallbackValue;
+    const normalized = numeric > 0 && numeric <= 1 ? numeric * 100 : numeric;
+    return Math.max(0, Math.min(100, Math.round(normalized)));
+  };
   return {
     suggestedRole: role,
     recommendedSection: section,
-    confidence: Math.max(0, Math.min(100, Math.round(Number(raw.confidence ?? fallback.confidence)))),
-    qualityScore: Math.max(0, Math.min(100, Math.round(Number(raw.qualityScore ?? fallback.qualityScore)))),
+    confidence: score(raw.confidence, fallback.confidence),
+    qualityScore: score(raw.qualityScore, fallback.qualityScore),
     title: String(raw.title || fallback.title),
     description: String(raw.description || fallback.description),
     caption: String(raw.caption || fallback.caption || ""),

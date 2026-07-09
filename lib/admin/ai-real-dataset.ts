@@ -120,6 +120,13 @@ function readJson<T>(filePath: string): T | null {
   }
 }
 
+function normalizeScore(value: number) {
+  const score = Number(value);
+  if (!Number.isFinite(score)) return 0;
+  const normalized = score > 0 && score <= 1 ? score * 100 : score;
+  return Math.max(0, Math.min(100, Math.round(normalized)));
+}
+
 export function writeJson(filePath: string, value: unknown) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
@@ -137,11 +144,22 @@ export function listDatasetImages(category: string) {
 }
 
 export function readRealMetadata(category: string, fileName: string) {
-  return readJson<AiRealDatasetMetadata>(metadataPathFor(category, fileName));
+  const metadata = readJson<AiRealDatasetMetadata>(metadataPathFor(category, fileName));
+  if (!metadata) return null;
+  return {
+    ...metadata,
+    confidence: normalizeScore(metadata.confidence),
+    qualityScore: normalizeScore(metadata.qualityScore)
+  };
 }
 
 export function readRealLabel(category: string, fileName: string) {
-  return readJson<AiRealDatasetLabel>(labelPathFor(category, fileName));
+  const label = readJson<AiRealDatasetLabel>(labelPathFor(category, fileName));
+  if (!label) return null;
+  return {
+    ...label,
+    expectedQualityScore: normalizeScore(label.expectedQualityScore)
+  };
 }
 
 export function createMetadataFromAnalysis({

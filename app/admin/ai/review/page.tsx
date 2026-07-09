@@ -124,7 +124,7 @@ export default async function AdminAiReviewPage() {
             {state.queue.map((item) => (
               <div id={`queue-${item.status}`} key={item.id}>
                 <AdminAiReviewCard
-                  category={categoryLabel(item.label.productCategory)}
+                  category={item.label.productCategory}
                   fileName={item.label.fileName}
                   imageSrc={item.imageSrc}
                   statusLabel={STATUS_LABELS[item.status]}
