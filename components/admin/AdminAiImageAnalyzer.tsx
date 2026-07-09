@@ -9,6 +9,7 @@ import {
   analyzeImagesWithMockEngine,
   applyHeroRanking,
   convertImageAnalysisToDetailJson,
+  getAiRoleLabel,
   sortAiImageAnalysisResults,
   summarizeAiImageAnalysis,
   type AiImageAnalysisResult,
@@ -45,12 +46,18 @@ const CATEGORIES = [
 
 const FILTERS: Array<{ value: ResultFilter; label: string }> = [
   { value: "all", label: "전체" },
-  { value: "hero", label: "대표 후보" },
+  { value: "hero", label: "대표사진 후보" },
   { value: "needsReview", label: "확인 필요" },
-  { value: "package", label: "포장/배송" },
+  { value: "package", label: "포장·배송" },
   { value: "cooking", label: "조리" },
   { value: "components", label: "구성품" }
 ];
+
+function providerLabel(provider: string) {
+  if (provider === "openai") return "OpenAI Vision";
+  if (provider === "mock") return "기본 분석";
+  return provider;
+}
 
 function fileToDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -87,7 +94,7 @@ export function AdminAiImageAnalyzer() {
   const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [providerInfo, setProviderInfo] = useState<ProviderInfo | null>(null);
-  const [message, setMessage] = useState("상품 사진을 올리면 AI가 역할, 품질 점수, 대표 후보, 상세페이지 배치 위치를 추천합니다.");
+  const [message, setMessage] = useState("상품 사진을 올리면 AI가 역할, 품질 점수, 대표사진 후보, 상세페이지 배치 위치를 추천합니다.");
 
   const summary = useMemo(() => summarizeAiImageAnalysis(results), [results]);
   const filteredResults = useMemo(() => filterResults(results, resultFilter), [results, resultFilter]);
@@ -101,7 +108,7 @@ export function AdminAiImageAnalyzer() {
     }
     const nextDrafts = await Promise.all(images.map(createDraft));
     setDrafts((current) => [...current, ...nextDrafts]);
-    setMessage(`${images.length}장의 사진을 추가했습니다. 분석 시작 버튼을 눌러 역할을 추천받으세요.`);
+    setMessage(`${images.length}장의 사진을 추가했습니다. 분석 시작 버튼을 눌러 사진 역할을 추천받으세요.`);
   };
 
   const removeDraft = (id: string) => {
@@ -121,13 +128,13 @@ export function AdminAiImageAnalyzer() {
   };
 
   const sortByAiRecommendation = () => {
-    setResults((current) => sortAiImageAnalysisResults(applyHeroRanking(current)));
+    const sortedResults = sortAiImageAnalysisResults(applyHeroRanking(results));
+    setResults(sortedResults);
     setDrafts((current) => {
-      const sortedResults = sortAiImageAnalysisResults(applyHeroRanking(results));
       const order = new Map(sortedResults.map((item, index) => [item.imageUrl, index]));
       return [...current].sort((a, b) => (order.get(a.imageUrl) ?? 999) - (order.get(b.imageUrl) ?? 999));
     });
-    setMessage("AI 추천 순서로 정렬했습니다. 운영자가 다시 위/아래 버튼으로 조정할 수 있습니다.");
+    setMessage("AI 추천 순서로 정렬했습니다. 필요하면 위/아래 버튼으로 직접 조정할 수 있습니다.");
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
@@ -172,21 +179,21 @@ export function AdminAiImageAnalyzer() {
       setMessage(
         body.fallbackUsed
           ? "실제 AI 분석에 실패하여 기본 분석으로 대체했습니다. 운영자가 결과를 확인하고 수정할 수 있습니다."
-          : `${nextResults.length}장의 사진 분석이 완료되었습니다. 대표 후보와 확인 필요 항목을 검토하세요.`
+          : `${nextResults.length}장의 사진 분석을 완료했습니다. 대표사진 후보와 확인 필요 항목을 검토해주세요.`
       );
     } catch (error) {
       const nextResults = analyzeImagesWithMockEngine(inputs).map((item) => ({
         ...item,
-        warningMessage: item.warningMessage || "서버 AI 분석에 실패하여 브라우저 기본 분석으로 대체했습니다.",
-        reasoningSummary: "서버 API 실패로 파일명/순서 기반 Mock 분석을 사용했습니다."
+        warningMessage: item.warningMessage || "서버 AI 분석에 실패하여 기본 분석으로 대체했습니다.",
+        reasoningSummary: "서버 API 실패로 파일명과 업로드 순서 기반 분석을 사용했습니다."
       }));
       setResults(nextResults);
       setProviderInfo({
         provider: "mock",
         fallbackUsed: true,
-        fallbackReason: error instanceof Error ? error.message : "Unknown client fallback"
+        fallbackReason: error instanceof Error ? error.message : "알 수 없는 클라이언트 대체 분석"
       });
-      setMessage("실제 AI 분석에 실패하여 기본 분석으로 대체했습니다. 결과는 수정 후 상품등록으로 보낼 수 있습니다.");
+      setMessage("실제 AI 분석에 실패하여 기본 분석으로 대체했습니다. 결과를 수정한 뒤 상품등록으로 보낼 수 있습니다.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -209,12 +216,12 @@ export function AdminAiImageAnalyzer() {
           savedAt: new Date().toISOString()
         })
       );
-      setMessage("AI 사진분석 결과를 상품등록 draft로 저장했습니다. 상품등록 화면으로 이동합니다.");
+      setMessage("AI 사진분석 결과를 상품등록 초안으로 저장했습니다. 상품등록 화면으로 이동합니다.");
       window.setTimeout(() => {
         window.location.href = "/admin/new?source=ai-images";
       }, 450);
     } catch {
-      setMessage("브라우저 저장 공간 부족으로 AI 분석 결과를 상품등록으로 보낼 수 없습니다.");
+      setMessage("브라우저 저장 공간 문제로 AI 분석 결과를 상품등록으로 보낼 수 없습니다.");
     }
   };
 
@@ -228,7 +235,7 @@ export function AdminAiImageAnalyzer() {
         <span>PADO STORY AI CENTER</span>
         <h2>AI 사진분석</h2>
         <p>
-          상품 사진을 올리면 Vision Provider가 사진의 실제 내용과 파일명을 함께 보고 역할, 품질 점수, 대표 후보, 상세페이지 배치 위치를 추천합니다.
+          상품 사진을 올리면 AI가 사진의 실제 내용과 파일명을 함께 보고 역할, 품질 점수, 대표사진 후보, 상세페이지 배치 위치를 추천합니다.
         </p>
         <div>
           <a className="button teal" href="#ai-image-upload">사진 업로드</a>
@@ -239,7 +246,7 @@ export function AdminAiImageAnalyzer() {
       <section className="admin-panel admin-ai-toolbar" id="ai-image-upload">
         <div>
           <h2>사진 업로드</h2>
-          <span className="admin-message">Drag & Drop, 다중 선택, 미리보기, 삭제, 순서 변경을 지원합니다.</span>
+          <span className="admin-message">드래그 앤 드롭, 여러 장 선택, 미리보기, 삭제, 순서 변경을 지원합니다.</span>
         </div>
         <label>
           상품 카테고리
@@ -260,7 +267,7 @@ export function AdminAiImageAnalyzer() {
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
       >
-        <strong>사진을 여기에 끌어 놓으세요</strong>
+        <strong>사진을 여기에 놓아주세요</strong>
         <span>또는 클릭해서 여러 장을 선택하세요. JPG, PNG, WebP 이미지를 권장합니다.</span>
         <input
           type="file"
@@ -316,8 +323,8 @@ export function AdminAiImageAnalyzer() {
 
         {providerInfo && (
           <div className={`admin-ai-provider-badge ${providerInfo.fallbackUsed ? "fallback" : ""}`}>
-            <strong>Provider: {providerInfo.provider}</strong>
-            <span>{providerInfo.fallbackUsed ? "fallback 사용됨" : "실제 분석 흐름 정상"}</span>
+            <strong>분석 방식: {providerLabel(providerInfo.provider)}</strong>
+            <span>{providerInfo.fallbackUsed ? "기본 분석으로 대체됨" : "실제 AI 분석 정상"}</span>
             {providerInfo.fallbackReason && <em>{providerInfo.fallbackReason}</em>}
           </div>
         )}
@@ -327,12 +334,12 @@ export function AdminAiImageAnalyzer() {
             <strong>전체 {summary.total}장 · 평균 품질 {summary.averageQuality}점 · 확인 필요 {summary.needsReview}장</strong>
             <div>
               {summary.heroCandidates.map((item) => (
-                <span key={item.imageUrl}>Hero {item.heroRank}순위: {item.originalName}</span>
+                <span key={item.imageUrl}>대표 {item.heroRank}순위: {item.originalName}</span>
               ))}
             </div>
             <div>
               {Object.entries(summary.roleCounts).map(([role, count]) => (
-                <span key={role}>{role}: {count}</span>
+                <span key={role}>{getAiRoleLabel(role as AiImageRole)}: {count}</span>
               ))}
             </div>
           </div>
@@ -351,12 +358,12 @@ export function AdminAiImageAnalyzer() {
             <article className="admin-ai-result-card" key={`${result.originalName}-${index}`}>
               <div className="admin-ai-result-image">
                 <img src={result.imageUrl} alt={result.originalName} />
-                {result.heroRank && <em>Hero {result.heroRank}순위</em>}
+                {result.heroRank && <em>대표 {result.heroRank}순위</em>}
               </div>
               <div className="admin-ai-result-fields">
                 <div>
                   <strong>{result.originalName}</strong>
-                  <span>신뢰도 {result.confidence}% · 품질 {result.qualityScore}점 · {result.suggestedRole}</span>
+                  <span>신뢰도 {result.confidence}% · 품질 {result.qualityScore}점 · {getAiRoleLabel(result.suggestedRole)}</span>
                 </div>
                 {result.warningMessage && <p className="admin-ai-warning">{result.warningMessage}</p>}
                 {result.reasoningSummary && <p className="admin-ai-reasoning">{result.reasoningSummary}</p>}
@@ -393,8 +400,8 @@ export function AdminAiImageAnalyzer() {
 
       <section className="admin-panel">
         <div>
-          <h2>detail_json 연결 준비</h2>
-          <span className="admin-message">FAQ, 상품 장점, 갤러리, 포장, 레시피, 공정 섹션 초안까지 함께 생성됩니다.</span>
+          <h2>상세페이지 데이터 연결 준비</h2>
+          <span className="admin-message">FAQ, 상품 장점, 갤러리, 포장, 레시피와 공정 섹션 초안까지 함께 생성합니다.</span>
         </div>
         <pre className="admin-ai-json-preview">{JSON.stringify(convertedDetailJson, null, 2)}</pre>
       </section>

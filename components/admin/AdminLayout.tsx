@@ -50,7 +50,7 @@ export function AdminLayout({
     <div className="admin-page">
       <aside className="admin-sidebar">
         <strong>파도스토리</strong>
-        <span>STORE ADMIN</span>
+        <span>관리자 시스템</span>
         <nav>
           {navItems.map((item) => (
             <span className="admin-nav-group" key={item.key}>
@@ -60,9 +60,9 @@ export function AdminLayout({
               {item.key === "ai" && (
                 <span className="admin-ai-subnav">
                   <Link href="/admin/ai/images">AI 사진분석</Link>
-                  <Link href="/admin/ai/dataset">AI Dataset</Link>
-                  <Link href="/admin/ai/dashboard">AI Dashboard</Link>
-                  <Link href="/admin/ai/review">AI Review Center</Link>
+                  <Link href="/admin/ai/dataset">AI 데이터셋</Link>
+                  <Link href="/admin/ai/dashboard">AI 대시보드</Link>
+                  <Link href="/admin/ai/review">AI 검수센터</Link>
                 </span>
               )}
             </span>
@@ -79,13 +79,17 @@ export function AdminLayout({
             <span>{subtitle}</span>
             <h1>{title}</h1>
           </div>
-          <a className="button outline" href="/products" target="_blank">라이브몰 보기</a>
+          <a className="button outline" href="/products" target="_blank">
+            라이브몰 보기
+          </a>
         </div>
 
         <div className="admin-current-user">
           <span>현재 로그인한 관리자</span>
           <strong>{admin.name || admin.email || "관리자"}</strong>
-          <em>{admin.email ?? "이메일 정보 없음"} · role: {admin.role}</em>
+          <em>
+            {admin.email ?? "이메일 정보 없음"} · 권한: {admin.role}
+          </em>
         </div>
 
         <nav className="admin-mobile-nav" aria-label="모바일 관리자 메뉴">

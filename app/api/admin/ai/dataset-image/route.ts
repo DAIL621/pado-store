@@ -22,19 +22,19 @@ export async function GET(request: Request) {
   const fileName = url.searchParams.get("file") || "";
 
   if (!category || !fileName || fileName.includes("..") || path.isAbsolute(fileName)) {
-    return NextResponse.json({ ok: false, message: "Invalid dataset image request." }, { status: 400 });
+    return NextResponse.json({ ok: false, message: "데이터셋 이미지 요청이 올바르지 않습니다." }, { status: 400 });
   }
 
   const ext = path.extname(fileName).toLowerCase();
   if (!IMAGE_EXTENSIONS.has(ext)) {
-    return NextResponse.json({ ok: false, message: "Unsupported image type." }, { status: 400 });
+    return NextResponse.json({ ok: false, message: "지원하지 않는 이미지 형식입니다." }, { status: 400 });
   }
 
   const imagePath = path.join(datasetImageDir(category), fileName);
   const resolvedRoot = path.resolve(datasetImageDir(category));
   const resolvedImage = path.resolve(imagePath);
   if (!resolvedImage.startsWith(resolvedRoot) || !fs.existsSync(resolvedImage)) {
-    return NextResponse.json({ ok: false, message: "Dataset image not found." }, { status: 404 });
+    return NextResponse.json({ ok: false, message: "데이터셋 이미지를 찾을 수 없습니다." }, { status: 404 });
   }
 
   const body = fs.readFileSync(resolvedImage);

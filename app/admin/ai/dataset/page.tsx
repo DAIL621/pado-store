@@ -3,8 +3,44 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { getAdminSession } from "@/lib/auth/admin";
 import { readAiDatasets, scoreAiDataset } from "@/lib/admin/ai-dataset";
 import { getRealDatasetStatus, readRealDatasetItems } from "@/lib/admin/ai-real-dataset";
+import { getAiRoleLabel, getAiSectionLabel } from "@/lib/admin/ai-image-analysis";
 
 export const dynamic = "force-dynamic";
+
+function yesNo(value: boolean | undefined) {
+  return value ? "예" : "아니오";
+}
+
+function existsLabel(value: unknown) {
+  return value ? "있음" : "없음";
+}
+
+function categoryLabel(category: string) {
+  const labels: Record<string, string> = {
+    abalone: "전복",
+    eel: "바다장어",
+    octopus: "문어",
+    oyster: "굴",
+    shrimp: "새우",
+    fish: "생선",
+    "meal-kit": "밀키트",
+    "gift-set": "선물세트"
+  };
+  return labels[category] ?? category;
+}
+
+function errorReasonKo(reason: string) {
+  return reason
+    .replace("role:", "역할:")
+    .replace("section:", "섹션:")
+    .replace("hero:", "대표사진:")
+    .replace("quality:", "품질:")
+    .replace("warning mismatch", "경고문 일치 여부 확인 필요")
+    .replace("expected", "기대값")
+    .replace("got", "AI 결과")
+    .replace("around", "근사값")
+    .replace("none", "없음");
+}
 
 export default async function AdminAiDatasetPage() {
   const adminSession = await getAdminSession();
@@ -22,38 +58,38 @@ export default async function AdminAiDatasetPage() {
     <AdminLayout
       admin={{ name: adminSession.profile.name, email: adminSession.user.email, role: adminSession.profile.role }}
       active="ai"
-      title="AI Dataset"
-      subtitle="사진 분석 정답 Label과 Evaluation을 관리합니다."
+      title="AI 데이터셋"
+      subtitle="AI 사진분석 정답 라벨과 평가 결과를 관리합니다."
     >
       <div className="admin-ai-page">
         <section className="admin-panel">
           <div>
-            <h2>Dataset 목록</h2>
-            <span className="admin-message">현재는 fixture 기반 Mock Dataset입니다. 실제 이미지를 넣으면 같은 Label Schema로 확장됩니다.</span>
+            <h2>데이터셋 목록</h2>
+            <span className="admin-message">현재 fixture와 실제 전복 사진 데이터셋을 함께 확인합니다. 실제 이미지가 늘어나면 같은 라벨 구조로 확장됩니다.</span>
           </div>
           <div className="admin-ai-summary">
-            <strong>Dataset {evaluation.datasetCount}개 · Fixture {evaluation.imageCount}장 · Total {evaluation.totalScore}점</strong>
+            <strong>데이터셋 {evaluation.datasetCount}개 · 이미지 {evaluation.imageCount}장 · 종합 {evaluation.totalScore}점</strong>
             <div>
-              <span>Role Accuracy {evaluation.roleAccuracy}%</span>
-              <span>Hero Accuracy {evaluation.heroAccuracy}%</span>
-              <span>Section Accuracy {evaluation.sectionAccuracy}%</span>
-              <span>Quality Accuracy {evaluation.qualityAccuracy}%</span>
-              <span>Warning Accuracy {evaluation.warningAccuracy}%</span>
+              <span>역할 정확도 {evaluation.roleAccuracy}%</span>
+              <span>대표사진 정확도 {evaluation.heroAccuracy}%</span>
+              <span>섹션 정확도 {evaluation.sectionAccuracy}%</span>
+              <span>품질 점수 정확도 {evaluation.qualityAccuracy}%</span>
+              <span>경고문 정확도 {evaluation.warningAccuracy}%</span>
             </div>
           </div>
           <div className="admin-ops-grid">
             <article className="admin-ops-card ready">
-              <span>abalone real images</span>
-              <strong>{abaloneStatus.imageCount} images</strong>
+              <span>전복 실제 사진 데이터셋</span>
+              <strong>{abaloneStatus.imageCount}장</strong>
               <p>
-                metadata {abaloneStatus.metadataCount} / labels {abaloneStatus.labelCount} / reviewed {abaloneStatus.reviewedCount} / approved {abaloneStatus.approvedCount}
+                분석 결과 {abaloneStatus.metadataCount}개 / 라벨 {abaloneStatus.labelCount}개 / 검수 {abaloneStatus.reviewedCount}개 / 승인 {abaloneStatus.approvedCount}개
               </p>
             </article>
             {datasets.map((dataset) => (
               <article className="admin-ops-card" key={dataset.category}>
-                <span>{dataset.category}</span>
-                <strong>{dataset.labels.length} labels</strong>
-                <p>images / labels / metadata 구조 준비 완료</p>
+                <span>{categoryLabel(dataset.category)}</span>
+                <strong>{dataset.labels.length}개 라벨</strong>
+                <p>이미지 / 라벨 / 분석 결과 구조 준비 완료</p>
               </article>
             ))}
           </div>
@@ -61,112 +97,71 @@ export default async function AdminAiDatasetPage() {
 
         <section className="admin-panel">
           <div>
-            <h2>Real Abalone Dataset Status</h2>
-            <span className="admin-message">`datasets/abalone/images`의 실제 사진과 metadata/label 생성 상태를 확인합니다.</span>
+            <h2>전복 실제 데이터셋 상태</h2>
+            <span className="admin-message">전복 실제 사진의 분석 결과, 정답 라벨, 검수 상태를 확인합니다.</span>
           </div>
           <div className="admin-ai-summary">
-            <strong>
-              Images {abaloneStatus.imageCount} · Metadata {abaloneStatus.metadataCount} · Labels {abaloneStatus.labelCount}
-            </strong>
+            <strong>이미지 {abaloneStatus.imageCount}장 · 분석 결과 {abaloneStatus.metadataCount}개 · 라벨 {abaloneStatus.labelCount}개</strong>
             <div>
-              <span>Reviewed {abaloneStatus.reviewedCount}</span>
-              <span>Approved {abaloneStatus.approvedCount}</span>
-              <span>Missing metadata {abaloneStatus.missingMetadata.length}</span>
-              <span>Missing labels {abaloneStatus.missingLabels.length}</span>
+              <span>검수 완료 {abaloneStatus.reviewedCount}개</span>
+              <span>승인 완료 {abaloneStatus.approvedCount}개</span>
+              <span>분석 누락 {abaloneStatus.missingMetadata.length}개</span>
+              <span>라벨 누락 {abaloneStatus.missingLabels.length}개</span>
             </div>
           </div>
           <div className="admin-ai-result-list">
-            {abaloneItems.map((item) => (
-              <article className="admin-ai-result-card" key={item.fileName}>
+            {abaloneItems.slice(0, 12).map((item) => (
+              <article className="admin-ai-result-card" key={item.imageId}>
                 <div className="admin-ai-result-image">
-                  <img
-                    src={`/api/admin/ai/dataset-image?category=abalone&file=${encodeURIComponent(item.fileName)}`}
-                    alt={item.fileName}
-                  />
+                  <img src={`/api/admin/ai/dataset-image?category=abalone&file=${encodeURIComponent(item.fileName)}`} alt={item.fileName} />
                 </div>
                 <div className="admin-ai-result-fields">
                   <div>
                     <strong>{item.fileName}</strong>
-                    <span>
-                      metadata {item.metadata ? "ok" : "missing"} / label {item.label ? "ok" : "missing"}
-                    </span>
+                    <span>분석 결과 {existsLabel(item.metadata)} · 라벨 {existsLabel(item.label)} · 검수 {yesNo(item.label?.reviewed)}</span>
                   </div>
-                  <label>
-                    AI Role
-                    <input readOnly value={item.metadata?.suggestedRole || "not analyzed"} />
-                  </label>
-                  <label>
-                    Confidence
-                    <input readOnly value={item.metadata?.confidence ?? "-"} />
-                  </label>
-                  <label>
-                    Reviewed
-                    <input readOnly value={item.label?.reviewed ? "true" : "false"} />
-                  </label>
-                  <label>
-                    Approved
-                    <input readOnly value={item.label?.approved ? "true" : "false"} />
-                  </label>
+                  {item.metadata && (
+                    <p>
+                      AI 추천: {getAiRoleLabel(item.metadata.suggestedRole)} / {getAiSectionLabel(item.metadata.recommendedSection)} · 품질 {item.metadata.qualityScore}점
+                    </p>
+                  )}
+                  {item.label && (
+                    <p>
+                      정답 라벨: {getAiRoleLabel(item.label.expectedRole)} / {getAiSectionLabel(item.label.expectedSection)} · 승인 {yesNo(item.label.approved)}
+                    </p>
+                  )}
                 </div>
               </article>
             ))}
+            {!abaloneItems.length && <p className="admin-empty-note">아직 등록된 실제 데이터셋 이미지가 없습니다.</p>}
           </div>
         </section>
 
         <section className="admin-panel">
           <div>
-            <h2>Label Editor</h2>
-            <span className="admin-message">사진별 Role, Hero 여부, Quality Score, Warning, Title, Caption, Description, Section을 검수합니다.</span>
+            <h2>오분류 확인</h2>
+            <span className="admin-message">점수가 낮거나 정답 라벨과 다른 항목을 먼저 확인해 프롬프트와 운영 규칙을 개선합니다.</span>
           </div>
           <div className="admin-ai-result-list">
-            {datasets.flatMap((dataset) =>
-              dataset.labels.map((label) => (
-                <article className="admin-ai-result-card" key={label.imageId}>
-                  <div className="admin-ai-result-image">
-                    <div className="admin-ai-placeholder-image">{label.productCategory}</div>
+            {evaluation.errors.slice(0, 10).map((item) => (
+              <article className="admin-ai-result-card" key={item.label.imageId}>
+                <div className="admin-ai-result-image">
+                  <div className="admin-ai-placeholder-image">{item.totalScore}</div>
+                </div>
+                <div className="admin-ai-result-fields">
+                  <div>
+                    <strong>{item.label.fileName}</strong>
+                    <span>{item.errorReasons.map(errorReasonKo).join(" · ") || "캡션 또는 품질 검토 필요"}</span>
                   </div>
-                  <div className="admin-ai-result-fields">
-                    <div>
-                      <strong>{label.fileName}</strong>
-                      <span>{label.imageId} · {label.notes}</span>
-                    </div>
-                    <label>
-                      Expected Role
-                      <input readOnly value={label.expectedRole} />
-                    </label>
-                    <label>
-                      Expected Section
-                      <input readOnly value={label.expectedSection} />
-                    </label>
-                    <label>
-                      Hero Rank
-                      <input readOnly value={label.expectedHeroRank ?? "none"} />
-                    </label>
-                    <label>
-                      Quality Score
-                      <input readOnly value={label.expectedQualityScore} />
-                    </label>
-                    <label>
-                      Caption
-                      <textarea readOnly rows={2} value={label.expectedCaption} />
-                    </label>
-                    <label>
-                      Description
-                      <textarea readOnly rows={2} value={label.expectedDescription} />
-                    </label>
-                  </div>
-                </article>
-              ))
-            )}
+                  <p>
+                    AI: {getAiRoleLabel(item.prediction.suggestedRole)} / {getAiSectionLabel(item.prediction.recommendedSection)} · 정답:{" "}
+                    {getAiRoleLabel(item.label.expectedRole === "gallery" ? "detail" : item.label.expectedRole)} / {getAiSectionLabel(item.label.expectedSection)}
+                  </p>
+                </div>
+              </article>
+            ))}
+            {!evaluation.errors.length && <p className="admin-empty-note">현재 확인할 오분류가 없습니다.</p>}
           </div>
-        </section>
-
-        <section className="admin-panel">
-          <div>
-            <h2>Evaluation 실행</h2>
-            <span className="admin-message">CLI에서 `pnpm run evaluate:dataset`을 실행하면 reports/ai-errors와 reports/prompt-history가 생성됩니다.</span>
-          </div>
-          <pre className="admin-ai-json-preview">{JSON.stringify(evaluation, null, 2)}</pre>
         </section>
       </div>
     </AdminLayout>

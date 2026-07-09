@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import type { AiImageRecommendedSection, AiImageRole } from "@/lib/admin/ai-image-analysis";
-
-const ROLE_OPTIONS: AiImageRole[] = ["hero", "origin", "sizeComparison", "freshness", "package", "shipping", "cooking", "components", "process", "review", "detail", "unknown"];
-const SECTION_OPTIONS: AiImageRecommendedSection[] = ["heroImages", "journey", "gallery", "packaging", "recipes", "components", "process", "extraSections"];
+import {
+  AI_IMAGE_ROLE_OPTIONS,
+  AI_IMAGE_SECTION_OPTIONS,
+  getAiRoleLabel,
+  getAiSectionLabel,
+  type AiImageRecommendedSection,
+  type AiImageRole
+} from "@/lib/admin/ai-image-analysis";
 
 export type AdminAiReviewCardProps = {
   category: string;
@@ -67,13 +71,13 @@ export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
         })
       });
       const body = await response.json();
-      if (!response.ok || !body.ok) throw new Error(body?.message || "label 저장 실패");
+      if (!response.ok || !body.ok) throw new Error(body?.message || "검수 결과 저장에 실패했습니다.");
       setReviewed(Boolean(body.label.reviewed));
       setApproved(Boolean(body.label.approved));
       setNotes(body.label.reviewerNotes || "");
       setMessage(body.label.approved ? "승인 저장 완료" : body.label.reviewed ? "검수 저장 완료" : "보류 저장 완료");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "저장 실패");
+      setMessage(error instanceof Error ? error.message : "저장에 실패했습니다.");
     } finally {
       setSaving(false);
     }
@@ -89,69 +93,69 @@ export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
         <div>
           <strong>{props.fileName}</strong>
           <span>
-            {props.category} / confidence {props.confidence}% / quality {props.qualityScore} / {message}
+            {props.category} / 신뢰도 {props.confidence}% / 품질 {props.qualityScore}점 / {message}
           </span>
         </div>
         <p className="admin-ai-reasoning">{props.reviewHint}</p>
         <div className="admin-ai-review-row">
           <label>
-            AI role
-            <input readOnly value={`${props.aiRole} -> ${role}`} />
+            AI 추천 역할
+            <input readOnly value={`${getAiRoleLabel(props.aiRole)} → ${getAiRoleLabel(role)}`} />
           </label>
           <label>
-            AI section
-            <input readOnly value={`${props.aiSection} -> ${section}`} />
+            AI 추천 섹션
+            <input readOnly value={`${getAiSectionLabel(props.aiSection)} → ${getAiSectionLabel(section)}`} />
           </label>
           <label>
-            Rule
-            <input readOnly value={props.appliedRule || "No operator rule"} />
+            적용 규칙
+            <input readOnly value={props.appliedRule || "적용된 운영 규칙 없음"} />
           </label>
         </div>
         <label>
-          Role 변경
+          역할 변경
           <select value={role} onChange={(event) => setRole(event.target.value as AiImageRole)}>
-            {ROLE_OPTIONS.map((item) => (
-              <option value={item} key={item}>{item}</option>
+            {AI_IMAGE_ROLE_OPTIONS.map((item) => (
+              <option value={item.value} key={item.value}>{item.label}</option>
             ))}
           </select>
         </label>
         <label>
-          Section 변경
+          상세페이지 섹션 변경
           <select value={section} onChange={(event) => setSection(event.target.value as AiImageRecommendedSection)}>
-            {SECTION_OPTIONS.map((item) => (
-              <option value={item} key={item}>{item}</option>
+            {AI_IMAGE_SECTION_OPTIONS.map((item) => (
+              <option value={item.value} key={item.value}>{item.label}</option>
             ))}
           </select>
         </label>
         <label>
-          Hero Rank
-          <input value={heroRank} onChange={(event) => setHeroRank(event.target.value)} placeholder="none" />
+          대표사진 순위
+          <input value={heroRank} onChange={(event) => setHeroRank(event.target.value)} placeholder="없음" />
         </label>
         <label>
-          Quality Score
+          품질 점수
           <input value={qualityScore} onChange={(event) => setQualityScore(event.target.value)} />
         </label>
         <label>
-          Title
+          제목
           <input value={title} onChange={(event) => setTitle(event.target.value)} />
         </label>
         <label>
-          Caption
+          캡션
           <textarea rows={2} value={caption} onChange={(event) => setCaption(event.target.value)} />
         </label>
         <label>
-          Description
+          설명
           <textarea rows={2} value={description} onChange={(event) => setDescription(event.target.value)} />
         </label>
         <label>
-          Reviewer Notes
+          운영자 메모
           <textarea rows={2} value={notes} onChange={(event) => setNotes(event.target.value)} />
         </label>
         <div className="admin-ai-action-row compact">
-          <button type="button" disabled={saving} onClick={() => save(true, true, notes || "approved")}>승인</button>
-          <button type="button" disabled={saving} onClick={() => save(false, false, notes || "hold")}>보류</button>
-          <button type="button" disabled={saving} onClick={() => save(false, true, notes || "role/section reviewed")}>저장</button>
-          <span>{reviewed ? "reviewed=true" : "reviewed=false"} / {approved ? "approved=true" : "approved=false"}</span>
+          <button type="button" disabled={saving} onClick={() => save(true, true, notes || "운영자가 승인했습니다.")}>승인</button>
+          <button type="button" disabled={saving} onClick={() => save(false, false, notes || "추가 확인이 필요합니다.")}>보류</button>
+          <button type="button" disabled={saving} onClick={() => save(false, true, notes || "역할과 섹션을 검수했습니다.")}>저장</button>
+          <span>{reviewed ? "검수 완료" : "검수 전"} / {approved ? "승인됨" : "미승인"}</span>
         </div>
       </div>
     </article>

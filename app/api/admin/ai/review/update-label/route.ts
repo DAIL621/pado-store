@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       beforeSection,
       afterSection: next.expectedSection,
       changedAt: new Date().toISOString(),
-      reason: next.reviewerNotes || "Updated from AI Review Center"
+      reason: next.reviewerNotes || "AI 검수센터에서 수정했습니다."
     });
   }
 

@@ -7,13 +7,13 @@ import { getAiReviewCenterState, getConfidenceTier, type AiReviewStatus } from "
 export const dynamic = "force-dynamic";
 
 const STATUS_LABELS: Record<AiReviewStatus, string> = {
-  "auto-approved": "Auto approved",
-  "review-recommended": "Review recommended",
-  "needs-review": "Needs review",
-  "operator-required": "Operator required",
-  corrected: "Corrected",
-  held: "Held",
-  misclassified: "Misclassified"
+  "auto-approved": "자동 승인",
+  "review-recommended": "검토 권장",
+  "needs-review": "확인 필요",
+  "operator-required": "운영자 확인 필수",
+  corrected: "수정 완료",
+  held: "보류",
+  misclassified: "오분류"
 };
 
 function statusClass(status: AiReviewStatus) {
@@ -21,6 +21,20 @@ function statusClass(status: AiReviewStatus) {
   if (status === "review-recommended") return "warning";
   if (status === "needs-review") return "caution";
   return "danger";
+}
+
+function categoryLabel(category: string) {
+  const labels: Record<string, string> = {
+    abalone: "전복",
+    eel: "바다장어",
+    octopus: "문어",
+    oyster: "굴",
+    shrimp: "새우",
+    fish: "생선",
+    "meal-kit": "밀키트",
+    "gift-set": "선물세트"
+  };
+  return labels[category] ?? category;
 }
 
 export default async function AdminAiReviewPage() {
@@ -37,50 +51,49 @@ export default async function AdminAiReviewPage() {
     <AdminLayout
       admin={{ name: adminSession.profile.name, email: adminSession.user.email, role: adminSession.profile.role }}
       active="ai"
-      title="AI Review Center"
-      subtitle="AI analysis review queue, operator rules, and confidence-based approval"
+      title="AI 검수센터"
+      subtitle="AI 사진분석 결과를 검수하고 운영 규칙으로 학습시키는 화면입니다."
     >
       <div className="admin-ai-page">
         <section className="admin-ops-hero">
           <span>PADO STORY AI REVIEW</span>
-          <h2>AI Review Center</h2>
+          <h2>AI 검수센터</h2>
           <p>
-            High-confidence images are auto approved. Ambiguous images move into a review queue, and repeated operator
-            corrections become reusable rules for future analysis.
+            신뢰도가 높은 사진은 자동 승인하고, 애매한 사진만 운영자가 검수합니다. 반복되는 수정은 운영 규칙으로 저장해 다음 분석에 반영합니다.
           </p>
           <div>
-            <a className="button teal" href="#review-queue">Review Queue</a>
-            <a className="button outline" href="#review-rules">Rules</a>
+            <a className="button teal" href="#review-queue">검수 대기열</a>
+            <a className="button outline" href="#review-rules">운영 규칙</a>
           </div>
         </section>
 
         <section className="admin-kpi-grid">
           <article>
-            <span>Total queue</span>
+            <span>전체 검수 대상</span>
             <strong>{state.metrics.total}</strong>
-            <em>real dataset first, fixture fallback</em>
+            <em>실제 데이터셋 우선, 없으면 fixture 사용</em>
           </article>
           <article>
-            <span>Auto approval</span>
+            <span>자동 승인율</span>
             <strong>{state.metrics.autoApprovalRate}%</strong>
-            <em>{state.metrics.autoApproved} images</em>
+            <em>{state.metrics.autoApproved}건 자동 승인</em>
           </article>
           <article>
-            <span>Correction rate</span>
+            <span>운영자 수정률</span>
             <strong>{state.metrics.operatorCorrectionRate}%</strong>
-            <em>human review pressure</em>
+            <em>사람 검수가 필요한 비율</em>
           </article>
           <article>
-            <span>Rule usage</span>
+            <span>규칙 적용률</span>
             <strong>{state.metrics.ruleUsageRate}%</strong>
-            <em>{state.metrics.corrected} rule-applied items</em>
+            <em>{state.metrics.corrected}건 규칙 적용</em>
           </article>
         </section>
 
         <section className="admin-panel">
           <div>
-            <h2>Confidence policy</h2>
-            <span className="admin-message">The same policy is used by the queue, score script, and operator dashboard.</span>
+            <h2>신뢰도 정책</h2>
+            <span className="admin-message">검수 대기열, 점수 스크립트, 운영자 화면에서 같은 기준을 사용합니다.</span>
           </div>
           <div className="admin-ai-review-policy">
             {confidenceGuide.map((item) => (
@@ -94,8 +107,8 @@ export default async function AdminAiReviewPage() {
 
         <section className="admin-panel" id="review-queue">
           <div>
-            <h2>AI Review Queue</h2>
-            <span className="admin-message">Operators only need to touch images with low confidence, warning messages, or rule conflicts.</span>
+            <h2>AI 검수 대기열</h2>
+            <span className="admin-message">낮은 신뢰도, 경고 문구, 규칙 충돌이 있는 사진만 빠르게 확인하면 됩니다.</span>
           </div>
           <div className="admin-ai-review-tabs">
             {Object.entries(STATUS_LABELS).map(([status, label]) => {
@@ -111,7 +124,7 @@ export default async function AdminAiReviewPage() {
             {state.queue.map((item) => (
               <div id={`queue-${item.status}`} key={item.id}>
                 <AdminAiReviewCard
-                  category={item.label.productCategory}
+                  category={categoryLabel(item.label.productCategory)}
                   fileName={item.label.fileName}
                   imageSrc={item.imageSrc}
                   statusLabel={STATUS_LABELS[item.status]}
@@ -135,21 +148,22 @@ export default async function AdminAiReviewPage() {
                 />
               </div>
             ))}
+            {!state.queue.length && <p className="admin-empty-note">현재 검수할 사진이 없습니다.</p>}
           </div>
         </section>
 
         <section className="admin-panel" id="review-rules">
           <div>
-            <h2>Operator Rules</h2>
-            <span className="admin-message">Operator rules are applied before Vision, Mock rules, and fallback logic.</span>
+            <h2>운영 규칙</h2>
+            <span className="admin-message">운영자 규칙은 Vision 분석, Mock 규칙, 대체 분석보다 먼저 적용됩니다.</span>
           </div>
           <div className="admin-ops-grid">
             {state.rules.map((rule) => (
               <article className="admin-ops-card" key={rule.id}>
-                <span>{rule.source} / priority {rule.priority}</span>
+                <span>{rule.source === "operator" ? "운영자 규칙" : "시스템 규칙"} / 우선순위 {rule.priority}</span>
                 <strong>{rule.name}</strong>
                 <p>{rule.description}</p>
-                <em>{`${rule.filenameIncludes.join(", ")} -> ${rule.targetRole} / ${rule.targetSection}`}</em>
+                <em>{`${rule.filenameIncludes.join(", ")} → ${rule.targetRole} / ${rule.targetSection}`}</em>
               </article>
             ))}
           </div>
@@ -157,32 +171,32 @@ export default async function AdminAiReviewPage() {
 
         <section className="admin-panel">
           <div>
-            <h2>Rule suggestions</h2>
-            <span className="admin-message">Repeated operator corrections are grouped into suggested rules.</span>
+            <h2>규칙 제안</h2>
+            <span className="admin-message">반복된 운영자 수정을 새 규칙 후보로 묶어 보여줍니다.</span>
           </div>
           <div className="admin-ops-grid">
             {state.ruleSuggestions.map((rule) => (
               <article className="admin-ops-card" key={rule.id}>
-                <span>{rule.usageCount} matching corrections</span>
+                <span>{rule.usageCount}건의 유사 수정</span>
                 <strong>{rule.name}</strong>
                 <p>{rule.description}</p>
               </article>
             ))}
-            {!state.ruleSuggestions.length && <p className="admin-empty-note">No rule suggestions yet.</p>}
+            {!state.ruleSuggestions.length && <p className="admin-empty-note">아직 제안할 규칙이 없습니다.</p>}
           </div>
         </section>
 
         <section className="admin-panel">
           <div>
-            <h2>AI self evaluation</h2>
-            <span className="admin-message">Confidence, rule usage, and correction pressure by product category.</span>
+            <h2>AI 자체 평가</h2>
+            <span className="admin-message">상품군별 신뢰도, 규칙 적용, 수정 부담을 확인합니다.</span>
           </div>
           <div className="admin-ops-grid">
             {state.roleAccuracyByCategory.map((item) => (
               <article className="admin-ops-card" key={item.category}>
-                <span>{item.category}</span>
+                <span>{categoryLabel(item.category)}</span>
                 <strong>{item.averageConfidence}%</strong>
-                <p>{item.total} items / auto {item.autoApproved} / rule corrected {item.corrected}</p>
+                <p>{item.total}건 / 자동 승인 {item.autoApproved}건 / 규칙 수정 {item.corrected}건</p>
               </article>
             ))}
           </div>
@@ -190,8 +204,8 @@ export default async function AdminAiReviewPage() {
 
         <section className="admin-panel">
           <div>
-            <h2>Review history & prompt versions</h2>
-            <span className="admin-message">This is file-backed in V1 and ready to move into Supabase later.</span>
+            <h2>검수 이력과 프롬프트 버전</h2>
+            <span className="admin-message">현재 V1은 파일 기반이며, 이후 Supabase 저장 구조로 이전할 수 있습니다.</span>
           </div>
           <pre className="admin-ai-json-preview">
             {JSON.stringify({ history: state.history, promptVersions: state.promptVersions }, null, 2)}

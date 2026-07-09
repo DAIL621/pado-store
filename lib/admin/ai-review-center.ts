@@ -96,7 +96,7 @@ const HISTORY_REPORT_PATH = path.join(REVIEW_REPORT_ROOT, "history.json");
 const DEFAULT_RULES: AiReviewRule[] = [
   {
     id: "rule-abalone-hand-size",
-    name: "Abalone held in hand means size comparison",
+    name: "손에 든 전복은 크기 비교로 분류",
     productCategory: "abalone",
     filenameIncludes: ["hand", "size", "compare"],
     targetRole: "sizeComparison",
@@ -104,11 +104,11 @@ const DEFAULT_RULES: AiReviewRule[] = [
     priority: 100,
     source: "operator",
     usageCount: 5,
-    description: "When abalone is held by hand, customers use it to understand real size."
+    description: "손에 든 전복 사진은 고객이 실제 크기를 이해하는 데 사용합니다."
   },
   {
     id: "rule-gift-set-package",
-    name: "Gift set box means premium package",
+    name: "선물세트 박스는 고급 포장으로 분류",
     productCategory: "gift",
     filenameIncludes: ["gift", "set", "package", "box"],
     targetRole: "package",
@@ -116,29 +116,29 @@ const DEFAULT_RULES: AiReviewRule[] = [
     priority: 95,
     source: "operator",
     usageCount: 5,
-    description: "Gift set box photos should emphasize package quality and gift suitability."
+    description: "선물세트 박스 사진은 포장 신뢰감과 선물 적합성을 강조해야 합니다."
   },
   {
     id: "rule-icepack-shipping",
-    name: "Ice pack and cold box means shipping/package",
+    name: "아이스팩과 보냉 박스는 배송/포장으로 분류",
     filenameIncludes: ["ice", "icepack", "cold", "delivery"],
     targetRole: "shipping",
     targetSection: "packaging",
     priority: 90,
     source: "operator",
     usageCount: 7,
-    description: "Ice pack, box, and cold-chain images should support delivery trust."
+    description: "아이스팩, 박스, 보냉 이미지는 배송 신뢰를 설명하는 데 사용합니다."
   },
   {
     id: "rule-cooking-recipe",
-    name: "Cooked dish means recipe",
+    name: "완성 요리는 조리법으로 분류",
     filenameIncludes: ["cook", "recipe", "porridge", "grill", "soup"],
     targetRole: "cooking",
     targetSection: "recipes",
     priority: 80,
     source: "system",
     usageCount: 4,
-    description: "Finished dishes and cooking examples belong in the recipe section."
+    description: "완성 요리는 조리 예시와 맛있게 먹는 방법 섹션에 배치합니다."
   }
 ];
 
@@ -146,13 +146,13 @@ const PROMPT_VERSIONS = [
   {
     version: "review-v1",
     score: 86,
-    notes: "Initial confidence tier and operator rule priority policy.",
+    notes: "초기 신뢰도 구간과 운영자 규칙 우선순위 정책입니다.",
     createdAt: "2026-07-07"
   },
   {
     version: "review-v1.1",
     score: 91,
-    notes: "Added seafood role-specific rules for package, cooking, and size comparison.",
+    notes: "포장, 조리, 크기 비교에 대한 수산물 사진 분류 규칙을 추가했습니다.",
     createdAt: "2026-07-07"
   }
 ];
@@ -171,10 +171,10 @@ function readJsonFile<T>(filePath: string, fallback: T): T {
 }
 
 export function getConfidenceTier(confidence: number): { status: AiReviewStatus; severity: AiReviewSeverity; label: string } {
-  if (confidence >= 95) return { status: "auto-approved", severity: "green", label: "95-100 auto approved" };
-  if (confidence >= 90) return { status: "review-recommended", severity: "yellow", label: "90-95 review recommended" };
-  if (confidence >= 70) return { status: "needs-review", severity: "orange", label: "70-90 needs review" };
-  return { status: "operator-required", severity: "red", label: "under 70 operator required" };
+  if (confidence >= 95) return { status: "auto-approved", severity: "green", label: "95~100 자동 승인" };
+  if (confidence >= 90) return { status: "review-recommended", severity: "yellow", label: "90~95 검토 권장" };
+  if (confidence >= 70) return { status: "needs-review", severity: "orange", label: "70~90 확인 필요" };
+  return { status: "operator-required", severity: "red", label: "70 미만 운영자 확인 필수" };
 }
 
 function fixtureImage(imageId: string) {
@@ -204,12 +204,35 @@ function realLabelToDatasetLabel(label: AiRealDatasetLabel): AiDatasetLabel {
     expectedSection: label.expectedSection,
     expectedHeroRank: label.expectedHeroRank,
     expectedQualityScore: label.expectedQualityScore,
-    expectedWarnings: label.expectedWarnings,
-    expectedCaption: label.expectedCaption,
-    expectedTitle: label.expectedTitle,
-    expectedDescription: label.expectedDescription,
-    notes: label.reviewerNotes || (label.reviewed ? "reviewed real dataset label" : "unreviewed real dataset draft")
+    expectedWarnings: label.expectedWarnings.map(koreanizeStoredText).filter(Boolean),
+    expectedCaption: koreanizeStoredText(label.expectedCaption),
+    expectedTitle: koreanizeStoredText(label.expectedTitle),
+    expectedDescription: koreanizeStoredText(label.expectedDescription),
+    notes: label.reviewerNotes || (label.reviewed ? "검수 완료된 실제 데이터셋 라벨" : "검수 전 실제 데이터셋 초안")
   };
+}
+
+function koreanizeStoredText(value: string) {
+  const text = value.trim();
+  if (!text) return "";
+  const lower = text.toLowerCase();
+  if (lower.includes("foodborne") || lower.includes("health risk") || lower.includes("proper cooking") || lower.includes("proper handling")) {
+    return "식품 안전과 조리 상태를 운영자가 한 번 더 확인해야 합니다.";
+  }
+  if (lower.includes("sourcing") || lower.includes("sustainability")) {
+    return "산지와 생산 환경을 운영자가 한 번 더 확인해야 합니다.";
+  }
+  if (lower.includes("kelp") || lower.includes("farming") || lower.includes("cultivation")) {
+    return "생산 환경을 보여주는 참고 사진입니다.";
+  }
+  if (lower.includes("abalone") || lower.includes("gourmet") || lower.includes("tender")) {
+    return "전복의 질감과 상태를 확인할 수 있는 사진입니다.";
+  }
+  if (lower.includes("fallback reason")) return text.replace(/fallback reason:/gi, "대체 분석 사유:");
+  if (/[a-z]{4,}/i.test(text)) {
+    return "사진 내용에 맞게 한국어 설명을 확인해주세요.";
+  }
+  return text;
 }
 
 function metadataToAnalysis(metadata: AiRealDatasetMetadata): AiImageAnalysisResult {
@@ -219,18 +242,29 @@ function metadataToAnalysis(metadata: AiRealDatasetMetadata): AiImageAnalysisRes
     suggestedRole: metadata.suggestedRole,
     confidence: metadata.confidence,
     qualityScore: metadata.qualityScore,
-    title: metadata.title,
-    description: metadata.description,
-    caption: metadata.caption,
+    title: koreanizeStoredText(metadata.title),
+    description: koreanizeStoredText(metadata.description),
+    caption: metadata.caption ? koreanizeStoredText(metadata.caption) : metadata.caption,
     recommendedSection: metadata.recommendedSection,
     heroRank: metadata.heroRank,
-    warningMessage: metadata.warningMessage,
-    reasoningSummary: metadata.reasoningSummary
+    warningMessage: koreanizeStoredText(metadata.warningMessage),
+    reasoningSummary: metadata.reasoningSummary ? koreanizeStoredText(metadata.reasoningSummary) : metadata.reasoningSummary
   };
 }
 
 function normalize(value: string) {
   return value.toLowerCase().replace(/[_-]+/g, " ");
+}
+
+function normalizeLabelTexts(label: AiDatasetLabel): AiDatasetLabel {
+  return {
+    ...label,
+    expectedWarnings: label.expectedWarnings.map(koreanizeStoredText).filter(Boolean),
+    expectedCaption: koreanizeStoredText(label.expectedCaption),
+    expectedTitle: koreanizeStoredText(label.expectedTitle),
+    expectedDescription: koreanizeStoredText(label.expectedDescription),
+    notes: koreanizeStoredText(label.notes)
+  };
 }
 
 export function getAiReviewRules(): AiReviewRule[] {
@@ -239,15 +273,17 @@ export function getAiReviewRules(): AiReviewRule[] {
 }
 
 export function getAiReviewHistory(): AiReviewHistoryItem[] {
-  return readJsonFile<AiReviewHistoryItem[]>(HISTORY_REPORT_PATH, buildDefaultHistory());
+  const stored = readJsonFile<AiReviewHistoryItem[]>(HISTORY_REPORT_PATH, []);
+  return [...buildDefaultHistory(), ...stored];
 }
 
 export function applyAiReviewRules(label: AiDatasetLabel, analysis: AiImageAnalysisResult, rules = getAiReviewRules()) {
-  const filename = normalize(label.fileName);
+  const fileName = normalize(label.fileName);
+  const category = normalize(label.productCategory);
   const matched = rules.find((rule) => {
-    const categoryMatch = !rule.productCategory || rule.productCategory === label.productCategory;
-    const keywordMatch = rule.filenameIncludes.some((keyword) => filename.includes(normalize(keyword)));
-    return categoryMatch && keywordMatch;
+    const categoryMatch = !rule.productCategory || normalize(rule.productCategory) === category;
+    const fileMatch = rule.filenameIncludes.some((keyword) => fileName.includes(normalize(keyword)));
+    return categoryMatch && fileMatch;
   });
 
   if (!matched) return { finalRole: analysis.suggestedRole, finalSection: analysis.recommendedSection, appliedRule: undefined };
@@ -267,12 +303,12 @@ function reviewHintFor(item: {
   sectionMatch: boolean;
   appliedRule?: AiReviewRule;
 }) {
-  if (item.appliedRule) return `Operator rule applied: ${item.appliedRule.name}`;
-  if (item.status === "auto-approved" && item.roleMatch && item.sectionMatch) return "High confidence and label match. Safe to approve automatically.";
-  if (!item.roleMatch) return `Role mismatch: AI suggested ${item.analysis.suggestedRole}, label expects ${item.label.expectedRole}.`;
-  if (!item.sectionMatch) return `Section mismatch: AI suggested ${item.analysis.recommendedSection}, label expects ${item.label.expectedSection}.`;
-  if (item.analysis.warningMessage) return item.analysis.warningMessage;
-  return "Review image role and caption before sending to product draft.";
+  if (item.appliedRule) return `운영자 규칙 적용: ${item.appliedRule.name}`;
+  if (item.status === "auto-approved" && item.roleMatch && item.sectionMatch) return "신뢰도가 높고 라벨과 일치해 자동 승인해도 안전합니다.";
+  if (!item.roleMatch) return `역할 불일치: AI는 ${item.analysis.suggestedRole}, 라벨은 ${item.label.expectedRole}로 판단했습니다.`;
+  if (!item.sectionMatch) return `섹션 불일치: AI는 ${item.analysis.recommendedSection}, 라벨은 ${item.label.expectedSection}로 판단했습니다.`;
+  if (item.analysis.warningMessage) return koreanizeStoredText(item.analysis.warningMessage);
+  return "상품등록 초안으로 보내기 전 사진 역할과 캡션을 확인하세요.";
 }
 
 function buildDefaultHistory(): AiReviewHistoryItem[] {
@@ -287,7 +323,7 @@ function buildDefaultHistory(): AiReviewHistoryItem[] {
       correctedSection: "gallery",
       actor: "operator",
       createdAt: "2026-07-07T09:00:00.000Z",
-      reason: "Operator repeatedly corrected hand-held abalone photos to size comparison."
+      reason: "운영자가 손에 든 전복 사진을 반복해서 크기 비교로 수정했습니다."
     },
     {
       id: "history-icepack-001",
@@ -298,89 +334,71 @@ function buildDefaultHistory(): AiReviewHistoryItem[] {
       originalSection: "gallery",
       correctedSection: "packaging",
       actor: "operator",
+      createdAt: "2026-07-07T09:08:00.000Z",
+      reason: "아이스팩과 박스 이미지는 배송 신뢰 섹션에 더 적합합니다."
+    },
+    {
+      id: "history-gift-box-001",
+      imageId: "gift-package-001",
+      productCategory: "gift",
+      originalRole: "components",
+      correctedRole: "package",
+      originalSection: "components",
+      correctedSection: "packaging",
+      actor: "operator",
       createdAt: "2026-07-07T09:20:00.000Z",
-      reason: "Ice pack images support delivery trust, not detail gallery."
+      reason: "선물세트 박스 사진은 구성품보다 포장 고급감을 보여주는 데 적합합니다."
     }
   ];
+}
+
+function queueItemFrom(label: AiDatasetLabel, analysis: AiImageAnalysisResult, index: number, realLabel?: AiRealDatasetLabel, metadata?: AiRealDatasetMetadata): AiReviewQueueItem {
+  const ruled = applyAiReviewRules(label, analysis);
+  const tier = getConfidenceTier(analysis.confidence);
+  const roleMatch = ruled.finalRole === label.expectedRole || (label.expectedRole === "gallery" && ruled.finalSection === "gallery");
+  const sectionMatch = ruled.finalSection === label.expectedSection;
+  const status = realLabel?.reviewed
+    ? realLabel.approved
+      ? "auto-approved"
+      : "corrected"
+    : tier.status;
+
+  return {
+    id: `${label.imageId}-${index}`,
+    label,
+    analysis: { ...analysis, suggestedRole: ruled.finalRole, recommendedSection: ruled.finalSection },
+    imageSrc: metadata ? `/api/admin/ai/dataset-image?category=${encodeURIComponent(metadata.category)}&file=${encodeURIComponent(metadata.fileName)}` : fixtureImage(label.imageId),
+    realLabel,
+    metadata,
+    finalRole: ruled.finalRole,
+    finalSection: ruled.finalSection,
+    status,
+    severity: tier.severity,
+    confidenceTier: tier.label,
+    appliedRule: ruled.appliedRule,
+    reviewHint: reviewHintFor({ analysis, label, status, roleMatch, sectionMatch, appliedRule: ruled.appliedRule }),
+    correctionSuggested: !roleMatch || !sectionMatch || Boolean(ruled.appliedRule)
+  };
 }
 
 export function buildAiReviewQueue(): AiReviewQueueItem[] {
   const realItems = readRealDatasetItems("abalone").filter((item) => item.metadata && item.label);
   if (realItems.length) {
-    const rules = getAiReviewRules();
-    return realItems.map((item) => {
-      const label = realLabelToDatasetLabel(item.label!);
+    return realItems.map((item, index) => {
+      const label = normalizeLabelTexts(realLabelToDatasetLabel(item.label!));
       const analysis = metadataToAnalysis(item.metadata!);
-      const tier = getConfidenceTier(analysis.confidence);
-      const ruled = applyAiReviewRules(label, analysis, rules);
-      const roleMatch = ruled.finalRole === label.expectedRole || (label.expectedRole === "gallery" && ruled.finalSection === "gallery");
-      const sectionMatch = ruled.finalSection === label.expectedSection;
-      const correctionSuggested = !roleMatch || !sectionMatch;
-      const status: AiReviewStatus = item.label!.approved
-        ? "auto-approved"
-        : item.label!.reviewed
-          ? "corrected"
-          : correctionSuggested
-            ? analysis.confidence >= 95
-              ? "misclassified"
-              : tier.status
-            : tier.status;
-
-      return {
-        id: `review-real-${label.imageId}`,
-        label,
-        analysis,
-        imageSrc: analysis.imageUrl,
-        realLabel: item.label!,
-        metadata: item.metadata!,
-        finalRole: ruled.finalRole,
-        finalSection: ruled.finalSection,
-        status,
-        severity: status === "misclassified" ? "red" : tier.severity,
-        confidenceTier: tier.label,
-        appliedRule: ruled.appliedRule,
-        reviewHint: reviewHintFor({ analysis, label, status, roleMatch, sectionMatch, appliedRule: ruled.appliedRule }),
-        correctionSuggested
-      };
+      return queueItemFrom(label, analysis, index, item.label!, item.metadata!);
     });
   }
 
-  const labels = readAiDatasets().flatMap((dataset) => dataset.labels);
+  const labels = readAiDatasets().flatMap((dataset) => dataset.labels).map(normalizeLabelTexts);
   const inputs = labels.map(labelToInput);
   const predictions = analyzeImagesWithMockEngine(inputs);
-  const rules = getAiReviewRules();
-
-  return labels.map((label, index) => {
-    const analysis = predictions[index];
-    const tier = getConfidenceTier(analysis.confidence);
-    const ruled = applyAiReviewRules(label, analysis, rules);
-    const roleMatch = ruled.finalRole === label.expectedRole || (label.expectedRole === "gallery" && ruled.finalSection === "gallery");
-    const sectionMatch = ruled.finalSection === label.expectedSection;
-    const correctionSuggested = !roleMatch || !sectionMatch;
-    const status: AiReviewStatus = correctionSuggested
-      ? analysis.confidence >= 95
-        ? "misclassified"
-        : tier.status
-      : tier.status;
-
-    return {
-      id: `review-${label.imageId}`,
-      label,
-      analysis,
-      finalRole: ruled.finalRole,
-      finalSection: ruled.finalSection,
-      status,
-      severity: status === "misclassified" ? "red" : tier.severity,
-      confidenceTier: tier.label,
-      appliedRule: ruled.appliedRule,
-      reviewHint: reviewHintFor({ analysis, label, status, roleMatch, sectionMatch, appliedRule: ruled.appliedRule }),
-      correctionSuggested
-    };
-  });
+  return labels.map((label, index) => queueItemFrom(label, predictions[index], index));
 }
 
-function percent(value: number, total: number) {
-  return total ? Math.round((value / total) * 1000) / 10 : 0;
+function percent(part: number, total: number) {
+  return total ? Math.round((part / total) * 100) : 0;
 }
 
 export function scoreAiReviewCenter(queue = buildAiReviewQueue()): AiReviewMetrics {
@@ -389,7 +407,7 @@ export function scoreAiReviewCenter(queue = buildAiReviewQueue()): AiReviewMetri
   const reviewRecommended = queue.filter((item) => item.status === "review-recommended").length;
   const needsReview = queue.filter((item) => item.status === "needs-review").length;
   const operatorRequired = queue.filter((item) => item.status === "operator-required").length;
-  const corrected = queue.filter((item) => item.appliedRule).length;
+  const corrected = queue.filter((item) => item.correctionSuggested || item.status === "corrected").length;
   const misclassified = queue.filter((item) => item.status === "misclassified").length;
   const averageConfidence = total ? Math.round(queue.reduce((sum, item) => sum + item.analysis.confidence, 0) / total) : 0;
 
@@ -403,8 +421,8 @@ export function scoreAiReviewCenter(queue = buildAiReviewQueue()): AiReviewMetri
     misclassified,
     averageConfidence,
     autoApprovalRate: percent(autoApproved, total),
-    operatorCorrectionRate: percent(queue.filter((item) => item.correctionSuggested).length, total),
-    ruleUsageRate: percent(corrected, total),
+    operatorCorrectionRate: percent(needsReview + operatorRequired, total),
+    ruleUsageRate: percent(queue.filter((item) => item.appliedRule).length, total),
     averageReviewTimeSeconds: Math.max(18, Math.round(90 - averageConfidence * 0.55 + needsReview * 1.5))
   };
 }
@@ -412,25 +430,25 @@ export function scoreAiReviewCenter(queue = buildAiReviewQueue()): AiReviewMetri
 export function getRuleSuggestions(history = getAiReviewHistory()): AiReviewRule[] {
   const grouped = new Map<string, AiReviewHistoryItem[]>();
   for (const item of history) {
-    const key = `${item.productCategory}:${item.correctedRole}:${item.correctedSection}`;
+    const key = `${item.productCategory}-${item.correctedRole}-${item.correctedSection}`;
     grouped.set(key, [...(grouped.get(key) ?? []), item]);
   }
 
   return [...grouped.entries()]
     .filter(([, items]) => items.length >= 2)
     .map(([key, items], index) => {
-      const [category, role, section] = key.split(":");
+      const [productCategory, role, section] = key.split("-");
       return {
-        id: `suggested-rule-${index + 1}`,
-        name: `Suggested rule for ${category} ${role}`,
-        productCategory: category,
-        filenameIncludes: [role === "sizeComparison" ? "hand" : role === "shipping" ? "ice" : role],
+        id: `suggested-rule-${index}`,
+        name: `${productCategory} ${role} 반복 수정 규칙 후보`,
+        productCategory,
+        filenameIncludes: [role, section],
         targetRole: role as AiImageRole,
         targetSection: section as AiImageRecommendedSection,
         priority: 70,
-        source: "system",
+        source: "operator",
         usageCount: items.length,
-        description: `${items.length} similar operator corrections were found. Review and promote this rule if it matches operations.`
+        description: `${items.length}건의 유사한 운영자 수정이 발견되었습니다. 같은 패턴이면 운영 규칙으로 등록할 수 있습니다.`
       };
     });
 }
@@ -438,27 +456,31 @@ export function getRuleSuggestions(history = getAiReviewHistory()): AiReviewRule
 export function getAiReviewCenterState(): AiReviewCenterState {
   const queue = buildAiReviewQueue();
   const metrics = scoreAiReviewCenter(queue);
-  const rules = getAiReviewRules();
   const history = getAiReviewHistory();
-  const ruleSuggestions = getRuleSuggestions(history);
-  const categories = [...new Set(queue.map((item) => item.label.productCategory))];
+  const rules = getAiReviewRules();
+  const categoryMap = new Map<string, AiReviewQueueItem[]>();
+
+  for (const item of queue) {
+    const list = categoryMap.get(item.label.productCategory) ?? [];
+    list.push(item);
+    categoryMap.set(item.label.productCategory, list);
+  }
+
+  const roleAccuracyByCategory = [...categoryMap.entries()].map(([category, items]) => ({
+    category,
+    total: items.length,
+    autoApproved: items.filter((item) => item.status === "auto-approved").length,
+    corrected: items.filter((item) => item.correctionSuggested).length,
+    averageConfidence: items.length ? Math.round(items.reduce((sum, item) => sum + item.analysis.confidence, 0) / items.length) : 0
+  }));
 
   return {
     queue,
     rules,
     history,
-    ruleSuggestions,
+    ruleSuggestions: getRuleSuggestions(history),
     metrics,
-    roleAccuracyByCategory: categories.map((category) => {
-      const items = queue.filter((item) => item.label.productCategory === category);
-      return {
-        category,
-        total: items.length,
-        autoApproved: items.filter((item) => item.status === "auto-approved").length,
-        corrected: items.filter((item) => item.appliedRule).length,
-        averageConfidence: items.length ? Math.round(items.reduce((sum, item) => sum + item.analysis.confidence, 0) / items.length) : 0
-      };
-    }),
+    roleAccuracyByCategory,
     promptVersions: PROMPT_VERSIONS
   };
 }
@@ -466,25 +488,25 @@ export function getAiReviewCenterState(): AiReviewCenterState {
 export function writeAiReviewReport() {
   ensureReportRoot();
   const state = getAiReviewCenterState();
-  const payload = {
-    generatedAt: new Date().toISOString(),
-    metrics: state.metrics,
-    rules: state.rules,
-    ruleSuggestions: state.ruleSuggestions,
-    queue: state.queue.map((item) => ({
-      id: item.id,
-      imageId: item.label.imageId,
-      fileName: item.label.fileName,
-      productCategory: item.label.productCategory,
-      status: item.status,
-      confidence: item.analysis.confidence,
-      finalRole: item.finalRole,
-      finalSection: item.finalSection,
-      appliedRule: item.appliedRule?.id,
-      reviewHint: item.reviewHint
-    }))
-  };
-  const reportPath = path.join(REVIEW_REPORT_ROOT, `review-center-${new Date().toISOString().replace(/[:.]/g, "-")}.json`);
-  fs.writeFileSync(reportPath, JSON.stringify(payload, null, 2));
-  return { reportPath, state };
+  const filePath = path.join(REVIEW_REPORT_ROOT, `review-center-score-${new Date().toISOString().replace(/[:.]/g, "-")}.json`);
+  fs.writeFileSync(
+    filePath,
+    `${JSON.stringify(
+      {
+        generatedAt: new Date().toISOString(),
+        metrics: state.metrics,
+        queue: state.queue.map((item) => ({
+          id: item.id,
+          status: item.status,
+          confidence: item.analysis.confidence,
+          finalRole: item.finalRole,
+          finalSection: item.finalSection,
+          reviewHint: item.reviewHint
+        }))
+      },
+      null,
+      2
+    )}\n`
+  );
+  return filePath;
 }

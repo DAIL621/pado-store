@@ -137,18 +137,20 @@ async function openAiAnalyze({ dataUrl, fileName, category }) {
   const provider = String(process.env.PADO_AI_IMAGE_PROVIDER || "mock").toLowerCase();
   if (!apiKey || provider !== "openai") {
     throw new Error(
-      `OpenAI provider is not configured. provider=${provider || "(empty)"}, hasOpenAiApiKey=${Boolean(apiKey)}`
+      `OpenAI Provider 설정이 필요합니다. provider=${provider || "(empty)"}, hasOpenAiApiKey=${Boolean(apiKey)}`
     );
   }
-  if (dataUrl.length > MAX_OPENAI_DATA_URL_LENGTH) throw new Error("Image is too large for safe OpenAI data URL analysis.");
+  if (dataUrl.length > MAX_OPENAI_DATA_URL_LENGTH) throw new Error("이미지가 안전한 OpenAI data URL 분석 기준보다 큽니다.");
 
   const prompt = [
-    "Analyze this seafood product image for PADO STORY.",
-    "Return strict JSON with: suggestedRole, recommendedSection, confidence, qualityScore, title, description, caption, warningMessage, reasoningSummary.",
-    "Roles: hero, origin, process, freshness, sizeComparison, package, shipping, components, cooking, detail, review, unknown.",
-    "Sections: heroImages, journey, gallery, packaging, recipes, components, process, extraSections.",
-    "Do not claim origin, harvest date, domestic origin, or same-day shipping unless visible.",
-    `Category: ${category}. File name: ${fileName}.`
+    "파도스토리 수산물 상품 사진을 분석하세요.",
+    "응답의 title, description, caption, warningMessage, reasoningSummary는 반드시 자연스러운 한국어로 작성하세요.",
+    "엄격한 JSON만 반환하세요. 키: suggestedRole, recommendedSection, confidence, qualityScore, title, description, caption, warningMessage, reasoningSummary.",
+    "역할: hero, origin, process, freshness, sizeComparison, package, shipping, components, cooking, detail, review, unknown.",
+    "섹션: heroImages, journey, gallery, packaging, recipes, components, process, extraSections.",
+    "사진에 보이지 않는 원산지, 조업일, 국내산 여부, 당일출고 여부는 단정하지 마세요.",
+    "제목과 설명은 운영자가 바로 상세페이지 초안에 쓸 수 있을 정도로 짧고 신뢰감 있게 작성하세요.",
+    `상품군: ${category}. 파일명: ${fileName}.`
   ].join("\n");
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -173,10 +175,10 @@ async function openAiAnalyze({ dataUrl, fileName, category }) {
     })
   });
 
-  if (!response.ok) throw new Error(`OpenAI request failed: ${response.status}`);
+  if (!response.ok) throw new Error(`OpenAI 요청 실패: ${response.status}`);
   const body = await response.json();
   const content = body?.choices?.[0]?.message?.content;
-  if (!content) throw new Error("OpenAI response was empty.");
+  if (!content) throw new Error("OpenAI 응답이 비어 있습니다.");
   return JSON.parse(content);
 }
 
@@ -298,7 +300,7 @@ for (let index = 0; index < images.length; index += 1) {
     fallbackReason = error instanceof Error ? error.message : "unknown";
     analysis = {
       ...fallback,
-      reasoningSummary: `${fallback.reasoningSummary} Fallback reason: ${fallbackReason}`
+      reasoningSummary: `${fallback.reasoningSummary} 대체 분석 사유: ${fallbackReason}`
     };
   }
 

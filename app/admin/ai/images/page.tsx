@@ -17,10 +17,9 @@ export default async function AdminAiImagesPage() {
       admin={{ name: adminSession.profile.name, email: adminSession.user.email, role: adminSession.profile.role }}
       active="ai"
       title="AI 운영센터"
-      subtitle="상품 사진을 분석해 상세페이지 자동 생성에 활용합니다"
+      subtitle="상품 사진을 분석하고 상세페이지 자동 생성에 활용합니다."
     >
       <AdminAiImageAnalyzer />
     </AdminLayout>
   );
 }
-
