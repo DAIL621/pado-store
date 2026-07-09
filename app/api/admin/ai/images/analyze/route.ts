@@ -62,7 +62,13 @@ export async function POST(request: Request) {
     ok: true,
     results: analysis.results,
     provider: analysis.provider,
+    resultProvider: analysis.resultProvider || analysis.provider,
     fallbackUsed: analysis.fallbackUsed,
-    fallbackReason: analysis.fallbackReason
+    fallbackReason: analysis.fallbackReason,
+    envStatus: {
+      padoAiImageProvider: process.env.PADO_AI_IMAGE_PROVIDER || "",
+      hasOpenAiApiKey: Boolean(process.env.OPENAI_API_KEY),
+      padoAiImageModel: process.env.PADO_AI_IMAGE_MODEL || ""
+    }
   });
 }

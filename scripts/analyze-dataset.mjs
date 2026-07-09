@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
+import { loadProjectEnv } from "./lib/load-next-env.mjs";
 
 const root = process.cwd();
+const envStatus = loadProjectEnv(root);
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const MAX_OPENAI_DATA_URL_LENGTH = 8 * 1024 * 1024;
 
@@ -133,7 +135,11 @@ function mockAnalyze({ fileName, index, category }) {
 async function openAiAnalyze({ dataUrl, fileName, category }) {
   const apiKey = process.env.OPENAI_API_KEY;
   const provider = String(process.env.PADO_AI_IMAGE_PROVIDER || "mock").toLowerCase();
-  if (!apiKey || provider !== "openai") throw new Error("OpenAI provider is not configured.");
+  if (!apiKey || provider !== "openai") {
+    throw new Error(
+      `OpenAI provider is not configured. provider=${provider || "(empty)"}, hasOpenAiApiKey=${Boolean(apiKey)}`
+    );
+  }
   if (dataUrl.length > MAX_OPENAI_DATA_URL_LENGTH) throw new Error("Image is too large for safe OpenAI data URL analysis.");
 
   const prompt = [
@@ -279,6 +285,7 @@ for (let index = 0; index < images.length; index += 1) {
   const fallback = mockAnalyze({ fileName, index, category });
   let provider = "mock";
   let fallbackUsed = true;
+  let fallbackReason = "";
   let analysis = fallback;
 
   try {
@@ -288,14 +295,15 @@ for (let index = 0; index < images.length; index += 1) {
     provider = "openai";
     fallbackUsed = false;
   } catch (error) {
+    fallbackReason = error instanceof Error ? error.message : "unknown";
     analysis = {
       ...fallback,
-      reasoningSummary: `${fallback.reasoningSummary} Fallback reason: ${error instanceof Error ? error.message : "unknown"}`
+      reasoningSummary: `${fallback.reasoningSummary} Fallback reason: ${fallbackReason}`
     };
   }
 
   if (fallbackUsed) fallbackCount += 1;
-  rawResults.push({ fileName, provider, fallbackUsed, analysis });
+  rawResults.push({ fileName, provider, fallbackUsed, fallbackReason, analysis });
 }
 
 const ranked = assignHeroRanks(rawResults.map((item) => item.analysis));
@@ -319,6 +327,12 @@ const report = {
   totalImages: images.length,
   successCount: metadataResults.length,
   fallbackCount,
+  envStatus,
+  providerIntent: process.env.PADO_AI_IMAGE_PROVIDER || "mock",
+  fallbackReasons: rawResults
+    .filter((item) => item.fallbackUsed)
+    .slice(0, 10)
+    .map((item) => ({ fileName: item.fileName, reason: item.fallbackReason })),
   roleCounts: roleCounts(metadataResults),
   averageConfidence: Math.round(metadataResults.reduce((sum, item) => sum + item.confidence, 0) / metadataResults.length),
   averageQualityScore: Math.round(metadataResults.reduce((sum, item) => sum + item.qualityScore, 0) / metadataResults.length),

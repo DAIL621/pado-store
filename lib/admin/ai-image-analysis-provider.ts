@@ -13,6 +13,7 @@ export type AiImageProviderName = "mock" | "openai";
 export type AiImageAnalysisProviderResponse = {
   results: AiImageAnalysisResult[];
   provider: AiImageProviderName;
+  resultProvider?: AiImageProviderName;
   fallbackUsed: boolean;
   fallbackReason?: string;
 };
@@ -238,7 +239,8 @@ export async function analyzeImagesWithSelectedProvider(inputs: AiImageAnalysisI
         warningMessage: result.warningMessage || "실제 AI 분석에 실패하여 기본 분석으로 대체했습니다.",
         reasoningSummary: "OpenAI Vision 호출 실패로 파일명/순서 기반 Mock 분석을 사용했습니다."
       })),
-      provider: "mock",
+      provider: provider.name,
+      resultProvider: "mock",
       fallbackUsed: true,
       fallbackReason: error instanceof Error ? error.message : "Unknown OpenAI Vision failure"
     };

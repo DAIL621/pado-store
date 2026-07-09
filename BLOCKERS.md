@@ -199,3 +199,11 @@ alter table products add column if not exists detail_json jsonb not null default
 - Local OpenAI Vision provider was not configured, so the 30-image abalone analysis used safe mock/fallback analysis.
 - File-backed metadata/labels are suitable for local review, but production should migrate labels and review history to Supabase.
 - Generated labels are AI drafts. They still need human review before they become trusted training/evaluation labels.
+
+## 2026-07-09 OpenAI Vision Quota
+
+- `.env.local` is loaded correctly for AI verification scripts.
+- `PADO_AI_IMAGE_PROVIDER=openai`, `OPENAI_API_KEY` presence, and `PADO_AI_IMAGE_MODEL=gpt-4o-mini` are visible to both the script and API runtime.
+- `pnpm run verify:ai-vision-provider` now selects `provider=openai`, but OpenAI returns HTTP 429 quota exceeded, so the app safely uses Mock fallback results.
+- `pnpm run analyze:dataset -- --category=abalone` attempted OpenAI analysis for 30 abalone images and returned `fallbackCount=30` because every OpenAI request returned 429.
+- To reach `fallbackUsed=false` and `fallbackCount` near 0, the OpenAI account billing/quota must be enabled or a valid key with available quota must be supplied.
