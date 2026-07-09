@@ -1,0 +1,18 @@
+{
+  "imageId": "abalone-030",
+  "fileName": "030.png",
+  "productCategory": "abalone",
+  "expectedRole": "freshness",
+  "expectedSection": "gallery",
+  "expectedHeroRank": 3,
+  "expectedQualityScore": 82,
+  "expectedWarnings": [],
+  "expectedCaption": "전복의 상태와 질감을 보여줍니다.",
+  "expectedTitle": "신선도 확인 사진",
+  "expectedDescription": "질감과 상태를 가까이에서 확인할 수 있는 사진입니다.",
+  "reviewed": false,
+  "approved": false,
+  "reviewerNotes": "",
+  "createdAt": "2026-07-09T02:03:14.142Z",
+  "updatedAt": "2026-07-09T02:03:14.142Z"
+}

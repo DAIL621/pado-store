@@ -1896,3 +1896,18 @@
 - Added report output location:
   - `reports/ai-review-center`
 - Added `AI_REVIEW_CENTER.md` and `RULE_ENGINE_GUIDE.md`.
+
+## 2026-07-09 Real Abalone Dataset Pipeline
+
+- Connected 30 real abalone images under `datasets/abalone/images`.
+- Added `pnpm run analyze:dataset -- --category=abalone`.
+- Generated 30 metadata JSON files under `datasets/abalone/metadata`.
+- Generated 30 label draft JSON files under `datasets/abalone/labels`.
+- Generated `reports/ai-analysis/abalone-latest.json`.
+- Added `/api/admin/ai/dataset-image` for admin-only dataset image thumbnails.
+- Added `/api/admin/ai/review/update-label` for file-backed label review updates.
+- Updated `/admin/ai/review` to read real dataset metadata/labels before fixture fallback.
+- Updated `/admin/ai/dataset` to show real abalone dataset status.
+- Captured:
+  - `screenshots/ai-review-abalone-real.png`
+  - `screenshots/ai-dataset-abalone-real.png`

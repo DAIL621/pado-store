@@ -1,0 +1,18 @@
+{
+  "imageId": "abalone-018",
+  "fileName": "018.png",
+  "productCategory": "abalone",
+  "expectedRole": "hero",
+  "expectedSection": "heroImages",
+  "expectedHeroRank": 1,
+  "expectedQualityScore": 86,
+  "expectedWarnings": [],
+  "expectedCaption": "첫 화면 대표 이미지 후보입니다.",
+  "expectedTitle": "대표 상품 사진",
+  "expectedDescription": "상품이 가장 크게 보이는 대표 후보 사진입니다.",
+  "reviewed": true,
+  "approved": false,
+  "reviewerNotes": "verify-real-abalone-dataset 2026-07-09T02:04:00.128Z",
+  "createdAt": "2026-07-09T02:03:14.136Z",
+  "updatedAt": "2026-07-09T02:04:00.524Z"
+}

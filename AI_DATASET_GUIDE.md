@@ -111,3 +111,37 @@ The Review Center compares:
 - applied operator rule
 
 This makes it possible to test whether operator rules improve the review queue before using real production photos.
+
+## Real Abalone Images
+
+Actual abalone images should be placed in:
+
+```text
+datasets/abalone/images
+```
+
+Supported extensions:
+
+- `.jpg`
+- `.jpeg`
+- `.png`
+- `.webp`
+
+Run:
+
+```bash
+pnpm run analyze:dataset -- --category=abalone
+```
+
+The command creates:
+
+- `datasets/abalone/metadata/{image}.json`
+- `datasets/abalone/labels/{image}.json`
+- `reports/ai-analysis/abalone-latest.json`
+
+Initial labels are drafts:
+
+- `reviewed=false`
+- `approved=false`
+
+The Review Center can update those label JSON files.

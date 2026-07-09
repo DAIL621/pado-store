@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminAiReviewCard } from "@/components/admin/AdminAiReviewCard";
 import { getAdminSession } from "@/lib/auth/admin";
 import { getAiReviewCenterState, getConfidenceTier, type AiReviewStatus } from "@/lib/admin/ai-review-center";
 
@@ -57,7 +58,7 @@ export default async function AdminAiReviewPage() {
           <article>
             <span>Total queue</span>
             <strong>{state.metrics.total}</strong>
-            <em>fixture-backed images</em>
+            <em>real dataset first, fixture fallback</em>
           </article>
           <article>
             <span>Auto approval</span>
@@ -108,41 +109,31 @@ export default async function AdminAiReviewPage() {
           </div>
           <div className="admin-ai-result-list">
             {state.queue.map((item) => (
-              <article className="admin-ai-result-card" id={`queue-${item.status}`} key={item.id}>
-                <div className="admin-ai-result-image">
-                  <div className="admin-ai-placeholder-image">{item.analysis.confidence}%</div>
-                  <em className={`admin-ai-status-pill ${statusClass(item.status)}`}>{STATUS_LABELS[item.status]}</em>
-                </div>
-                <div className="admin-ai-result-fields">
-                  <div>
-                    <strong>{item.label.fileName}</strong>
-                    <span>
-                      {item.label.productCategory} / confidence {item.analysis.confidence}% / quality {item.analysis.qualityScore}
-                    </span>
-                  </div>
-                  <p className="admin-ai-reasoning">{item.reviewHint}</p>
-                  <div className="admin-ai-review-row">
-                    <label>
-                      AI role
-                      <input readOnly value={`${item.analysis.suggestedRole} -> ${item.finalRole}`} />
-                    </label>
-                    <label>
-                      Section
-                      <input readOnly value={`${item.analysis.recommendedSection} -> ${item.finalSection}`} />
-                    </label>
-                    <label>
-                      Human label
-                      <input readOnly value={`${item.label.expectedRole} / ${item.label.expectedSection}`} />
-                    </label>
-                  </div>
-                  <div className="admin-ai-action-row compact">
-                    <button type="button" disabled>Approve</button>
-                    <button type="button" disabled>Change role</button>
-                    <button type="button" disabled>Hold</button>
-                    <span>{item.appliedRule ? `Rule: ${item.appliedRule.name}` : "No operator rule"}</span>
-                  </div>
-                </div>
-              </article>
+              <div id={`queue-${item.status}`} key={item.id}>
+                <AdminAiReviewCard
+                  category={item.label.productCategory}
+                  fileName={item.label.fileName}
+                  imageSrc={item.imageSrc}
+                  statusLabel={STATUS_LABELS[item.status]}
+                  statusClassName={statusClass(item.status)}
+                  confidence={item.analysis.confidence}
+                  qualityScore={item.analysis.qualityScore}
+                  reviewHint={item.reviewHint}
+                  aiRole={item.analysis.suggestedRole}
+                  aiSection={item.analysis.recommendedSection}
+                  expectedRole={item.label.expectedRole === "gallery" ? "detail" : item.label.expectedRole}
+                  expectedSection={item.label.expectedSection}
+                  expectedHeroRank={item.label.expectedHeroRank}
+                  expectedQualityScore={item.label.expectedQualityScore}
+                  expectedTitle={item.label.expectedTitle}
+                  expectedCaption={item.label.expectedCaption}
+                  expectedDescription={item.label.expectedDescription}
+                  reviewed={item.realLabel?.reviewed}
+                  approved={item.realLabel?.approved}
+                  reviewerNotes={item.realLabel?.reviewerNotes}
+                  appliedRule={item.appliedRule?.name}
+                />
+              </div>
             ))}
           </div>
         </section>

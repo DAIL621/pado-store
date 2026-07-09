@@ -1,0 +1,18 @@
+{
+  "imageId": "abalone-eca084ebb3b520ec84a0ebb38420ec9e",
+  "fileName": "전복 선별 작업.png",
+  "filePath": "datasets/abalone/images/전복 선별 작업.png",
+  "category": "abalone",
+  "provider": "mock",
+  "fallbackUsed": true,
+  "suggestedRole": "process",
+  "recommendedSection": "process",
+  "confidence": 83,
+  "qualityScore": 80,
+  "title": "선별 작업 사진",
+  "description": "선별, 손질, 작업 과정을 보여주는 사진입니다.",
+  "caption": "상품 준비 과정을 확인할 수 있습니다.",
+  "warningMessage": "",
+  "reasoningSummary": "파일명, 업로드 순서, 상품 카테고리 기반 fallback 분석 결과입니다. Fallback reason: OpenAI provider is not configured.",
+  "analyzedAt": "2026-07-09T02:03:14.149Z"
+}

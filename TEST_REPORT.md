@@ -2065,3 +2065,50 @@
   - Average confidence: `92%`
   - Misclassified: `0`
   - Confidence accuracy: `100%`
+
+## 2026-07-09 Real Abalone Dataset Pipeline Verification
+
+- Source:
+  - `datasets/abalone/images`
+- Actual images read:
+  - `30`
+- Generated metadata:
+  - `30`
+- Generated labels:
+  - `30`
+- Latest report:
+  - `reports/ai-analysis/abalone-latest.json`
+- Provider:
+  - fallback/mock used for `30` images because local OpenAI Vision provider was not configured.
+- Classification result:
+  - `hero`: 1
+  - `freshness`: 5
+  - `detail`: 23
+  - `process`: 1
+- Hero Top 5:
+  - `018.png`
+  - `029.png`
+  - `030.png`
+  - `ㄴ.png`
+  - `ㄹ.png`
+- Average confidence:
+  - `78`
+- Average quality score:
+  - `77`
+- Needs review:
+  - `0`
+- Label update API:
+  - Passed. First label was updated with `reviewed=true` and reviewer notes.
+- Screenshots:
+  - `screenshots/ai-review-abalone-real.png`
+  - `screenshots/ai-dataset-abalone-real.png`
+- Verification:
+  - `pnpm run build`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run analyze:dataset -- --category=abalone`: passed
+  - `pnpm run verify:real-abalone-dataset`: passed
+  - `pnpm run verify:admin`: passed after one transient retry
+  - `pnpm run verify:ai-operation-center`: passed
+  - `pnpm run verify:ai-draft-flow`: passed
+  - `pnpm run verify:ai-review-center`: passed
+  - `pnpm run verify:ai-dataset`: passed

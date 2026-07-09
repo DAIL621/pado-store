@@ -1,0 +1,49 @@
+{
+  "category": "abalone",
+  "analyzedAt": "2026-07-09T02:03:14.175Z",
+  "totalImages": 30,
+  "successCount": 30,
+  "fallbackCount": 30,
+  "roleCounts": {
+    "hero": 1,
+    "freshness": 5,
+    "detail": 23,
+    "process": 1
+  },
+  "averageConfidence": 78,
+  "averageQualityScore": 77,
+  "heroTop5": [
+    {
+      "fileName": "018.png",
+      "heroRank": 1,
+      "confidence": 86,
+      "qualityScore": 86
+    },
+    {
+      "fileName": "029.png",
+      "heroRank": 2,
+      "confidence": 82,
+      "qualityScore": 82
+    },
+    {
+      "fileName": "030.png",
+      "heroRank": 3,
+      "confidence": 82,
+      "qualityScore": 82
+    },
+    {
+      "fileName": "ㄴ.png",
+      "heroRank": 4,
+      "confidence": 82,
+      "qualityScore": 82
+    },
+    {
+      "fileName": "ㄹ.png",
+      "heroRank": 5,
+      "confidence": 82,
+      "qualityScore": 82
+    }
+  ],
+  "needsReview": [],
+  "warnings": []
+}

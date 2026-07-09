@@ -85,3 +85,33 @@ pnpm run score:review-center
 3. Promote repeated corrections into rules through an approval workflow.
 4. Compare OpenAI Vision output against reviewed labels.
 5. Feed confirmed rules back into the image analysis API.
+
+## Real Abalone Dataset Connection
+
+The Review Center now reads real analyzed files when available.
+
+Source:
+
+- `datasets/abalone/images`
+- `datasets/abalone/metadata`
+- `datasets/abalone/labels`
+
+Analyze command:
+
+```bash
+pnpm run analyze:dataset -- --category=abalone
+```
+
+Review route:
+
+- `/admin/ai/review`
+
+Operator actions now save back to label JSON through:
+
+- `POST /api/admin/ai/review/update-label`
+
+Review history path:
+
+- `reports/ai-review-history`
+
+V1 remains file-based. Supabase persistence is the next production step.

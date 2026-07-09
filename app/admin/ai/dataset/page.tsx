@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { getAdminSession } from "@/lib/auth/admin";
 import { readAiDatasets, scoreAiDataset } from "@/lib/admin/ai-dataset";
+import { getRealDatasetStatus, readRealDatasetItems } from "@/lib/admin/ai-real-dataset";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,8 @@ export default async function AdminAiDatasetPage() {
 
   const datasets = readAiDatasets();
   const evaluation = scoreAiDataset(datasets);
+  const abaloneStatus = getRealDatasetStatus("abalone");
+  const abaloneItems = readRealDatasetItems("abalone");
 
   return (
     <AdminLayout
@@ -39,11 +42,72 @@ export default async function AdminAiDatasetPage() {
             </div>
           </div>
           <div className="admin-ops-grid">
+            <article className="admin-ops-card ready">
+              <span>abalone real images</span>
+              <strong>{abaloneStatus.imageCount} images</strong>
+              <p>
+                metadata {abaloneStatus.metadataCount} / labels {abaloneStatus.labelCount} / reviewed {abaloneStatus.reviewedCount} / approved {abaloneStatus.approvedCount}
+              </p>
+            </article>
             {datasets.map((dataset) => (
               <article className="admin-ops-card" key={dataset.category}>
                 <span>{dataset.category}</span>
                 <strong>{dataset.labels.length} labels</strong>
                 <p>images / labels / metadata 구조 준비 완료</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="admin-panel">
+          <div>
+            <h2>Real Abalone Dataset Status</h2>
+            <span className="admin-message">`datasets/abalone/images`의 실제 사진과 metadata/label 생성 상태를 확인합니다.</span>
+          </div>
+          <div className="admin-ai-summary">
+            <strong>
+              Images {abaloneStatus.imageCount} · Metadata {abaloneStatus.metadataCount} · Labels {abaloneStatus.labelCount}
+            </strong>
+            <div>
+              <span>Reviewed {abaloneStatus.reviewedCount}</span>
+              <span>Approved {abaloneStatus.approvedCount}</span>
+              <span>Missing metadata {abaloneStatus.missingMetadata.length}</span>
+              <span>Missing labels {abaloneStatus.missingLabels.length}</span>
+            </div>
+          </div>
+          <div className="admin-ai-result-list">
+            {abaloneItems.map((item) => (
+              <article className="admin-ai-result-card" key={item.fileName}>
+                <div className="admin-ai-result-image">
+                  <img
+                    src={`/api/admin/ai/dataset-image?category=abalone&file=${encodeURIComponent(item.fileName)}`}
+                    alt={item.fileName}
+                  />
+                </div>
+                <div className="admin-ai-result-fields">
+                  <div>
+                    <strong>{item.fileName}</strong>
+                    <span>
+                      metadata {item.metadata ? "ok" : "missing"} / label {item.label ? "ok" : "missing"}
+                    </span>
+                  </div>
+                  <label>
+                    AI Role
+                    <input readOnly value={item.metadata?.suggestedRole || "not analyzed"} />
+                  </label>
+                  <label>
+                    Confidence
+                    <input readOnly value={item.metadata?.confidence ?? "-"} />
+                  </label>
+                  <label>
+                    Reviewed
+                    <input readOnly value={item.label?.reviewed ? "true" : "false"} />
+                  </label>
+                  <label>
+                    Approved
+                    <input readOnly value={item.label?.approved ? "true" : "false"} />
+                  </label>
+                </div>
               </article>
             ))}
           </div>

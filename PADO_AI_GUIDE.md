@@ -211,3 +211,18 @@ Review Center output should be judged by:
 - Rule usage rate
 - Average confidence
 - Misclassification count
+
+## Real Image Pipeline Rule
+
+Fixture success is not enough for production AI quality.
+
+For real product photos:
+
+1. Put images in `datasets/{category}/images`.
+2. Run `pnpm run analyze:dataset -- --category={category}`.
+3. Review generated metadata and label drafts.
+4. Open `/admin/ai/review`.
+5. Approve, hold, or correct the label.
+6. Keep the corrected label JSON as the next training/evaluation source.
+
+Current V1 stores this on disk. The next step is Supabase-backed persistence.

@@ -193,3 +193,9 @@ alter table products add column if not exists detail_json jsonb not null default
 - Review queue, rule history, and rule suggestions are file/fixture-backed in V1.
 - Production use requires Supabase tables for `ai_review_queue`, `ai_review_rules`, `ai_review_history`, and `ai_prompt_versions`.
 - Real operator approve/change-role/hold actions are UI-disabled placeholders until DB persistence is added.
+
+## 2026-07-09 Real Abalone Dataset Pipeline
+
+- Local OpenAI Vision provider was not configured, so the 30-image abalone analysis used safe mock/fallback analysis.
+- File-backed metadata/labels are suitable for local review, but production should migrate labels and review history to Supabase.
+- Generated labels are AI drafts. They still need human review before they become trusted training/evaluation labels.

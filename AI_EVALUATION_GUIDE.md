@@ -82,3 +82,22 @@ Important review metrics:
 - Average review time estimate
 
 Use dataset evaluation and review scoring together before changing prompts or rules.
+
+## Real Dataset Verification
+
+For real abalone images:
+
+```bash
+pnpm run verify:real-abalone-dataset
+```
+
+This verifies:
+
+- actual images exist under `datasets/abalone/images`
+- metadata JSON exists
+- label JSON exists
+- latest analysis report exists
+- Review Center route is accessible
+- Dataset route is accessible
+- label update API persists `reviewed=true`
+- screenshots are generated

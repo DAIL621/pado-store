@@ -1,0 +1,18 @@
+{
+  "imageId": "abalone-eca084ebb3b520ec84a0ebb38420ec9e",
+  "fileName": "전복 선별 작업.png",
+  "productCategory": "abalone",
+  "expectedRole": "process",
+  "expectedSection": "process",
+  "expectedHeroRank": null,
+  "expectedQualityScore": 80,
+  "expectedWarnings": [],
+  "expectedCaption": "상품 준비 과정을 확인할 수 있습니다.",
+  "expectedTitle": "선별 작업 사진",
+  "expectedDescription": "선별, 손질, 작업 과정을 보여주는 사진입니다.",
+  "reviewed": false,
+  "approved": false,
+  "reviewerNotes": "",
+  "createdAt": "2026-07-09T02:03:14.149Z",
+  "updatedAt": "2026-07-09T02:03:14.149Z"
+}

@@ -1,0 +1,18 @@
+{
+  "imageId": "abalone-kakaotalk_20260708_141457370",
+  "fileName": "KakaoTalk_20260708_141457370.jpg",
+  "filePath": "datasets/abalone/images/KakaoTalk_20260708_141457370.jpg",
+  "category": "abalone",
+  "provider": "mock",
+  "fallbackUsed": true,
+  "suggestedRole": "detail",
+  "recommendedSection": "gallery",
+  "confidence": 76,
+  "qualityScore": 76,
+  "title": "상세 질감 사진",
+  "description": "상품의 표면, 질감, 세부 상태를 보여주는 사진입니다.",
+  "caption": "상세 상태를 가까이에서 확인할 수 있습니다.",
+  "warningMessage": "",
+  "reasoningSummary": "파일명, 업로드 순서, 상품 카테고리 기반 fallback 분석 결과입니다. Fallback reason: OpenAI provider is not configured.",
+  "analyzedAt": "2026-07-09T02:03:14.174Z"
+}

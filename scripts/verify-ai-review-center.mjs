@@ -16,7 +16,10 @@ function assert(condition, message) {
 
 const requiredFiles = [
   "app/admin/ai/review/page.tsx",
+  "app/api/admin/ai/dataset-image/route.ts",
+  "app/api/admin/ai/review/update-label/route.ts",
   "lib/admin/ai-review-center.ts",
+  "lib/admin/ai-real-dataset.ts",
   "scripts/score-review-center.mjs",
   "AI_REVIEW_CENTER.md",
   "RULE_ENGINE_GUIDE.md"
@@ -46,6 +49,20 @@ for (const marker of [
   assert(engine.includes(marker), `review engine is missing ${marker}`);
 }
 
+const realDataset = read("lib/admin/ai-real-dataset.ts");
+for (const marker of ["readRealDatasetItems", "getRealDatasetStatus", "appendReviewHistory", "labelPathFor"]) {
+  assert(realDataset.includes(marker), `real dataset helper is missing ${marker}`);
+}
+
+const updateApi = read("app/api/admin/ai/review/update-label/route.ts");
+assert(updateApi.includes("appendReviewHistory"), "label update API should append review history");
+assert(updateApi.includes("reviewed"), "label update API should persist reviewed state");
+assert(updateApi.includes("approved"), "label update API should persist approved state");
+
+const imageApi = read("app/api/admin/ai/dataset-image/route.ts");
+assert(imageApi.includes("datasetImageDir"), "dataset image API should read dataset image directory");
+assert(imageApi.includes("Content-Type"), "dataset image API should return an image response");
+
 const pkg = JSON.parse(read("package.json"));
 assert(pkg.scripts["verify:ai-review-center"] === "node scripts/verify-ai-review-center.mjs", "package script verify:ai-review-center is missing");
 assert(pkg.scripts["score:review-center"] === "node scripts/score-review-center.mjs", "package script score:review-center is missing");
@@ -65,7 +82,7 @@ console.log(
       ok: true,
       page: "/admin/ai/review",
       fixtureLabels: labelCount,
-      checks: ["menu", "page", "engine", "scripts", "docs"]
+      checks: ["menu", "page", "engine", "real-dataset", "label-update-api", "image-api", "scripts", "docs"]
     },
     null,
     2

@@ -344,3 +344,24 @@ Production note:
 
 - V1 is file-backed and fixture-driven.
 - Production should store review queue, operator corrections, rules, and prompt versions in Supabase.
+
+## Real Dataset Analyze Pipeline
+
+Actual product images can now be analyzed from disk.
+
+```bash
+pnpm run analyze:dataset -- --category=abalone
+```
+
+For the abalone dataset this reads:
+
+- `datasets/abalone/images`
+
+and writes:
+
+- `datasets/abalone/metadata`
+- `datasets/abalone/labels`
+- `reports/ai-analysis/abalone-latest.json`
+
+If `PADO_AI_IMAGE_PROVIDER=openai` and `OPENAI_API_KEY` are configured, the script attempts Vision analysis.
+If the key is missing, the provider is not enabled, the image is too large, or the API fails, it writes safe fallback analysis instead.

@@ -1,0 +1,19 @@
+{
+  "imageId": "abalone-e384b4",
+  "fileName": "ㄴ.png",
+  "filePath": "datasets/abalone/images/ㄴ.png",
+  "category": "abalone",
+  "provider": "mock",
+  "fallbackUsed": true,
+  "suggestedRole": "freshness",
+  "recommendedSection": "gallery",
+  "confidence": 82,
+  "qualityScore": 82,
+  "heroRank": 4,
+  "title": "신선도 확인 사진",
+  "description": "질감과 상태를 가까이에서 확인할 수 있는 사진입니다.",
+  "caption": "전복의 상태와 질감을 보여줍니다.",
+  "warningMessage": "",
+  "reasoningSummary": "파일명, 업로드 순서, 상품 카테고리 기반 fallback 분석 결과입니다. Fallback reason: OpenAI provider is not configured.",
+  "analyzedAt": "2026-07-09T02:03:14.144Z"
+}

@@ -1,0 +1,19 @@
+{
+  "imageId": "abalone-018",
+  "fileName": "018.png",
+  "filePath": "datasets/abalone/images/018.png",
+  "category": "abalone",
+  "provider": "mock",
+  "fallbackUsed": true,
+  "suggestedRole": "hero",
+  "recommendedSection": "heroImages",
+  "confidence": 86,
+  "qualityScore": 86,
+  "heroRank": 1,
+  "title": "대표 상품 사진",
+  "description": "상품이 가장 크게 보이는 대표 후보 사진입니다.",
+  "caption": "첫 화면 대표 이미지 후보입니다.",
+  "warningMessage": "",
+  "reasoningSummary": "파일명, 업로드 순서, 상품 카테고리 기반 fallback 분석 결과입니다. Fallback reason: OpenAI provider is not configured.",
+  "analyzedAt": "2026-07-09T02:03:14.132Z"
+}

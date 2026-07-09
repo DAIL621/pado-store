@@ -543,3 +543,20 @@
 3. Add real operator approve/change-role/hold actions.
 4. Add prompt version A/B comparison against real datasets.
 5. Add review-to-product-registration one-click flow after operator approval.
+
+### Real Abalone Dataset Pipeline Completed
+
+- 30 real abalone images connected under `datasets/abalone/images`.
+- Disk analysis command added.
+- Metadata and label drafts generated.
+- Review Center reads real abalone dataset before fixture fallback.
+- Dataset page shows image/metadata/label/review/approval state.
+- Label update API persists file-backed review state.
+
+### Next Real Dataset Work
+
+1. Configure `PADO_AI_IMAGE_PROVIDER=openai` and `OPENAI_API_KEY` for actual Vision analysis.
+2. Manually review the 30 generated abalone label drafts in `/admin/ai/review`.
+3. Move labels/review history to Supabase.
+4. Add real datasets for eel, oyster, shrimp, fish, meal-kit, and gift-set.
+5. Re-run Dataset Evaluation after human-reviewed labels are approved.

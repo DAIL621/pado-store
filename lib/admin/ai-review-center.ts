@@ -8,6 +8,7 @@ import {
   type AiImageRole
 } from "@/lib/admin/ai-image-analysis";
 import { readAiDatasets, type AiDatasetLabel } from "@/lib/admin/ai-dataset";
+import { readRealDatasetItems, type AiRealDatasetLabel, type AiRealDatasetMetadata } from "@/lib/admin/ai-real-dataset";
 
 export type AiReviewStatus =
   | "auto-approved"
@@ -50,6 +51,9 @@ export type AiReviewQueueItem = {
   id: string;
   label: AiDatasetLabel;
   analysis: AiImageAnalysisResult;
+  imageSrc?: string;
+  realLabel?: AiRealDatasetLabel;
+  metadata?: AiRealDatasetMetadata;
   finalRole: AiImageRole;
   finalSection: AiImageRecommendedSection;
   status: AiReviewStatus;
@@ -191,6 +195,40 @@ function labelToInput(label: AiDatasetLabel, index: number): AiImageAnalysisInpu
   };
 }
 
+function realLabelToDatasetLabel(label: AiRealDatasetLabel): AiDatasetLabel {
+  return {
+    imageId: label.imageId,
+    fileName: label.fileName,
+    productCategory: label.productCategory,
+    expectedRole: label.expectedRole,
+    expectedSection: label.expectedSection,
+    expectedHeroRank: label.expectedHeroRank,
+    expectedQualityScore: label.expectedQualityScore,
+    expectedWarnings: label.expectedWarnings,
+    expectedCaption: label.expectedCaption,
+    expectedTitle: label.expectedTitle,
+    expectedDescription: label.expectedDescription,
+    notes: label.reviewerNotes || (label.reviewed ? "reviewed real dataset label" : "unreviewed real dataset draft")
+  };
+}
+
+function metadataToAnalysis(metadata: AiRealDatasetMetadata): AiImageAnalysisResult {
+  return {
+    imageUrl: `/api/admin/ai/dataset-image?category=${encodeURIComponent(metadata.category)}&file=${encodeURIComponent(metadata.fileName)}`,
+    originalName: metadata.fileName,
+    suggestedRole: metadata.suggestedRole,
+    confidence: metadata.confidence,
+    qualityScore: metadata.qualityScore,
+    title: metadata.title,
+    description: metadata.description,
+    caption: metadata.caption,
+    recommendedSection: metadata.recommendedSection,
+    heroRank: metadata.heroRank,
+    warningMessage: metadata.warningMessage,
+    reasoningSummary: metadata.reasoningSummary
+  };
+}
+
 function normalize(value: string) {
   return value.toLowerCase().replace(/[_-]+/g, " ");
 }
@@ -267,6 +305,46 @@ function buildDefaultHistory(): AiReviewHistoryItem[] {
 }
 
 export function buildAiReviewQueue(): AiReviewQueueItem[] {
+  const realItems = readRealDatasetItems("abalone").filter((item) => item.metadata && item.label);
+  if (realItems.length) {
+    const rules = getAiReviewRules();
+    return realItems.map((item) => {
+      const label = realLabelToDatasetLabel(item.label!);
+      const analysis = metadataToAnalysis(item.metadata!);
+      const tier = getConfidenceTier(analysis.confidence);
+      const ruled = applyAiReviewRules(label, analysis, rules);
+      const roleMatch = ruled.finalRole === label.expectedRole || (label.expectedRole === "gallery" && ruled.finalSection === "gallery");
+      const sectionMatch = ruled.finalSection === label.expectedSection;
+      const correctionSuggested = !roleMatch || !sectionMatch;
+      const status: AiReviewStatus = item.label!.approved
+        ? "auto-approved"
+        : item.label!.reviewed
+          ? "corrected"
+          : correctionSuggested
+            ? analysis.confidence >= 95
+              ? "misclassified"
+              : tier.status
+            : tier.status;
+
+      return {
+        id: `review-real-${label.imageId}`,
+        label,
+        analysis,
+        imageSrc: analysis.imageUrl,
+        realLabel: item.label!,
+        metadata: item.metadata!,
+        finalRole: ruled.finalRole,
+        finalSection: ruled.finalSection,
+        status,
+        severity: status === "misclassified" ? "red" : tier.severity,
+        confidenceTier: tier.label,
+        appliedRule: ruled.appliedRule,
+        reviewHint: reviewHintFor({ analysis, label, status, roleMatch, sectionMatch, appliedRule: ruled.appliedRule }),
+        correctionSuggested
+      };
+    });
+  }
+
   const labels = readAiDatasets().flatMap((dataset) => dataset.labels);
   const inputs = labels.map(labelToInput);
   const predictions = analyzeImagesWithMockEngine(inputs);
