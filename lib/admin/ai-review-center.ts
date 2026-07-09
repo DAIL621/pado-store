@@ -67,11 +67,18 @@ export type AiReviewQueueItem = {
 export type AiReviewMetrics = {
   total: number;
   autoApproved: number;
+  approved: number;
+  pending: number;
+  held: number;
+  autoApprovalCandidates: number;
   reviewRecommended: number;
   needsReview: number;
   operatorRequired: number;
   corrected: number;
   misclassified: number;
+  roleMismatch: number;
+  sectionMismatch: number;
+  lowQuality: number;
   averageConfidence: number;
   autoApprovalRate: number;
   operatorCorrectionRate: number;
@@ -355,8 +362,10 @@ function buildDefaultHistory(): AiReviewHistoryItem[] {
 function queueItemFrom(label: AiDatasetLabel, analysis: AiImageAnalysisResult, index: number, realLabel?: AiRealDatasetLabel, metadata?: AiRealDatasetMetadata): AiReviewQueueItem {
   const ruled = applyAiReviewRules(label, analysis);
   const tier = getConfidenceTier(analysis.confidence);
-  const roleMatch = ruled.finalRole === label.expectedRole || (label.expectedRole === "gallery" && ruled.finalSection === "gallery");
-  const sectionMatch = ruled.finalSection === label.expectedSection;
+  const operatorRole = label.expectedRole === "gallery" ? "detail" : label.expectedRole;
+  const operatorSection = label.expectedSection;
+  const roleMatch = analysis.suggestedRole === operatorRole;
+  const sectionMatch = analysis.recommendedSection === operatorSection;
   const status = realLabel?.reviewed
     ? realLabel.approved
       ? "auto-approved"
@@ -366,12 +375,12 @@ function queueItemFrom(label: AiDatasetLabel, analysis: AiImageAnalysisResult, i
   return {
     id: `${label.imageId}-${index}`,
     label,
-    analysis: { ...analysis, suggestedRole: ruled.finalRole, recommendedSection: ruled.finalSection },
+    analysis,
     imageSrc: metadata ? `/api/admin/ai/dataset-image?category=${encodeURIComponent(metadata.category)}&file=${encodeURIComponent(metadata.fileName)}` : fixtureImage(label.imageId),
     realLabel,
     metadata,
-    finalRole: ruled.finalRole,
-    finalSection: ruled.finalSection,
+    finalRole: operatorRole,
+    finalSection: operatorSection,
     status,
     severity: tier.severity,
     confidenceTier: tier.label,
@@ -404,21 +413,35 @@ function percent(part: number, total: number) {
 export function scoreAiReviewCenter(queue = buildAiReviewQueue()): AiReviewMetrics {
   const total = queue.length;
   const autoApproved = queue.filter((item) => item.status === "auto-approved").length;
+  const approved = queue.filter((item) => item.realLabel?.approved).length;
+  const pending = queue.filter((item) => !item.realLabel?.reviewed && !item.realLabel?.approved).length;
+  const held = queue.filter((item) => item.realLabel?.reviewed && !item.realLabel?.approved).length;
+  const autoApprovalCandidates = queue.filter((item) => !item.realLabel?.reviewed && item.analysis.confidence >= 95).length;
   const reviewRecommended = queue.filter((item) => item.status === "review-recommended").length;
   const needsReview = queue.filter((item) => item.status === "needs-review").length;
   const operatorRequired = queue.filter((item) => item.status === "operator-required").length;
   const corrected = queue.filter((item) => item.correctionSuggested || item.status === "corrected").length;
   const misclassified = queue.filter((item) => item.status === "misclassified").length;
+  const roleMismatch = queue.filter((item) => item.analysis.suggestedRole !== item.finalRole).length;
+  const sectionMismatch = queue.filter((item) => item.analysis.recommendedSection !== item.finalSection).length;
+  const lowQuality = queue.filter((item) => item.analysis.qualityScore < 70).length;
   const averageConfidence = total ? Math.round(queue.reduce((sum, item) => sum + item.analysis.confidence, 0) / total) : 0;
 
   return {
     total,
     autoApproved,
+    approved,
+    pending,
+    held,
+    autoApprovalCandidates,
     reviewRecommended,
     needsReview,
     operatorRequired,
     corrected,
     misclassified,
+    roleMismatch,
+    sectionMismatch,
+    lowQuality,
     averageConfidence,
     autoApprovalRate: percent(autoApproved, total),
     operatorCorrectionRate: percent(needsReview + operatorRequired, total),

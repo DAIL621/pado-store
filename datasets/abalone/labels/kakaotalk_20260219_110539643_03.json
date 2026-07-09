@@ -2,17 +2,19 @@
   "imageId": "abalone-kakaotalk_20260219_110539643_03",
   "fileName": "KakaoTalk_20260219_110539643_03.jpg",
   "productCategory": "abalone",
-  "expectedRole": "detail",
-  "expectedSection": "gallery",
+  "expectedRole": "process",
+  "expectedSection": "process",
   "expectedHeroRank": null,
-  "expectedQualityScore": 76,
-  "expectedWarnings": [],
-  "expectedCaption": "상세 상태를 가까이에서 확인할 수 있습니다.",
-  "expectedTitle": "상세 질감 사진",
-  "expectedDescription": "상품의 표면, 질감, 세부 상태를 보여주는 사진입니다.",
+  "expectedQualityScore": 90,
+  "expectedWarnings": [
+    "상품의 원산지 및 조업일은 확인이 필요합니다."
+  ],
+  "expectedCaption": "전복 가공 중, 신선함을 유지하는 과정",
+  "expectedTitle": "신선한 전복 가공 과정",
+  "expectedDescription": "전복이 컨베이어 벨트를 통해 정리되고 있는 모습으로, 신선한 해산물의 품질을 보장합니다.",
   "reviewed": false,
   "approved": false,
   "reviewerNotes": "",
-  "createdAt": "2026-07-09T02:03:14.152Z",
-  "updatedAt": "2026-07-09T02:03:14.152Z"
+  "createdAt": "2026-07-09T05:03:47.612Z",
+  "updatedAt": "2026-07-09T08:25:52.885Z"
 }

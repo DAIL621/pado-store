@@ -4,15 +4,17 @@
   "productCategory": "abalone",
   "expectedRole": "freshness",
   "expectedSection": "gallery",
-  "expectedHeroRank": 4,
-  "expectedQualityScore": 82,
-  "expectedWarnings": [],
-  "expectedCaption": "전복의 상태와 질감을 보여줍니다.",
-  "expectedTitle": "신선도 확인 사진",
-  "expectedDescription": "질감과 상태를 가까이에서 확인할 수 있는 사진입니다.",
-  "reviewed": false,
-  "approved": false,
-  "reviewerNotes": "",
-  "createdAt": "2026-07-09T02:03:14.144Z",
-  "updatedAt": "2026-07-09T02:03:14.144Z"
+  "expectedHeroRank": null,
+  "expectedQualityScore": 100,
+  "expectedWarnings": [
+    "Handle with care; ensure proper cooking to avoid foodborne illness."
+  ],
+  "expectedCaption": "전복의 질감과 상태를 확인할 수 있는 사진입니다.",
+  "expectedTitle": "배송된 전복의 신선도",
+  "expectedDescription": "전복의 질감과 상태를 확인할 수 있는 사진입니다.",
+  "reviewed": true,
+  "approved": true,
+  "reviewerNotes": "운영자가 승인했습니다.",
+  "createdAt": "2026-07-09T05:03:47.607Z",
+  "updatedAt": "2026-07-09T08:25:52.877Z"
 }

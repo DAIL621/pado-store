@@ -2,17 +2,19 @@
   "imageId": "abalone-e38581",
   "fileName": "ㅁ.png",
   "productCategory": "abalone",
-  "expectedRole": "freshness",
-  "expectedSection": "gallery",
-  "expectedHeroRank": null,
-  "expectedQualityScore": 82,
-  "expectedWarnings": [],
-  "expectedCaption": "전복의 상태와 질감을 보여줍니다.",
-  "expectedTitle": "신선도 확인 사진",
-  "expectedDescription": "질감과 상태를 가까이에서 확인할 수 있는 사진입니다.",
-  "reviewed": false,
-  "approved": false,
-  "reviewerNotes": "",
-  "createdAt": "2026-07-09T02:03:14.146Z",
-  "updatedAt": "2026-07-09T02:03:14.146Z"
+  "expectedRole": "components",
+  "expectedSection": "packaging",
+  "expectedHeroRank": 2,
+  "expectedQualityScore": 89,
+  "expectedWarnings": [
+    "Ensure proper handling and storage of seafood products."
+  ],
+  "expectedCaption": "사진 내용에 맞게 한국어 설명을 확인해주세요.",
+  "expectedTitle": "전복 구성품으로서 아이스팩과 전복손질칼이 함께 배송됩니다.",
+  "expectedDescription": "사진 내용에 맞게 한국어 설명을 확인해주세요.",
+  "reviewed": true,
+  "approved": true,
+  "reviewerNotes": "운영자가 승인했습니다.",
+  "createdAt": "2026-07-09T05:03:47.609Z",
+  "updatedAt": "2026-07-09T08:25:52.879Z"
 }

@@ -261,6 +261,48 @@ function labelFrom(metadata) {
   };
 }
 
+function readExistingLabel(fileName) {
+  const labelPath = path.join(labelsDir, `${safeBaseName(fileName)}.json`);
+  try {
+    if (!fs.existsSync(labelPath)) return null;
+    return JSON.parse(fs.readFileSync(labelPath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function mergeLabel(metadata, fileName) {
+  const next = labelFrom(metadata);
+  const existing = readExistingLabel(fileName);
+  if (!existing) return next;
+
+  const wasReviewed = Boolean(existing.reviewed || existing.approved);
+  if (!wasReviewed) {
+    return {
+      ...next,
+      createdAt: existing.createdAt || next.createdAt,
+      reviewerNotes: existing.reviewerNotes || next.reviewerNotes
+    };
+  }
+
+  return {
+    ...next,
+    expectedRole: existing.expectedRole ?? next.expectedRole,
+    expectedSection: existing.expectedSection ?? next.expectedSection,
+    expectedHeroRank: existing.expectedHeroRank ?? next.expectedHeroRank,
+    expectedQualityScore: existing.expectedQualityScore ?? next.expectedQualityScore,
+    expectedWarnings: Array.isArray(existing.expectedWarnings) ? existing.expectedWarnings : next.expectedWarnings,
+    expectedCaption: existing.expectedCaption ?? next.expectedCaption,
+    expectedTitle: existing.expectedTitle ?? next.expectedTitle,
+    expectedDescription: existing.expectedDescription ?? next.expectedDescription,
+    reviewed: Boolean(existing.reviewed),
+    approved: Boolean(existing.approved),
+    reviewerNotes: existing.reviewerNotes || next.reviewerNotes,
+    createdAt: existing.createdAt || next.createdAt,
+    updatedAt: new Date().toISOString()
+  };
+}
+
 function roleCounts(results) {
   return results.reduce((acc, item) => {
     acc[item.suggestedRole] = (acc[item.suggestedRole] || 0) + 1;
@@ -323,7 +365,7 @@ const metadataResults = rawResults.map((item, index) => {
     provider: item.provider,
     fallbackUsed: item.fallbackUsed
   });
-  const label = labelFrom(metadata);
+  const label = mergeLabel(metadata, item.fileName);
   fs.writeFileSync(path.join(metadataDir, `${safeBaseName(item.fileName)}.json`), `${JSON.stringify(metadata, null, 2)}\n`);
   fs.writeFileSync(path.join(labelsDir, `${safeBaseName(item.fileName)}.json`), `${JSON.stringify(label, null, 2)}\n`);
   return metadata;

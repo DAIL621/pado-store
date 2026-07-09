@@ -115,3 +115,46 @@ Review history path:
 - `reports/ai-review-history`
 
 V1 remains file-based. Supabase persistence is the next production step.
+
+## Abalone 30 Image Review Status
+
+Current source:
+
+- `datasets/abalone/images`
+- `datasets/abalone/metadata`
+- `datasets/abalone/labels`
+
+Latest operator-review evaluation:
+
+```bash
+pnpm run evaluate:review -- --category=abalone
+```
+
+Latest report:
+
+```text
+reports/ai-evaluation/abalone-review-latest.json
+```
+
+Current status:
+
+- Total images: `30`
+- Approved labels: `7`
+- Pending labels: `23`
+- Held labels: `0`
+- Role accuracy against approved operator labels: `43%`
+- Section accuracy against approved operator labels: `57%`
+
+Recommended next review workflow:
+
+1. Open `/admin/ai/review?filter=pending`.
+2. Review one pending image at a time.
+3. Compare `AI 추천 역할/섹션` with `운영자 최종 역할/섹션`.
+4. Correct role, section, caption, description, or quality score if needed.
+5. Click `승인` when the label can be used as the human reference.
+6. Rerun `pnpm run evaluate:review -- --category=abalone`.
+
+Important:
+
+- Rerunning `pnpm run analyze:dataset -- --category=abalone` preserves existing reviewed/approved operator labels.
+- AI metadata can change after reanalysis, but approved human labels remain the evaluation baseline.

@@ -1,0 +1,85 @@
+{
+  "category": "abalone",
+  "generatedAt": "2026-07-09T08:27:42.724Z",
+  "totalImages": 30,
+  "labelCount": 30,
+  "metadataCount": 30,
+  "reviewedCount": 7,
+  "approvedCount": 7,
+  "pendingCount": 23,
+  "heldCount": 0,
+  "roleAccuracy": 43,
+  "sectionAccuracy": 57,
+  "titleChangedCount": 7,
+  "descriptionChangedCount": 7,
+  "qualityChangedCount": 6,
+  "roleMismatchCount": 4,
+  "sectionMismatchCount": 3,
+  "reviewedFiles": [
+    {
+      "fileName": "018.png",
+      "aiRole": "freshness",
+      "finalRole": "freshness",
+      "aiSection": "gallery",
+      "finalSection": "gallery",
+      "roleMatch": true,
+      "sectionMatch": true
+    },
+    {
+      "fileName": "029.png",
+      "aiRole": "cooking",
+      "finalRole": "cooking",
+      "aiSection": "recipes",
+      "finalSection": "recipes",
+      "roleMatch": true,
+      "sectionMatch": true
+    },
+    {
+      "fileName": "030.png",
+      "aiRole": "unknown",
+      "finalRole": "cooking",
+      "aiSection": "gallery",
+      "finalSection": "recipes",
+      "roleMatch": false,
+      "sectionMatch": false
+    },
+    {
+      "fileName": "ㄴ.png",
+      "aiRole": "freshness",
+      "finalRole": "freshness",
+      "aiSection": "gallery",
+      "finalSection": "gallery",
+      "roleMatch": true,
+      "sectionMatch": true
+    },
+    {
+      "fileName": "ㄹ.png",
+      "aiRole": "origin",
+      "finalRole": "hero",
+      "aiSection": "gallery",
+      "finalSection": "heroImages",
+      "roleMatch": false,
+      "sectionMatch": false
+    },
+    {
+      "fileName": "ㅁ.png",
+      "aiRole": "unknown",
+      "finalRole": "components",
+      "aiSection": "packaging",
+      "finalSection": "packaging",
+      "roleMatch": false,
+      "sectionMatch": true
+    },
+    {
+      "fileName": "ㅇ.png",
+      "aiRole": "process",
+      "finalRole": "shipping",
+      "aiSection": "process",
+      "finalSection": "packaging",
+      "roleMatch": false,
+      "sectionMatch": false
+    }
+  ],
+  "missingLabels": [],
+  "missingMetadata": []
+}

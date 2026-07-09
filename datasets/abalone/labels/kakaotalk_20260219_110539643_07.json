@@ -2,17 +2,19 @@
   "imageId": "abalone-kakaotalk_20260219_110539643_07",
   "fileName": "KakaoTalk_20260219_110539643_07.jpg",
   "productCategory": "abalone",
-  "expectedRole": "detail",
-  "expectedSection": "gallery",
+  "expectedRole": "origin",
+  "expectedSection": "journey",
   "expectedHeroRank": null,
-  "expectedQualityScore": 76,
-  "expectedWarnings": [],
-  "expectedCaption": "상세 상태를 가까이에서 확인할 수 있습니다.",
-  "expectedTitle": "상세 질감 사진",
-  "expectedDescription": "상품의 표면, 질감, 세부 상태를 보여주는 사진입니다.",
+  "expectedQualityScore": 90,
+  "expectedWarnings": [
+    "사진에 보이는 정보는 참고용이며, 원산지 및 조업일은 확인이 필요합니다."
+  ],
+  "expectedCaption": "전복 조업을 위한 어선",
+  "expectedTitle": "신선한 전복을 위한 조업 현장",
+  "expectedDescription": "전복을 잡기 위한 어선의 모습으로, 신선한 해산물의 출발점입니다.",
   "reviewed": false,
   "approved": false,
   "reviewerNotes": "",
-  "createdAt": "2026-07-09T02:03:14.157Z",
-  "updatedAt": "2026-07-09T02:03:14.157Z"
+  "createdAt": "2026-07-09T05:03:47.616Z",
+  "updatedAt": "2026-07-09T08:25:52.889Z"
 }

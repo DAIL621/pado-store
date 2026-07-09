@@ -31,6 +31,7 @@
     "score:ai-image-analysis": "node scripts/score-ai-image-analysis.mjs",
     "score:review-center": "node scripts/score-review-center.mjs",
     "evaluate:dataset": "node scripts/evaluate-dataset.mjs",
+    "evaluate:review": "node scripts/evaluate-review.mjs",
     "analyze:dataset": "node scripts/analyze-dataset.mjs",
     "capture:detail": "pnpm run dev:ensure && node scripts/capture-detail.mjs",
     "capture:detail:before": "pnpm run dev:ensure && node scripts/capture-detail.mjs --phase=before",

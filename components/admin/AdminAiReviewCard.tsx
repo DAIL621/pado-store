@@ -59,8 +59,11 @@ export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
   const [notes, setNotes] = useState(props.reviewerNotes || "");
   const [reviewed, setReviewed] = useState(Boolean(props.reviewed));
   const [approved, setApproved] = useState(Boolean(props.approved));
-  const [message, setMessage] = useState(reviewed ? "검수 완료" : "검수 대기");
+  const [message, setMessage] = useState(reviewed ? "저장됨" : "저장 전");
   const [saving, setSaving] = useState(false);
+
+  const roleMismatch = props.aiRole !== role;
+  const sectionMismatch = props.aiSection !== section;
 
   const save = async (nextApproved = approved, nextReviewed = true, nextNotes = notes) => {
     setSaving(true);
@@ -114,12 +117,30 @@ export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
         <div className="admin-ai-review-row">
           <label>
             AI 추천 역할
-            <input readOnly value={`${getAiRoleLabel(props.aiRole)} → ${getAiRoleLabel(role)}`} />
+            <input readOnly value={getAiRoleLabel(props.aiRole)} />
+          </label>
+          <label>
+            운영자 최종 역할
+            <input readOnly value={`${getAiRoleLabel(role)}${roleMismatch ? " (수정됨)" : ""}`} />
           </label>
           <label>
             AI 추천 섹션
-            <input readOnly value={`${getAiSectionLabel(props.aiSection)} → ${getAiSectionLabel(section)}`} />
+            <input readOnly value={getAiSectionLabel(props.aiSection)} />
           </label>
+          <label>
+            운영자 최종 섹션
+            <input readOnly value={`${getAiSectionLabel(section)}${sectionMismatch ? " (수정됨)" : ""}`} />
+          </label>
+          <label>
+            승인 상태
+            <input readOnly value={approved ? "승인 완료" : "미승인"} />
+          </label>
+          <label>
+            저장 상태
+            <input readOnly value={reviewed ? "검수 완료" : "검수 전"} />
+          </label>
+        </div>
+        <div className="admin-ai-review-row">
           <label>
             적용 규칙
             <input readOnly value={props.appliedRule || "적용된 운영 규칙 없음"} />

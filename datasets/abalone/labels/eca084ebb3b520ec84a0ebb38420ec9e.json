@@ -4,15 +4,17 @@
   "productCategory": "abalone",
   "expectedRole": "process",
   "expectedSection": "process",
-  "expectedHeroRank": null,
-  "expectedQualityScore": 80,
-  "expectedWarnings": [],
-  "expectedCaption": "상품 준비 과정을 확인할 수 있습니다.",
-  "expectedTitle": "선별 작업 사진",
-  "expectedDescription": "선별, 손질, 작업 과정을 보여주는 사진입니다.",
+  "expectedHeroRank": 4,
+  "expectedQualityScore": 90,
+  "expectedWarnings": [
+    "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+  ],
+  "expectedCaption": "전복 선별 중인 모습",
+  "expectedTitle": "신선한 전복 선별 작업",
+  "expectedDescription": "전복을 정성스럽게 선별하는 과정입니다. 품질 좋은 전복만을 엄선하여 제공합니다.",
   "reviewed": false,
   "approved": false,
   "reviewerNotes": "",
-  "createdAt": "2026-07-09T02:03:14.149Z",
-  "updatedAt": "2026-07-09T02:03:14.149Z"
+  "createdAt": "2026-07-09T05:03:47.610Z",
+  "updatedAt": "2026-07-09T08:25:52.882Z"
 }

@@ -1911,3 +1911,28 @@
 - Captured:
   - `screenshots/ai-review-abalone-real.png`
   - `screenshots/ai-dataset-abalone-real.png`
+
+## 2026-07-09 AI Review 검수 효율 개선 - 전복 30장
+
+- 전복 실제 이미지 30장을 기준으로 승인 라벨 평가 리포트를 추가했습니다.
+- 추가 명령:
+  - `pnpm run evaluate:review -- --category=abalone`
+- 생성 리포트:
+  - `reports/ai-evaluation/abalone-review-latest.json`
+- 현재 검수 현황:
+  - 전체 이미지: `30`
+  - 승인 완료: `7`
+  - 미검수: `23`
+  - 보류: `0`
+  - 역할 정확도: `43%`
+  - 섹션 정확도: `57%`
+- `/admin/ai/review`에서 AI 추천 역할/섹션과 운영자 최종 역할/섹션을 분리 표시하도록 개선했습니다.
+- Review Center 필터를 전복 검수 업무 기준으로 정리했습니다:
+  - 전체
+  - 검수 전
+  - 승인 완료
+  - 보류
+  - 역할 다름
+  - 섹션 다름
+  - 품질 낮음
+- `analyze:dataset` 재실행 시 기존 운영자 승인 라벨이 덮어써지지 않도록 보존 로직을 추가했습니다.

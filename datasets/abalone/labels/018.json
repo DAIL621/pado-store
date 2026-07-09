@@ -2,17 +2,19 @@
   "imageId": "abalone-018",
   "fileName": "018.png",
   "productCategory": "abalone",
-  "expectedRole": "hero",
-  "expectedSection": "heroImages",
-  "expectedHeroRank": 1,
-  "expectedQualityScore": 86,
-  "expectedWarnings": [],
-  "expectedCaption": "첫 화면 대표 이미지 후보입니다.",
-  "expectedTitle": "대표 상품 사진",
-  "expectedDescription": "상품이 가장 크게 보이는 대표 후보 사진입니다.",
+  "expectedRole": "freshness",
+  "expectedSection": "gallery",
+  "expectedHeroRank": null,
+  "expectedQualityScore": 95,
+  "expectedWarnings": [
+    "Ensure proper cooking and handling to enjoy safely."
+  ],
+  "expectedCaption": "전복의 질감과 상태를 확인할 수 있는 사진입니다.",
+  "expectedTitle": "전복의 질감과 상태를 확인할 수 있는 사진입니다.",
+  "expectedDescription": "전복의 질감과 상태를 확인할 수 있는 사진입니다.",
   "reviewed": true,
-  "approved": false,
-  "reviewerNotes": "verify-real-abalone-dataset 2026-07-09T02:04:00.128Z",
-  "createdAt": "2026-07-09T02:03:14.136Z",
-  "updatedAt": "2026-07-09T02:04:00.524Z"
+  "approved": true,
+  "reviewerNotes": "역할과 섹션을 검수했습니다.",
+  "createdAt": "2026-07-09T05:03:47.603Z",
+  "updatedAt": "2026-07-09T08:25:52.873Z"
 }

@@ -2,17 +2,19 @@
   "imageId": "abalone-kakaotalk_20260708_141457370_04",
   "fileName": "KakaoTalk_20260708_141457370_04.jpg",
   "productCategory": "abalone",
-  "expectedRole": "detail",
+  "expectedRole": "origin",
   "expectedSection": "gallery",
   "expectedHeroRank": null,
-  "expectedQualityScore": 76,
-  "expectedWarnings": [],
-  "expectedCaption": "상세 상태를 가까이에서 확인할 수 있습니다.",
-  "expectedTitle": "상세 질감 사진",
-  "expectedDescription": "상품의 표면, 질감, 세부 상태를 보여주는 사진입니다.",
+  "expectedQualityScore": 90,
+  "expectedWarnings": [
+    "원산지 및 조업일은 확인이 필요합니다."
+  ],
+  "expectedCaption": "자연 그대로의 전복, 신선함을 느껴보세요.",
+  "expectedTitle": "신선한 전복",
+  "expectedDescription": "자연에서 채취한 신선한 전복입니다. 풍부한 맛과 영양을 자랑합니다.",
   "reviewed": false,
   "approved": false,
   "reviewerNotes": "",
-  "createdAt": "2026-07-09T02:03:14.171Z",
-  "updatedAt": "2026-07-09T02:03:14.171Z"
+  "createdAt": "2026-07-09T05:03:47.625Z",
+  "updatedAt": "2026-07-09T08:25:52.901Z"
 }

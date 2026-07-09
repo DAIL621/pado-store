@@ -101,3 +101,43 @@ This verifies:
 - Dataset route is accessible
 - label update API persists `reviewed=true`
 - screenshots are generated
+
+## Operator Review Evaluation
+
+Use this command when the operator has reviewed or approved real labels:
+
+```bash
+pnpm run evaluate:review -- --category=abalone
+```
+
+This compares:
+
+- AI original role in `datasets/abalone/metadata`
+- operator final role in `datasets/abalone/labels`
+- AI original section
+- operator final section
+- title changes
+- description changes
+- quality score changes
+
+Latest report path:
+
+```text
+reports/ai-evaluation/abalone-review-latest.json
+```
+
+Current abalone review baseline:
+
+- Total images: `30`
+- Approved labels: `7`
+- Pending labels: `23`
+- Role accuracy: `43%`
+- Section accuracy: `57%`
+
+Operator next steps:
+
+1. Open `/admin/ai/review?filter=pending`.
+2. Approve or correct the remaining `23` images.
+3. Use `/admin/ai/review?filter=roleMismatch` to focus on role disagreements.
+4. Use `/admin/ai/review?filter=sectionMismatch` to focus on section placement disagreements.
+5. Rerun `evaluate:review` after each review batch.

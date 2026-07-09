@@ -2,17 +2,19 @@
   "imageId": "abalone-029",
   "fileName": "029.png",
   "productCategory": "abalone",
-  "expectedRole": "freshness",
-  "expectedSection": "gallery",
-  "expectedHeroRank": 2,
-  "expectedQualityScore": 82,
-  "expectedWarnings": [],
-  "expectedCaption": "전복의 상태와 질감을 보여줍니다.",
-  "expectedTitle": "신선도 확인 사진",
-  "expectedDescription": "질감과 상태를 가까이에서 확인할 수 있는 사진입니다.",
-  "reviewed": false,
-  "approved": false,
-  "reviewerNotes": "",
-  "createdAt": "2026-07-09T02:03:14.137Z",
-  "updatedAt": "2026-07-09T02:03:14.137Z"
+  "expectedRole": "cooking",
+  "expectedSection": "recipes",
+  "expectedHeroRank": null,
+  "expectedQualityScore": 97,
+  "expectedWarnings": [
+    "Ensure proper cooking to avoid foodborne illnesses."
+  ],
+  "expectedCaption": "전복의 질감과 상태를 확인할 수 있는 사진입니다.",
+  "expectedTitle": "전복요리",
+  "expectedDescription": "전복의 질감과 상태를 확인할 수 있는 사진입니다.",
+  "reviewed": true,
+  "approved": true,
+  "reviewerNotes": "운영자가 승인했습니다.",
+  "createdAt": "2026-07-09T05:03:47.605Z",
+  "updatedAt": "2026-07-09T08:25:52.875Z"
 }

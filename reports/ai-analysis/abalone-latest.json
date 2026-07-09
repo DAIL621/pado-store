@@ -1,49 +1,296 @@
 {
   "category": "abalone",
-  "analyzedAt": "2026-07-09T02:03:14.175Z",
+  "analyzedAt": "2026-07-09T08:25:52.906Z",
   "totalImages": 30,
   "successCount": 30,
-  "fallbackCount": 30,
-  "roleCounts": {
-    "hero": 1,
-    "freshness": 5,
-    "detail": 23,
-    "process": 1
+  "fallbackCount": 11,
+  "envStatus": {
+    "loaded": true,
+    "loader": "manual-env-local",
+    "loadedEnvFiles": [
+      ".env.local"
+    ],
+    "padoAiImageProvider": "openai",
+    "hasOpenAiApiKey": true,
+    "padoAiImageModel": "gpt-4o-mini"
   },
-  "averageConfidence": 78,
-  "averageQualityScore": 77,
+  "providerIntent": "openai",
+  "fallbackReasons": [
+    {
+      "fileName": "KakaoTalk_20260219_110539643.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260219_120847695_01.jpg",
+      "reason": "이미지가 안전한 OpenAI data URL 분석 기준보다 큽니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_120847695.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260424_141454114_01.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260424_141454114_05.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_01.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_02.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_03.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_05.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_06.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    }
+  ],
+  "roleCounts": {
+    "freshness": 2,
+    "cooking": 1,
+    "unknown": 2,
+    "origin": 10,
+    "process": 4,
+    "detail": 11
+  },
+  "averageConfidence": 84,
+  "averageQualityScore": 74,
   "heroTop5": [
     {
-      "fileName": "018.png",
+      "fileName": "ㄹ.png",
       "heroRank": 1,
-      "confidence": 86,
-      "qualityScore": 86
+      "confidence": 95,
+      "qualityScore": 90
+    },
+    {
+      "fileName": "ㅁ.png",
+      "heroRank": 2,
+      "confidence": 85,
+      "qualityScore": 90
+    },
+    {
+      "fileName": "ㅇ.png",
+      "heroRank": 3,
+      "confidence": 85,
+      "qualityScore": 90
+    },
+    {
+      "fileName": "전복 선별 작업.png",
+      "heroRank": 4,
+      "confidence": 95,
+      "qualityScore": 90
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_01.jpg",
+      "heroRank": 5,
+      "confidence": 85,
+      "qualityScore": 90
+    }
+  ],
+  "needsReview": [
+    {
+      "fileName": "018.png",
+      "confidence": 95,
+      "qualityScore": 5,
+      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
     },
     {
       "fileName": "029.png",
-      "heroRank": 2,
-      "confidence": 82,
-      "qualityScore": 82
+      "confidence": 95,
+      "qualityScore": 8,
+      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
     },
     {
       "fileName": "030.png",
-      "heroRank": 3,
-      "confidence": 82,
-      "qualityScore": 82
+      "confidence": 90,
+      "qualityScore": 85,
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
     },
     {
       "fileName": "ㄴ.png",
-      "heroRank": 4,
-      "confidence": 82,
-      "qualityScore": 82
+      "confidence": 95,
+      "qualityScore": 8,
+      "warningMessage": "원산지 및 조업일은 확인이 필요합니다."
     },
     {
       "fileName": "ㄹ.png",
-      "heroRank": 5,
-      "confidence": 82,
-      "qualityScore": 82
+      "confidence": 95,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "ㅁ.png",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+    },
+    {
+      "fileName": "ㅇ.png",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일 정보는 확인할 수 없습니다."
+    },
+    {
+      "fileName": "전복 선별 작업.png",
+      "confidence": 95,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_01.jpg",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "사진에 보이는 정보는 참고용이며, 실제 상품과 다를 수 있습니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_02.jpg",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_03.jpg",
+      "confidence": 95,
+      "qualityScore": 90,
+      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_04.jpg",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_05.jpg",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_06.jpg",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_07.jpg",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "사진에 보이는 정보는 참고용이며, 원산지 및 조업일은 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_08.jpg",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_09.jpg",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_10.jpg",
+      "confidence": 95,
+      "qualityScore": 8,
+      "warningMessage": "사진에 보이지 않는 원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_04.jpg",
+      "confidence": 85,
+      "qualityScore": 90,
+      "warningMessage": "원산지 및 조업일은 확인이 필요합니다."
     }
   ],
-  "needsReview": [],
-  "warnings": []
+  "warnings": [
+    {
+      "fileName": "018.png",
+      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+    },
+    {
+      "fileName": "029.png",
+      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "030.png",
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "ㄴ.png",
+      "warningMessage": "원산지 및 조업일은 확인이 필요합니다."
+    },
+    {
+      "fileName": "ㄹ.png",
+      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "ㅁ.png",
+      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+    },
+    {
+      "fileName": "ㅇ.png",
+      "warningMessage": "원산지 및 조업일 정보는 확인할 수 없습니다."
+    },
+    {
+      "fileName": "전복 선별 작업.png",
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_01.jpg",
+      "warningMessage": "사진에 보이는 정보는 참고용이며, 실제 상품과 다를 수 있습니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_02.jpg",
+      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_03.jpg",
+      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_04.jpg",
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_05.jpg",
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_06.jpg",
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_07.jpg",
+      "warningMessage": "사진에 보이는 정보는 참고용이며, 원산지 및 조업일은 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_08.jpg",
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_09.jpg",
+      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_10.jpg",
+      "warningMessage": "사진에 보이지 않는 원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_04.jpg",
+      "warningMessage": "원산지 및 조업일은 확인이 필요합니다."
+    }
+  ]
 }

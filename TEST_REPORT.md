@@ -2112,3 +2112,33 @@
   - `pnpm run verify:ai-draft-flow`: passed
   - `pnpm run verify:ai-review-center`: passed
   - `pnpm run verify:ai-dataset`: passed
+
+## 2026-07-09 AI Review Evaluation - Abalone 30 Images
+
+- Command:
+  - `pnpm run evaluate:review -- --category=abalone`
+- Report:
+  - `reports/ai-evaluation/abalone-review-latest.json`
+- Result:
+  - Total images: `30`
+  - Labels found: `30`
+  - Metadata found: `30`
+  - Reviewed: `7`
+  - Approved: `7`
+  - Pending: `23`
+  - Held: `0`
+  - Role accuracy: `43%`
+  - Section accuracy: `57%`
+  - Title changed: `7`
+  - Description changed: `7`
+  - Quality score changed: `6`
+- Existing verification:
+  - `pnpm run build`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run verify:ai-review-center`: passed
+  - `pnpm run verify:ai-dataset`: passed
+  - `pnpm run analyze:dataset -- --category=abalone`: passed with `fallbackCount=11`
+- Note:
+  - OpenAI Vision was used where possible.
+  - 11 images used fallback because of OpenAI `429` responses or image size limits.
+  - Existing reviewed/approved label fields are preserved when `analyze:dataset` is rerun.
