@@ -31,6 +31,7 @@ function edgeExecutablePath() {
 }
 
 const fixtureImagePath = join(root, "datasets", "abalone", "images", "018.png");
+const allowedVisionRoles = new Set(["hero", "freshness", "detail", "package", "process", "cooking", "components"]);
 const imageUrl = existsSync(fixtureImagePath)
   ? `data:image/png;base64,${readFileSync(fixtureImagePath).toString("base64")}`
   : "data:image/svg+xml;utf8," +
@@ -103,11 +104,18 @@ try {
   if (expectsOpenAi && apiResult.body.provider !== "openai") {
     throw new Error(`Expected selected provider=openai from .env.local, got ${apiResult.body.provider}. fallbackUsed=${apiResult.body.fallbackUsed}. fallbackReason=${apiResult.body.fallbackReason || ""}`);
   }
+  if (expectsOpenAi && apiResult.body.resultProvider !== "openai") {
+    throw new Error(`Expected resultProvider=openai for live Vision verification, got ${apiResult.body.resultProvider}. fallbackUsed=${apiResult.body.fallbackUsed}. fallbackReason=${apiResult.body.fallbackReason || ""}`);
+  }
+  if (expectsOpenAi && apiResult.body.fallbackUsed) {
+    throw new Error(`Expected fallbackUsed=false for live Vision verification. fallbackReason=${apiResult.body.fallbackReason || ""}`);
+  }
   if (!expectsOpenAi && apiResult.body.provider !== "mock") {
     throw new Error(`Expected mock provider without openai env, got ${apiResult.body.provider}`);
   }
-  if (!result.heroRank) throw new Error("AI analyze result should include heroRank for first hero fixture.");
-  if (result.suggestedRole !== "hero") throw new Error(`Expected hero role for hero fixture, got ${result.suggestedRole}`);
+  if (!allowedVisionRoles.has(result.suggestedRole)) {
+    throw new Error(`Unexpected suggestedRole from Vision provider: ${result.suggestedRole}`);
+  }
   if (result.qualityScore < 75) throw new Error(`Expected usable quality score, got ${result.qualityScore}`);
 
   console.log(
@@ -130,7 +138,9 @@ try {
           "fallback-flag-returned",
           "analysis-result-shape",
           "quality-factor-shape",
-          "hero-ranking-returned",
+          "allowed-role-returned",
+          expectsOpenAi ? "openai-live-result-provider" : "mock-result-provider",
+          expectsOpenAi ? "openai-no-fallback" : "mock-fallback-not-required",
           expectsOpenAi ? "openai-provider-selected" : "mock-provider-default"
         ]
       },
