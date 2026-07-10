@@ -570,3 +570,20 @@
   1. 실제 상품 1개를 AI 사진분석 -> 상품등록 -> 공개까지 운영자 손으로 리허설
   2. 예약 공개 전용 DB 컬럼 또는 운영 배치 정책 확정
   3. 상품등록 Wizard에서 사진 업로드 단계와 AI 분석 페이지를 더 강하게 연결
+### Sprint 12 Launch Readiness Follow-up
+
+Priority 1:
+- Apply and verify the operation automation migration in the connected Supabase DB.
+- Confirm `orders_status_check` accepts `delivery_ready`.
+- Confirm `review_requests` exists and review request preparation succeeds.
+
+Priority 2:
+- Complete Kakao/Supabase Auth signup and login rehearsal with a real customer account.
+- Verify My Page order history for a user-linked paid order.
+
+Priority 3:
+- Complete Toss payment approval, failure, full refund, and inventory restore rehearsal.
+
+Priority 4:
+- Re-run `pnpm run rehearsal:launch` after the external blockers are removed.
+- Target: success rate `95%+`, Go/No-Go `Go`.

@@ -2195,3 +2195,52 @@
   - Button state changed from `상품 등록하기` to `저장 중...` to `상품 등록완료`.
   - Created product was listed at the top of `/admin/products`.
   - Created product detail URL returned 200.
+## 2026-07-10 Sprint 12 Launch Readiness Rehearsal
+
+- Command:
+  - `pnpm run rehearsal:launch`
+- Product:
+  - `tongyeong-sea-eel`
+- Test order:
+  - `PADO-20260710-E58F8D4`
+- Report:
+  - `LAUNCH_READINESS_REPORT.md`
+  - `reports/launch-readiness/launch-readiness-latest.json`
+- Screenshots:
+  - `screenshots/launch-readiness/02-login.png`
+  - `screenshots/launch-readiness/03-products.png`
+  - `screenshots/launch-readiness/04-product-detail.png`
+  - `screenshots/launch-readiness/05-cart.png`
+  - `screenshots/launch-readiness/06-checkout.png`
+  - `screenshots/launch-readiness/08-order-complete.png`
+  - `screenshots/launch-readiness/09-admin-orders.png`
+  - `screenshots/launch-readiness/12-admin-shipped.png`
+  - `screenshots/launch-readiness/13-admin-delivered.png`
+  - `screenshots/launch-readiness/14-mypage.png`
+  - `screenshots/launch-readiness/15-review-request.png`
+- Result:
+  - Success rate: `53%`
+  - Go/No-Go: `No-Go`
+  - Launch possible: `No`
+- Passed steps:
+  - Product listing
+  - Product detail page
+  - Cart page
+  - Checkout form
+  - Order creation
+  - Admin order lookup
+  - Admin status updates: `pending -> paid -> preparing`
+  - Shipping status with tracking number
+  - Delivered status
+- Blocked or partial steps:
+  - Signup/login require real Kakao/Supabase Auth configuration.
+  - Toss approval/refund rehearsal requires real or test Toss transaction credentials.
+  - `delivery_ready` is blocked in the connected DB by the current `orders_status_check` constraint.
+  - `review_requests` is missing in the connected DB.
+  - My page order history requires a real customer login session and user-linked order.
+- Final verification:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run verify:operations`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run dev:ensure`: passed

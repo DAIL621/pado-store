@@ -207,3 +207,16 @@ alter table products add column if not exists detail_json jsonb not null default
 - `pnpm run verify:ai-vision-provider` now selects `provider=openai`, but OpenAI returns HTTP 429 quota exceeded, so the app safely uses Mock fallback results.
 - `pnpm run analyze:dataset -- --category=abalone` attempted OpenAI analysis for 30 abalone images and returned `fallbackCount=30` because every OpenAI request returned 429.
 - To reach `fallbackUsed=false` and `fallbackCount` near 0, the OpenAI account billing/quota must be enabled or a valid key with available quota must be supplied.
+## 2026-07-10 Sprint 12 Launch Readiness Blockers
+
+- Critical: Toss live/test payment approval and refund rehearsal is still unverified.
+  - Required: Toss dashboard credentials, payment secret key, approved success/fail URLs, and a refundable real or test transaction.
+- Major: Customer signup/login is still blocked by external Kakao and Supabase Auth configuration.
+  - Required: Kakao Developers redirect URI, Supabase Auth redirect URL, and a real customer account rehearsal.
+- Major: Connected Supabase DB still blocks `delivery_ready`.
+  - Required: apply `supabase/migrations/202607060400_operation_automation.sql` or the equivalent `orders_status_check` constraint update in production DB.
+  - Source schema has been aligned in `supabase/schema.sql`.
+- Major: Connected Supabase DB is missing `review_requests`.
+  - Required: apply the operation automation migration before review request rehearsal can pass.
+- Major: My page order history is not fully verified with a real customer login session.
+  - Required: create a real customer session and confirm user-linked order visibility after payment.

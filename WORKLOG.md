@@ -1975,3 +1975,39 @@
   - `pnpm run build`: passed
   - `pnpm run dev:ensure`: passed
   - `pnpm run verify:admin`: passed
+
+## 2026-07-10 Sprint 12 - Launch Readiness Rehearsal
+
+- 실제 운영 전 고객/관리자 흐름 리허설 스크립트를 추가했습니다.
+  - 명령: `pnpm run rehearsal:launch`
+  - 보고서: `LAUNCH_READINESS_REPORT.md`
+  - JSON: `reports/launch-readiness/launch-readiness-latest.json`
+  - 캡처: `screenshots/launch-readiness/`
+- 리허설 상품:
+  - `tongyeong-sea-eel`
+- 리허설 주문:
+  - `PADO-20260710-E58F8D4`
+- 확인된 성공 흐름:
+  - 상품 조회
+  - 상품 상세
+  - 장바구니
+  - 주문서 작성
+  - 주문 생성
+  - 관리자 주문 확인
+  - `pending -> paid -> preparing`
+  - 송장 포함 `shipped`
+  - `delivered`
+- 확인된 Blocker:
+  - Kakao/Supabase Auth 실계정 회원가입/로그인 검증 필요
+  - Toss 실결제 승인/환불 리허설 필요
+  - 운영 DB `orders_status_check`에 `delivery_ready` 적용 필요
+  - 운영 DB `review_requests` 테이블 적용 필요
+  - 고객 로그인 기반 마이페이지 주문내역 확인 필요
+- 코드 보강:
+  - `supabase/schema.sql`의 주문 상태 check를 운영 상태 엔진과 일치시켰습니다.
+- 검증:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run verify:operations`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run dev:ensure`: passed

@@ -60,7 +60,7 @@ create table if not exists orders (
   id uuid primary key default gen_random_uuid(),
   order_no text unique not null,
   user_id uuid references profiles(id),
-  status text not null default 'pending' check (status in ('pending', 'paid', 'preparing', 'shipped', 'delivered', 'cancelled')),
+  status text not null default 'pending' check (status in ('pending', 'paid', 'preparing', 'delivery_ready', 'shipped', 'delivered', 'cancelled', 'return_requested', 'returned', 'refunded')),
   recipient_name text not null,
   recipient_phone text not null,
   postcode text,
