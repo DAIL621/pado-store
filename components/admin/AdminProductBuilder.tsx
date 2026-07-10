@@ -28,10 +28,14 @@ export type AdminProductOptionForm = {
   stock: string;
 };
 
+export type AdminProductPublishMode = "public" | "private" | "reserved";
+
 export type AdminProductBuilderPayload = {
   form: AdminProductFormState;
   options: AdminProductOptionForm[];
   detailJson: ProductDetail;
+  publishMode: AdminProductPublishMode;
+  reservedAt?: string;
 };
 
 type SubmitResult = {
@@ -159,6 +163,34 @@ function createTestSlug(baseSlug: string) {
   return `${normalizedBase}-test-${date}-${time}`;
 }
 
+function firstText(values: Array<string | undefined>) {
+  return values.find((value) => value && value.trim())?.trim() ?? "";
+}
+
+function hasReviewPlaceholder(detail: ProductDetail) {
+  return detail.extraSections.some((section) => section.type === "review-placeholder");
+}
+
+function withReviewPlaceholder(detail: ProductDetail): ProductDetail {
+  if (hasReviewPlaceholder(detail)) return detail;
+  return {
+    ...detail,
+    extraSections: [
+      ...detail.extraSections,
+      {
+        type: "review-placeholder",
+        title: "리뷰 준비중",
+        items: [
+          {
+            title: "사진 리뷰 영역",
+            description: "상품 판매 후 구매 인증 리뷰와 사진 후기를 연결할 수 있도록 준비된 영역입니다."
+          }
+        ]
+      }
+    ]
+  };
+}
+
 export function AdminProductBuilder({
   title,
   initialMessage,
@@ -186,6 +218,8 @@ export function AdminProductBuilder({
   const [toastMessage, setToastMessage] = useState("");
   const [draftReady, setDraftReady] = useState(!draftStorageKey);
   const [aiDraftLoaded, setAiDraftLoaded] = useState(false);
+  const [publishMode, setPublishMode] = useState<AdminProductPublishMode>("public");
+  const [reservedAt, setReservedAt] = useState("");
   const [submitDebug, setSubmitDebug] = useState<SubmitDebugState>({ mountedAt: "-", clickCount: 0 });
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const showSubmitDebug = process.env.NODE_ENV !== "production";
@@ -205,7 +239,7 @@ export function AdminProductBuilder({
         const aiDraft = JSON.parse(aiRaw) as AiImageAnalysisDraft;
         if (aiDraft.detailJson) {
           setDetailJson((current) =>
-            createProductDetailFormValue({
+            withReviewPlaceholder(createProductDetailFormValue({
               ...current,
               ...aiDraft.detailJson,
               heroImages: aiDraft.detailJson.heroImages?.length ? aiDraft.detailJson.heroImages : current.heroImages,
@@ -213,13 +247,30 @@ export function AdminProductBuilder({
               packaging: aiDraft.detailJson.packaging?.length ? aiDraft.detailJson.packaging : current.packaging,
               recipes: aiDraft.detailJson.recipes?.length ? aiDraft.detailJson.recipes : current.recipes,
               components: aiDraft.detailJson.components?.length ? aiDraft.detailJson.components : current.components,
+              faq: aiDraft.detailJson.faq?.length ? aiDraft.detailJson.faq : current.faq,
+              benefits: aiDraft.detailJson.benefits?.length ? aiDraft.detailJson.benefits : current.benefits,
               extraSections: aiDraft.detailJson.extraSections?.length ? aiDraft.detailJson.extraSections : current.extraSections
-            })
+            }))
           );
         }
+        const heroImage = aiDraft.detailJson.heroImages?.[0];
+        const firstBenefit = aiDraft.detailJson.benefits?.find(Boolean);
+        const firstFaq = aiDraft.detailJson.faq?.find((item) => item.question || item.answer);
+        const generatedTitle = firstText([heroImage?.label, aiDraft.results?.[0]?.title]);
+        const generatedDescription = firstText([
+          heroImage?.description,
+          aiDraft.results?.[0]?.description,
+          firstFaq?.answer,
+          firstBenefit
+        ]);
         setForm((current) => ({
           ...current,
+          name: current.name || generatedTitle,
           category: current.category || aiDraft.category || "",
+          subtitle: current.subtitle || generatedTitle || firstBenefit || "",
+          description: current.description || generatedDescription,
+          badge: current.badge || "AI 초안",
+          highlights: current.highlights || (aiDraft.detailJson.benefits ?? []).filter(Boolean).slice(0, 3).join(", "),
           imageUrl:
             !current.imageUrl || current.imageUrl === initialForm.imageUrl
               ? aiDraft.detailJson.heroImages?.[0]?.url || current.imageUrl
@@ -239,6 +290,10 @@ export function AdminProductBuilder({
         if (draft.form) setForm((current) => ({ ...current, ...draft.form }));
         if (draft.options?.length) setOptions(draft.options);
         if (draft.detailJson) setDetailJson(createProductDetailFormValue(draft.detailJson));
+        if (draft.publishMode === "public" || draft.publishMode === "private" || draft.publishMode === "reserved") {
+          setPublishMode(draft.publishMode);
+        }
+        if (typeof draft.reservedAt === "string") setReservedAt(draft.reservedAt);
         const savedAt = draft.savedAt ? new Date(draft.savedAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }) : "";
         setDraftStatus(savedAt ? `${savedAt} 자동 저장 초안을 불러왔습니다.` : "자동 저장 초안을 불러왔습니다.");
       }
@@ -260,6 +315,8 @@ export function AdminProductBuilder({
             form,
             options,
             detailJson,
+            publishMode,
+            reservedAt,
             savedAt: new Date().toISOString()
           })
         );
@@ -270,7 +327,7 @@ export function AdminProductBuilder({
     }, 800);
 
     return () => window.clearTimeout(timer);
-  }, [detailJson, draftReady, draftStorageKey, form, options, saving]);
+  }, [detailJson, draftReady, draftStorageKey, form, options, publishMode, reservedAt, saving]);
 
   const update = (key: keyof AdminProductFormState, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -387,6 +444,56 @@ export function AdminProductBuilder({
     const earnedWeight = qualityItems.reduce((sum, item) => sum + (item.done ? item.weight : 0), 0);
     return Math.round((earnedWeight / totalWeight) * 100);
   }, [qualityItems]);
+
+  const launchReadiness = useMemo(() => {
+    const heroCount = detailJson.heroImages.filter((image) => image.url).length;
+    const benefitCount = detailJson.benefits.filter(Boolean).length;
+    const packagingCount = detailJson.packaging.filter(Boolean).length;
+    const faqCount = detailJson.faq.filter((item) => item.question || item.answer).length;
+    const seoReady = Boolean(form.name && form.slug && form.subtitle);
+    const detailReady = benefitCount >= 3 && packagingCount >= 3 && faqCount >= 1;
+    const checks = [
+      Boolean(form.name && form.origin && form.category && form.subtitle && form.description && form.basePrice),
+      heroCount > 0,
+      aiDraftLoaded || heroCount > 0,
+      detailReady,
+      seoReady,
+      publishMode === "public" ? qualityScore >= 80 : true
+    ];
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  }, [aiDraftLoaded, detailJson, form, publishMode, qualityScore]);
+
+  const aiAutoFields = useMemo(() => {
+    const checks = [
+      { label: "제목", done: Boolean(aiDraftLoaded && form.name) },
+      { label: "설명", done: Boolean(aiDraftLoaded && form.description) },
+      { label: "대표사진", done: Boolean(detailJson.heroImages.some((image) => image.url)) },
+      { label: "Gallery", done: Boolean(detailJson.heroImages.filter((image) => image.url).length >= 2) },
+      { label: "FAQ", done: Boolean(detailJson.faq.some((item) => item.question || item.answer)) },
+      { label: "Benefits", done: Boolean(detailJson.benefits.some(Boolean)) },
+      { label: "Packaging", done: Boolean(detailJson.packaging.some(Boolean)) },
+      { label: "Review", done: Boolean(hasReviewPlaceholder(detailJson)) },
+      { label: "SEO", done: Boolean(form.name && form.slug && form.subtitle) }
+    ];
+    const doneCount = checks.filter((item) => item.done).length;
+    return {
+      checks,
+      rate: Math.round((doneCount / checks.length) * 100)
+    };
+  }, [aiDraftLoaded, detailJson, form.description, form.name, form.slug, form.subtitle]);
+
+  const wizardSteps = useMemo(() => {
+    const heroCount = detailJson.heroImages.filter((image) => image.url).length;
+    return [
+      { label: "① 기본정보", done: Boolean(form.name && form.origin && form.category && form.basePrice), value: form.name ? "완료" : "입력" },
+      { label: "② 사진 업로드", done: heroCount > 0, value: `${heroCount}/6` },
+      { label: "③ AI 자동분석", done: aiDraftLoaded, value: aiDraftLoaded ? "완료" : "선택" },
+      { label: "④ AI 상세 생성", done: aiAutoFields.rate >= 60, value: `${aiAutoFields.rate}%` },
+      { label: "⑤ 운영자 수정", done: qualityScore >= 80, value: `${qualityScore}%` },
+      { label: "⑥ 저장", done: saveCompleted, value: saveCompleted ? "완료" : "대기" },
+      { label: "⑦ 상품 공개", done: publishMode === "public" && saveCompleted, value: publishMode === "public" ? "공개" : publishMode === "private" ? "비공개" : "예약" }
+    ];
+  }, [aiAutoFields.rate, aiDraftLoaded, detailJson.heroImages, form, publishMode, qualityScore, saveCompleted]);
 
   const blockingIssues = useMemo<ValidationIssue[]>(() => validateProductPayload({ form, options }), [form, options]);
 
@@ -529,7 +636,7 @@ export function AdminProductBuilder({
 
     let result: SubmitResult;
     try {
-      result = await onSubmit({ form: submittedForm, options: submittedOptions, detailJson });
+      result = await onSubmit({ form: submittedForm, options: submittedOptions, detailJson, publishMode, reservedAt });
       updateSubmitDebug({
         apiStatus: result.ok ? "success" : "failed",
         apiFinishedAt: debugTime(),
@@ -651,6 +758,35 @@ export function AdminProductBuilder({
         </div>
         <progress value={progress} max={100} aria-label="상품등록 진행률" />
       </div>
+
+      <section className="admin-launch-wizard" aria-label="상품등록 런칭 Wizard">
+        <div className="admin-launch-wizard-head">
+          <div>
+            <span>LAUNCH WIZARD</span>
+            <strong>5분 상품등록 흐름</strong>
+          </div>
+          <div>
+            <b>{launchReadiness}%</b>
+            <small>출시 가능도</small>
+          </div>
+        </div>
+        <div className="admin-launch-steps">
+          {wizardSteps.map((step) => (
+            <span key={step.label} className={step.done ? "done" : ""}>
+              <b>{step.label}</b>
+              <em>{step.value}</em>
+            </span>
+          ))}
+        </div>
+        <div className="admin-ai-autofill-rate" role="status">
+          <strong>AI 자동 입력률 {aiAutoFields.rate}%</strong>
+          <div>
+            {aiAutoFields.checks.map((item) => (
+              <span key={item.label} className={item.done ? "done" : ""}>{item.label}</span>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <div className="admin-panel">
         <div>
@@ -817,6 +953,37 @@ export function AdminProductBuilder({
                   </ul>
                 ) : (
                   <p>필수 정보와 상세페이지 핵심 항목이 균형 있게 입력되었습니다.</p>
+                )}
+              </div>
+              <div className="admin-publish-panel" data-admin-section="publish">
+                <div>
+                  <strong>상품 공개 설정</strong>
+                  <span>저장과 동시에 공개할지, 검수용으로 숨길지 선택합니다.</span>
+                </div>
+                <div className="admin-publish-options" role="radiogroup" aria-label="상품 공개 상태">
+                  {[
+                    { value: "public", label: "즉시 공개", hint: "고객 상품 목록과 상세페이지에 노출" },
+                    { value: "private", label: "비공개 저장", hint: "관리자만 상세페이지 검수" },
+                    { value: "reserved", label: "예약 준비", hint: "비공개로 저장 후 예약일에 공개" }
+                  ].map((item) => (
+                    <label key={item.value} className={publishMode === item.value ? "active" : ""}>
+                      <input
+                        type="radio"
+                        name="publishMode"
+                        value={item.value}
+                        checked={publishMode === item.value}
+                        onChange={() => setPublishMode(item.value as AdminProductPublishMode)}
+                      />
+                      <b>{item.label}</b>
+                      <small>{item.hint}</small>
+                    </label>
+                  ))}
+                </div>
+                {publishMode === "reserved" && (
+                  <label className="admin-reserved-at">
+                    예약 공개 예정일
+                    <input type="datetime-local" value={reservedAt} onChange={(event) => setReservedAt(event.target.value)} />
+                  </label>
                 )}
               </div>
               <div className="admin-save-panel">

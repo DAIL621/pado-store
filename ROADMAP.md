@@ -560,3 +560,13 @@
 3. Move labels/review history to Supabase.
 4. Add real datasets for eel, oyster, shrimp, fish, meal-kit, and gift-set.
 5. Re-run Dataset Evaluation after human-reviewed labels are approved.
+
+### Sprint 11 Launch Registration Flow Completed
+
+- AI 사진분석 결과를 상품등록 화면의 운영 흐름에 연결했습니다.
+- 런칭용 Wizard로 기본정보, 사진, AI, 상세, SEO, 저장, 공개 상태를 한 화면에서 확인합니다.
+- 상품 공개 방식은 즉시 공개, 비공개 저장, 예약 준비를 지원합니다.
+- 다음 런칭 우선순위:
+  1. 실제 상품 1개를 AI 사진분석 -> 상품등록 -> 공개까지 운영자 손으로 리허설
+  2. 예약 공개 전용 DB 컬럼 또는 운영 배치 정책 확정
+  3. 상품등록 Wizard에서 사진 업로드 단계와 AI 분석 페이지를 더 강하게 연결

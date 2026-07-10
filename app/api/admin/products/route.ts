@@ -77,6 +77,12 @@ export async function POST(request: Request) {
     );
   }
 
+  const isActive = body.isActive === undefined ? true : Boolean(body.isActive);
+  const reservedNote =
+    body.publishMode === "reserved" && body.reservedAt
+      ? `예약 공개 예정: ${String(body.reservedAt)}`
+      : "";
+
   const { data: product, error } = await supabase
     .from("products")
     .insert({
@@ -93,8 +99,9 @@ export async function POST(request: Request) {
       highlights: String(body.highlights ?? "")
         .split(",")
         .map((item) => item.trim())
-        .filter(Boolean),
-      is_active: true
+        .filter(Boolean)
+        .concat(reservedNote ? [reservedNote] : []),
+      is_active: isActive
     })
     .select()
     .single();

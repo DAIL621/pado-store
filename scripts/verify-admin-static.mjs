@@ -41,6 +41,11 @@ assert(productEditor.includes("handlePaste"), "admin pasted image upload handler
 assert(productEditor.includes("clipboardData.files"), "admin pasted image upload does not read clipboard files");
 assert(productBuilder.includes("SEO"), "admin quality score does not include SEO readiness");
 assert(productBuilder.includes("productSlug"), "admin submit result should expose created product slug");
+assert(productBuilder.includes("LAUNCH WIZARD"), "admin product launch wizard is missing");
+assert(productBuilder.includes("AI 자동 입력률"), "admin AI autofill rate is missing");
+assert(productBuilder.includes("상품 공개 설정"), "admin publish mode selector is missing");
+assert(productBuilder.includes("publishMode"), "admin product payload should include publish mode");
+assert(productsApi.includes("body.isActive"), "admin product create API should accept active/private publish state");
 assert(productPreview.includes("ProductDetailTemplate"), "admin preview should render the real product detail template");
 assert(productPreview.includes("PreviewPurchaseSlot"), "admin preview should use a safe preview purchase slot");
 assert(ordersManager.includes("downloadFilteredOrders"), "admin order CSV download action is missing");

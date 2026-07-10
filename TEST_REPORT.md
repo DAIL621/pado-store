@@ -2173,3 +2173,25 @@
 - Analyze fallback:
   - `fallbackCount=12`
   - Primary reasons: OpenAI `429` responses and one image size limit.
+
+## 2026-07-10 Sprint 11 Product Registration Launch Flow
+
+- Scope:
+  - Product registration wizard
+  - AI draft auto-fill readiness
+  - Publish/private/reserved launch state
+  - Create success UX and product list redirect
+- Results:
+  - Estimated registration time: 5 minutes target supported by one-screen Wizard and AI draft import.
+  - Estimated click count: 6 major actions after AI image analysis handoff.
+  - AI auto-fill rate: shown in `/admin/new` as a live percentage across 9 fields.
+  - Human edits expected: product name, price/options, final copy, publish state.
+- Verification:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run dev:ensure`: passed
+  - `pnpm run verify:admin`: passed
+- E2E create flow confirmed:
+  - Button state changed from `상품 등록하기` to `저장 중...` to `상품 등록완료`.
+  - Created product was listed at the top of `/admin/products`.
+  - Created product detail URL returned 200.

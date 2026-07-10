@@ -1956,3 +1956,22 @@
   - 승인 완료: `7`
   - 미검수: `23`
   - fallbackCount: `12`
+- `pnpm run dev:ensure`: passed
+
+## 2026-07-10 Sprint 11 - 상품등록 자동화 완성
+
+- `/admin/new` 상품등록 화면에 런칭용 Wizard를 추가했습니다.
+  - 기본정보 -> 사진 업로드 -> AI 자동분석 -> AI 상세페이지 생성 -> 운영자 수정 -> 저장 -> 상품 공개 흐름을 한 화면에서 확인합니다.
+- AI 사진분석 draft가 들어오면 빈 기본정보와 상세페이지 항목을 자동 보강합니다.
+  - 제목/설명/대표사진/Gallery/FAQ/Benefits/Packaging/Review Placeholder/SEO 준비도를 진행률로 표시합니다.
+- 상품 공개 설정을 추가했습니다.
+  - 즉시 공개: `is_active=true`
+  - 비공개 저장: `is_active=false`
+  - 예약 준비: `is_active=false`로 저장하고 예약 일시를 하이라이트 메모에 남깁니다.
+- 등록 완료 후 기존 흐름대로 상세페이지 미리보기를 새 창으로 열고 `/admin/products`로 이동합니다.
+- 관리자 Preview는 기존 실제 상세페이지 템플릿 기반 PC/태블릿/모바일 전환을 유지합니다.
+- 검증:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run dev:ensure`: passed
+  - `pnpm run verify:admin`: passed
