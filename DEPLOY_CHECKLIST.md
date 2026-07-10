@@ -186,3 +186,23 @@
 - [ ] Kakao production login redirect tested
 - [ ] Supabase Storage product upload tested
 - [ ] Domain, SSL, robots, sitemap, metadata confirmed on production URL
+
+## 2026-07-10 Open Essential Blocker Checklist
+
+- [x] `verify:production-launch` checks Toss duplicate approval guard.
+- [x] `verify:production-launch` checks Toss failure rollback and payment inventory logs.
+- [x] `verify:production-launch` checks Toss refund stock restoration.
+- [x] `verify:production-launch` checks Kakao/Supabase callback profile creation source.
+- [x] `verify:production-launch` checks Supabase Storage upload source and admin upload route.
+- [x] `verify:production-launch` checks existing detail-page JSON source and renderer.
+- [x] `phase10-production-verification.sql` checks operation tables, order status constraint, `products.detail_json`, existing detail JSON sample, and Storage bucket/policies.
+- [ ] Enter final production `NEXT_PUBLIC_SITE_URL` in Vercel Production.
+- [ ] Enter final `NEXT_PUBLIC_KAKAO_CLIENT_ID` in Vercel Production.
+- [ ] Confirm `DEV_ADMIN_LOGIN_ENABLED=false` in Vercel Production.
+- [ ] Set `PADO_PRODUCT_IMAGE_STORAGE=supabase` and `SUPABASE_PRODUCT_IMAGE_BUCKET`.
+- [ ] Apply `supabase/migrations/202607060400_operation_automation.sql` to production Supabase.
+- [ ] Run `supabase/phase10-production-verification.sql` in the production Supabase SQL Editor.
+- [ ] Register Kakao/Supabase/Toss redirect URLs using the final production domain.
+- [ ] Run Toss approval/refund rehearsal with a refundable transaction.
+- [ ] Run `pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true`.
+- [ ] Run `pnpm run rehearsal:launch` and confirm `90%+`, Critical `0`.

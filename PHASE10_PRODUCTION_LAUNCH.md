@@ -419,3 +419,44 @@ External console confirmations still required even when the automated score is G
 3. Toss live/test payment approval and refund rehearsal completed.
 4. Kakao Developers and Supabase Auth redirect URLs match the production domain.
 5. Supabase Storage bucket policy confirmed.
+
+## 12. 2026-07-10 Open Blocker Removal Status
+
+This pass intentionally did not add customer-facing features, AI features, page design changes, or product-detail behavior changes. It only tightened launch-blocker verification.
+
+### Automated verification added or strengthened
+
+- `pnpm run verify:production-launch` now checks Toss duplicate approval guard, Toss failure stock rollback, Toss inventory logs, refund stock restoration, Kakao callback profile creation, admin role SQL, Supabase Storage upload helper, admin upload route protection, existing detail-page JSON fields, existing detail-page admin editor support, existing detail-page customer renderer, order status constraint coverage, and Storage verification SQL coverage.
+- `supabase/phase10-production-verification.sql` now checks:
+  - Operation automation tables.
+  - Indexes, RLS policies, triggers, and foreign keys.
+  - `products.detail_json`.
+  - `orders_status_check` values including `delivery_ready`, `return_requested`, `returned`, and `refunded`.
+  - Existing detail-page JSON shape using `detailDisplayMode` and `legacyDetailImages`.
+  - Supabase Storage bucket and storage object policies for the production product image bucket.
+
+### Latest local readiness result
+
+- `pnpm run verify:production-launch`: `Conditional Go`, `81%`.
+- `pnpm run rehearsal:launch`: `No-Go`, `53%`.
+- The remaining failures are not design or feature gaps. They are external-console or production-DB application blockers:
+  - Production `NEXT_PUBLIC_SITE_URL` is not available in the local production-verification environment.
+  - Kakao production key and redirect settings are not available in the local production-verification environment.
+  - Local `.env.local` still has development admin login enabled for testing.
+  - Local image storage mode is still `local`; production must use Supabase Storage.
+  - Connected Supabase DB has not yet applied the operation automation migration, so `delivery_ready` and `review_requests` fail in rehearsal.
+  - Toss real payment approval/refund still requires Toss credentials, dashboard URL registration, and a refundable transaction.
+
+### Go criteria for the next pass
+
+Run after the external console items are completed:
+
+```bash
+pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true
+pnpm run rehearsal:launch
+```
+
+Expected before public opening:
+
+- `verify:production-launch`: `Go`, `95%+`.
+- `rehearsal:launch`: `Conditional Go` or `Go`, `90%+`, with no Critical issues.

@@ -82,6 +82,15 @@ const confirmRoute = read("app/api/payments/toss/confirm/route.ts");
 const refundRoute = read("app/api/admin/payments/refund/route.ts");
 const webhookRoute = read("app/api/payments/toss/webhook/route.ts");
 const runbook = read("PHASE10_PRODUCTION_LAUNCH.md");
+const envExample = read(".env.example");
+const storageHelper = read("lib/admin/image-storage.ts");
+const uploadRoute = read("app/api/admin/uploads/route.ts");
+const productDetailModel = read("lib/products/detail.ts");
+const productDetailTemplate = read("components/products/ProductDetailTemplate.tsx");
+const productDetailEditor = read("components/admin/ProductDetailEditor.tsx");
+const authCallbackRoute = read("app/auth/callback/route.ts");
+const setAdminSql = read("supabase/set-admin.sql");
+const schemaSql = read("supabase/schema.sql");
 
 const requiredEnv = [
   "NEXT_PUBLIC_SUPABASE_URL",
@@ -125,14 +134,37 @@ checks.push(check("migration:RLS", migration.includes("enable row level security
 checks.push(check("migration:indexes", migration.includes("create index if not exists"), "indexes present", 2, true));
 checks.push(check("migration:triggers", migration.includes("create trigger") && migration.includes("set_updated_at"), "updated_at triggers present", 2, true));
 checks.push(check("migration:foreign-keys", migration.includes("references orders") && migration.includes("references product_options"), "foreign keys present", 2, true));
+["delivery_ready", "return_requested", "returned", "refunded"].forEach((status) => {
+  checks.push(check(`migration:orders_status_check:${status}`, migration.includes(`'${status}'`), `orders status supports ${status}`, 2, true));
+  checks.push(check(`schema:orders_status_check:${status}`, schemaSql.includes(`'${status}'`), `base schema supports ${status}`, 1, true));
+  checks.push(check(`verification-sql:orders_status_check:${status}`, verificationSql.includes(`('${status}')`), `verification SQL checks ${status}`, 1, true));
+});
+checks.push(check("verification-sql:products.detail_json", verificationSql.includes("column_name = 'detail_json'"), "products.detail_json column check present", 2, true));
+checks.push(check("verification-sql:legacy-detail-json", verificationSql.includes("legacyDetailImages") && verificationSql.includes("detailDisplayMode"), "legacy detail JSON structure check present", 2, true));
+checks.push(check("verification-sql:storage-bucket", verificationSql.includes("storage.buckets") && verificationSql.includes("product-images"), "Supabase Storage bucket check present", 1, false));
 
 checks.push(check("health:env checks", healthRoute.includes("tossSecretKey") && healthRoute.includes("devAdminLoginDisabled"), "health route checks critical env", 2, true));
 checks.push(check("seo:sitemap route", sitemap.includes("NEXT_PUBLIC_SITE_URL") && sitemap.includes("/products"), "sitemap route uses site URL and product URLs", 2, true));
 checks.push(check("seo:robots route", robots.includes("sitemap") && robots.includes("disallow"), "robots route includes sitemap and admin disallow", 2, true));
 checks.push(check("toss:confirm route", confirmRoute.includes("api.tosspayments.com") && confirmRoute.includes("payment_approved"), "Toss confirm and operation log present", 3, true));
+checks.push(check("toss:duplicate-confirm guard", confirmRoute.includes("alreadyPaid") && confirmRoute.includes("alreadyConfirmed"), "duplicate payment approval returns idempotent success", 2, true));
+checks.push(check("toss:failure handling", confirmRoute.includes("payment_failed") && confirmRoute.includes("restoreOrderStock"), "Toss failure logs and restores reserved stock", 2, true));
+checks.push(check("toss:inventory logging", confirmRoute.includes("writeInventoryLogsBestEffort") && confirmRoute.includes("payment_confirmed"), "payment approval writes inventory logs", 2, true));
 checks.push(check("toss:refund route", refundRoute.includes("cancel") && refundRoute.includes("refund_completed"), "Toss refund and stock restore path present", 3, true));
+checks.push(check("toss:refund stock restore", refundRoute.includes("restoreRefundedStock") && refundRoute.includes("writeInventoryLogsBestEffort"), "refund restores inventory and writes logs", 2, true));
 checks.push(check("toss:webhook route", webhookRoute.includes("toss-webhook") && webhookRoute.includes("writeOperationLogBestEffort"), "Toss webhook logging present", 2, true));
+checks.push(check("kakao:auth callback profile", authCallbackRoute.includes("profiles") && authCallbackRoute.includes("role: \"customer\""), "Kakao/Supabase callback creates customer profile", 2, true));
+checks.push(check("kakao:admin role sql", setAdminSql.includes("set role = 'admin'") && setAdminSql.includes("profiles"), "admin role promotion SQL documented", 1, true));
+checks.push(check("storage:env example", envExample.includes("PADO_PRODUCT_IMAGE_STORAGE=supabase") && envExample.includes("SUPABASE_PRODUCT_IMAGE_BUCKET=product-images"), "Storage production env documented", 1, true));
+checks.push(check("storage:upload helper", storageHelper.includes("client.storage.from(bucket).upload") && storageHelper.includes("getPublicUrl"), "Supabase Storage upload and public URL path present", 2, true));
+checks.push(check("storage:admin upload route", uploadRoute.includes("uploadAdminProductImage") && uploadRoute.includes("requireAdminApi"), "admin upload route requires admin and uses storage helper", 2, true));
+checks.push(check("detail-json:legacy model", productDetailModel.includes("detailDisplayMode") && productDetailModel.includes("legacyDetailImages"), "legacy detail image fields exist in detail model", 2, true));
+checks.push(check("detail-json:legacy editor", productDetailEditor.includes("legacyDetailImages") && productDetailEditor.includes("uploadLegacyFiles"), "admin editor supports legacy detail uploads", 2, true));
+checks.push(check("detail-json:legacy renderer", productDetailTemplate.includes('data-template-kind="legacy"') && productDetailTemplate.includes("legacy-detail-pages"), "customer detail page renders legacy detail images first", 2, true));
 checks.push(check("runbook:go no-go", runbook.includes("Go / No-Go") && runbook.includes("Top 10"), "runbook has launch decision and critical tasks", 2, true));
+checks.push(check("runbook:toss rehearsal", runbook.includes("Toss Real Payment / Refund Rehearsal"), "Toss real-payment/refund rehearsal documented", 2, true));
+checks.push(check("runbook:redirect checklist", runbook.includes("Redirect URL Checklist"), "Kakao/Supabase/Toss redirect checklist documented", 2, true));
+checks.push(check("runbook:storage checklist", runbook.includes("Supabase Storage Production Bucket Checklist"), "Supabase Storage production checklist documented", 2, true));
 
 Object.entries(redirectUrls).forEach(([key, value]) => {
   checks.push(check(`redirect:${key}`, isProductionUrl(value), value, 1, key.includes("toss") || key.includes("kakao")));

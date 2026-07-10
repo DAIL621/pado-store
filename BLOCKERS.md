@@ -227,3 +227,18 @@ alter table products add column if not exists detail_json jsonb not null default
   - Wando live abalone detail page PNG/JPG/WebP files
   - Tongyeong sea eel, rock oyster, octopus, mackerel, hairtail, abalone porridge, abalone seaweed soup, and other product detail page image files
 - The upload, ordering, preview, save, and customer detail rendering pipeline is ready. Actual product application can proceed as soon as the image files are provided.
+
+## 2026-07-10 Open Essential Blockers
+
+- Critical: Toss real payment approval/refund rehearsal is still blocked by external Toss credentials, dashboard URL registration, and a refundable real/test transaction.
+- Critical: Production URL verification is still blocked until `NEXT_PUBLIC_SITE_URL` is set to the final HTTPS domain and the deployed URL is available.
+- Critical: Kakao production login verification is still blocked until `NEXT_PUBLIC_KAKAO_CLIENT_ID`, Kakao Developers redirect URI, and Supabase Auth redirect URL are configured for the production domain.
+- Critical: Production must confirm `DEV_ADMIN_LOGIN_ENABLED=false` in Vercel Production. Local `.env.local` currently remains enabled for development testing.
+- Major: Connected Supabase DB still needs the operation automation migration applied. Current rehearsal shows `orders_status_check` does not allow `delivery_ready`, and `review_requests` is missing.
+- Major: Supabase Storage production readiness still needs bucket creation/policy confirmation and Vercel env values:
+  - `PADO_PRODUCT_IMAGE_STORAGE=supabase`
+  - `SUPABASE_PRODUCT_IMAGE_BUCKET=product-images` or the actual production bucket name
+- Major: Notification provider can remain `mock` for a soft internal rehearsal, but public launch should either accept mock notifications explicitly or configure Kakao Alimtalk/SMS/Email provider credentials.
+- Automated preparation completed:
+  - `verify:production-launch` now checks Toss duplicate approval, Toss failure rollback, refund stock restore, Kakao profile callback, admin role SQL, Storage upload path, existing detail JSON path, order status coverage, and production verification SQL coverage.
+  - `supabase/phase10-production-verification.sql` now checks operation tables, indexes, policies, triggers, foreign keys, order status constraint values, `products.detail_json`, existing detail-page JSON structure, and Storage bucket/policies.

@@ -1,9 +1,9 @@
 {
-  "createdAt": "2026-07-10T05:39:00.952Z",
+  "createdAt": "2026-07-10T06:41:22.824Z",
   "successRate": 53,
   "goNoGo": "No-Go",
   "launchPossible": "불가",
-  "orderNo": "PADO-20260710-E58F8D4",
+  "orderNo": "PADO-20260710-A981093",
   "productSlug": "tongyeong-sea-eel",
   "steps": [
     {
@@ -57,7 +57,7 @@
     {
       "name": "⑨ 관리자 주문 확인",
       "status": "SUCCESS",
-      "details": "PADO-20260710-E58F8D4",
+      "details": "PADO-20260710-A981093",
       "screenshot": "screenshots/launch-readiness/09-admin-orders.png"
     },
     {
@@ -126,7 +126,7 @@
   ],
   "notes": [
     "리허설 상품: 통영 바다장어 (tongyeong-sea-eel)",
-    "리허설 주문: PADO-20260710-E58F8D4",
+    "리허설 주문: PADO-20260710-A981093",
     "실결제 승인 대신 관리자 상태 변경으로 결제완료 이후 운영 흐름을 검증했습니다."
   ]
 }

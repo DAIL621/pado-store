@@ -600,3 +600,17 @@ Next launch work:
 2. Repeat upload for Tongyeong sea eel, rock oyster, octopus, mackerel, hairtail, abalone porridge, abalone seaweed soup, and other registered products.
 3. Re-run product detail captures for PC, tablet, and mobile after each real detail page image batch is applied.
 4. Confirm image file size and mobile loading performance before production launch.
+
+### Open Essential Blocker Priority
+
+Current automated status:
+- `verify:production-launch`: Conditional Go, 81%.
+- `rehearsal:launch`: No-Go, 53%.
+
+Next priority before launch:
+1. Apply operation automation migration to production Supabase and run `supabase/phase10-production-verification.sql`.
+2. Set Vercel Production env values, especially production site URL, Kakao key, Storage mode/bucket, and `DEV_ADMIN_LOGIN_ENABLED=false`.
+3. Register Kakao/Supabase/Toss redirect URLs against the final production domain.
+4. Confirm Supabase Storage bucket policy and production admin image upload.
+5. Run Toss payment approval/refund rehearsal with a refundable transaction.
+6. Re-run `pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true` and `pnpm run rehearsal:launch`.

@@ -1,10 +1,10 @@
 # Launch Readiness Report
 
-- 생성 시각: 2026-07-10T05:39:00.952Z
+- 생성 시각: 2026-07-10T06:41:22.824Z
 - 테스트 성공률: 53%
 - Go / No-Go: No-Go
 - 실제 런칭 가능 여부: 불가
-- 주문번호: PADO-20260710-E58F8D4
+- 주문번호: PADO-20260710-A981093
 
 ## 단계별 결과
 
@@ -18,7 +18,7 @@
 | ⑥ 주문서 작성 | SUCCESS | 필수 배송지 입력 완료 | screenshots/launch-readiness/06-checkout.png |
 | ⑦ Toss 결제 | BLOCKED | 실제 Toss 결제창/승인/환불은 외부 실결제 권한 필요. 주문은 pending으로 생성됨. | - |
 | ⑧ 주문 완료 | PARTIAL | 결제 전 주문 생성 및 주문 확인 화면 표시 | screenshots/launch-readiness/08-order-complete.png |
-| ⑨ 관리자 주문 확인 | SUCCESS | PADO-20260710-E58F8D4 | screenshots/launch-readiness/09-admin-orders.png |
+| ⑨ 관리자 주문 확인 | SUCCESS | PADO-20260710-A981093 | screenshots/launch-readiness/09-admin-orders.png |
 | ⑩ 주문 상태 변경 | SUCCESS | pending -> paid -> preparing | - |
 | ⑪ 송장 입력 | PARTIAL | delivery_ready 전환 실패. shipped 단계에서 송장 입력 재시도: 주문 상태 변경 실패: {"status":"delivery_ready","carrier":"CJ대한통운","trackingNumber":"123456789012"} status=500 body={"ok":false,"message":"new row for relation \"orders\" violates check constraint \"orders_status_check\""} | - |
 | ⑫ 배송중 | SUCCESS | preparing -> shipped | screenshots/launch-readiness/12-admin-shipped.png |
@@ -37,5 +37,5 @@
 ## 검증 메모
 
 - 리허설 상품: 통영 바다장어 (tongyeong-sea-eel)
-- 리허설 주문: PADO-20260710-E58F8D4
+- 리허설 주문: PADO-20260710-A981093
 - 실결제 승인 대신 관리자 상태 변경으로 결제완료 이후 운영 흐름을 검증했습니다.

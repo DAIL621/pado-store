@@ -2269,3 +2269,29 @@
   - `pnpm run build`: passed
 - Note:
   - The actual CEO-made abalone detail page source images were not present in the repository, so the production abalone product was not modified with placeholder detail pages.
+
+## 2026-07-10 Open Essential Blocker Removal Verification
+
+- Commands:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run verify:operations`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:production-launch`: passed as non-strict
+  - `pnpm run rehearsal:launch`: script passed
+  - `pnpm run dev:ensure`: passed
+- Production launch verifier:
+  - Go/No-Go: `Conditional Go`
+  - Readiness: `81%`
+  - Production readiness: `81%`
+  - Major passing areas: operation migration source, RLS/index/FK/trigger coverage, order status source coverage, Toss confirm/refund/webhook source readiness, Kakao callback profile creation source, Storage upload source, existing detail JSON source, robots/sitemap source.
+  - Remaining local/env failures: missing production `NEXT_PUBLIC_SITE_URL`, missing Kakao production key, local `DEV_ADMIN_LOGIN_ENABLED=true`, local image storage mode `local`, mock notification provider, missing live production URL remote checks.
+- Launch readiness rehearsal:
+  - Report: `LAUNCH_READINESS_REPORT.md`
+  - JSON: `reports/launch-readiness/launch-readiness-latest.json`
+  - Success rate: `53%`
+  - Go/No-Go: `No-Go`
+  - Rehearsal order: `PADO-20260710-A981093`
+  - Product: `tongyeong-sea-eel`
+  - Passed: product list, product detail, cart, checkout form, order creation, admin order lookup, status changes through shipped/delivered.
+  - Blocked/partial: Kakao signup/login, Toss real approval/refund, connected DB `delivery_ready`, connected DB `review_requests`, my page real customer order history.

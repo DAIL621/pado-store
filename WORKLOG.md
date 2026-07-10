@@ -2034,3 +2034,17 @@
   - `pnpm run verify:detail-template`: passed
   - `pnpm run verify:admin`: passed
   - `pnpm run build`: passed
+
+## 2026-07-10 Open Essential Blocker Removal
+
+- Scope was limited to launch blockers only. No AI feature, design, main page, or product-detail feature changes were made.
+- Strengthened `pnpm run verify:production-launch` to cover Toss duplicate approval guard, Toss failure stock rollback, payment inventory logs, refund stock restoration, webhook operation logging, Kakao callback profile creation, admin role SQL, Supabase Storage upload path, existing detail-page JSON path, and operation order status constraint coverage.
+- Expanded `supabase/phase10-production-verification.sql` with checks for `orders_status_check`, `products.detail_json`, existing detail-page JSON sample shape, and Supabase Storage bucket/policies.
+- Latest automated status:
+  - `pnpm run verify:production-launch`: passed as non-strict, `Conditional Go`, readiness `81%`.
+  - `pnpm run rehearsal:launch`: script passed, launch result `No-Go`, success rate `53%`.
+- Latest rehearsal order:
+  - `PADO-20260710-A981093`
+  - Product: `tongyeong-sea-eel`
+- Internal flows that passed in rehearsal: product list, product detail, cart, checkout form, order creation, admin order lookup, admin status updates through shipped/delivered.
+- Remaining blockers are external console or production DB application items: Toss real approval/refund, Kakao production login redirect, Vercel Production env confirmation, Supabase operation migration application, Supabase Storage bucket/policy confirmation, and Production URL SSL/robots/sitemap/metadata check.
