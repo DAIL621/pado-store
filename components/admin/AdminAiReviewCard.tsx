@@ -121,7 +121,7 @@ export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
           </label>
           <label>
             운영자 최종 역할
-            <input readOnly value={`${getAiRoleLabel(role)}${roleMismatch ? " (수정됨)" : ""}`} />
+            <input className={roleMismatch ? "admin-ai-compare-mismatch" : "admin-ai-compare-match"} readOnly value={`${getAiRoleLabel(role)}${roleMismatch ? " (수정됨)" : ""}`} />
           </label>
           <label>
             AI 추천 섹션
@@ -129,7 +129,7 @@ export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
           </label>
           <label>
             운영자 최종 섹션
-            <input readOnly value={`${getAiSectionLabel(section)}${sectionMismatch ? " (수정됨)" : ""}`} />
+            <input className={sectionMismatch ? "admin-ai-compare-mismatch" : "admin-ai-compare-match"} readOnly value={`${getAiSectionLabel(section)}${sectionMismatch ? " (수정됨)" : ""}`} />
           </label>
           <label>
             승인 상태
@@ -150,7 +150,7 @@ export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
           역할 변경
           <select value={role} onChange={(event) => setRole(event.target.value as AiImageRole)}>
             {AI_IMAGE_ROLE_OPTIONS.map((item) => (
-              <option value={item.value} key={item.value}>{item.label}</option>
+              <option value={item.value} key={item.value}>{getAiRoleLabel(item.value)}</option>
             ))}
           </select>
         </label>
@@ -158,7 +158,7 @@ export function AdminAiReviewCard(props: AdminAiReviewCardProps) {
           상세페이지 섹션 변경
           <select value={section} onChange={(event) => setSection(event.target.value as AiImageRecommendedSection)}>
             {AI_IMAGE_SECTION_OPTIONS.map((item) => (
-              <option value={item.value} key={item.value}>{item.label}</option>
+              <option value={item.value} key={item.value}>{getAiSectionLabel(item.value)}</option>
             ))}
           </select>
         </label>

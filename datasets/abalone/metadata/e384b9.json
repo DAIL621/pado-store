@@ -5,15 +5,14 @@
   "category": "abalone",
   "provider": "openai",
   "fallbackUsed": false,
-  "suggestedRole": "origin",
+  "suggestedRole": "freshness",
   "recommendedSection": "gallery",
   "confidence": 95,
-  "qualityScore": 90,
-  "heroRank": 1,
+  "qualityScore": 8,
   "title": "신선한 전복",
-  "description": "자연에서 갓 잡아온 신선한 전복입니다. 탱글탱글한 식감과 깊은 맛을 자랑합니다.",
-  "caption": "신선한 전복, 바다의 맛을 그대로 담았습니다.",
-  "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다.",
-  "reasoningSummary": "전복의 신선함과 품질을 강조하며, 소비자에게 매력적인 요소를 제공합니다.",
-  "analyzedAt": "2026-07-09T08:25:52.878Z"
+  "description": "신선한 전복이 얼음 위에 놓여 있습니다. 탱글탱글한 질감과 자연스러운 색상이 돋보입니다.",
+  "caption": "신선한 전복의 질감과 색상",
+  "warningMessage": "상품의 신선도는 보관 상태에 따라 달라질 수 있습니다.",
+  "reasoningSummary": "전복의 신선도와 질감을 강조하는 사진으로, 신선한 해산물의 매력을 잘 보여줍니다.",
+  "analyzedAt": "2026-07-10T04:05:54.607Z"
 }

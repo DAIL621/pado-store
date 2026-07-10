@@ -2142,3 +2142,34 @@
   - OpenAI Vision was used where possible.
   - 11 images used fallback because of OpenAI `429` responses or image size limits.
   - Existing reviewed/approved label fields are preserved when `analyze:dataset` is rerun.
+
+## 2026-07-10 AI Standard Role / Section Dictionary V1
+
+- Added standard dictionaries:
+  - `lib/admin/ai-role-dictionary.ts`
+  - `lib/admin/ai-section-dictionary.ts`
+- Validation policy:
+  - unknown Role -> `unknown`
+  - unknown Section -> `extraSections`
+  - UI labels remain Korean-first.
+  - Existing reviewed labels remain the ground truth and are not overwritten.
+- Commands:
+  - `pnpm run analyze:dataset -- --category=abalone`: passed
+  - `pnpm run evaluate:review -- --category=abalone`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:ai-vision-provider`: passed
+  - `pnpm run dev:ensure`: passed
+- Latest accuracy:
+  - Role Accuracy: `57%`
+  - Section Accuracy: `86%`
+  - Baseline Role Accuracy: `43%`
+  - Baseline Section Accuracy: `57%`
+  - Role improvement: `+14%p`
+  - Section improvement: `+29%p`
+- Confusion Matrix:
+  - `reports/ai-evaluation/role-confusion.json`
+- Analyze fallback:
+  - `fallbackCount=12`
+  - Primary reasons: OpenAI `429` responses and one image size limit.

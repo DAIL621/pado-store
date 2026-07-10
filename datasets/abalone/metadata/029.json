@@ -9,10 +9,10 @@
   "recommendedSection": "recipes",
   "confidence": 95,
   "qualityScore": 8,
-  "title": "신선한 전복 요리",
-  "description": "부드러운 전복으로 만든 단백한 전복죽과 고소한 전복구이로 특별한 한 끼를 즐겨보세요.",
-  "caption": "전복의 다양한 요리, 전복죽과 전복구이",
-  "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다.",
-  "reasoningSummary": "전복을 활용한 두 가지 요리 사진으로, 신선함과 맛을 강조하며 소비자에게 매력적인 선택지를 제공합니다.",
-  "analyzedAt": "2026-07-09T08:25:52.874Z"
+  "title": "전복 요리 예시",
+  "description": "신선한 전복으로 만든 단백한 전복죽과 고소한 전복구이의 모습입니다.",
+  "caption": "전복죽과 전복구이, 두 가지 조리법을 소개합니다.",
+  "warningMessage": "조리된 음식의 사진입니다.",
+  "reasoningSummary": "전복 요리 예시로, 조리된 음식이 포함되어 있어 'cooking' 역할과 'recipes' 섹션이 적합합니다.",
+  "analyzedAt": "2026-07-10T04:05:54.599Z"
 }

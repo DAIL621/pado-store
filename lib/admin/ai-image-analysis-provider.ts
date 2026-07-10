@@ -7,6 +7,8 @@ import {
   type AiImageRecommendedSection,
   type AiImageRole
 } from "@/lib/admin/ai-image-analysis";
+import { getAiRolePromptList, normalizeAiRole } from "@/lib/admin/ai-role-dictionary";
+import { getAiSectionPromptList, normalizeAiSection } from "@/lib/admin/ai-section-dictionary";
 
 export type AiImageProviderName = "mock" | "openai";
 
@@ -58,11 +60,11 @@ function clampScore(value: unknown, fallback: number) {
 }
 
 function asRole(value: unknown): AiImageRole {
-  return ROLE_VALUES.includes(value as AiImageRole) ? (value as AiImageRole) : "unknown";
+  return normalizeAiRole(value);
 }
 
 function asSection(value: unknown): AiImageRecommendedSection {
-  return SECTION_VALUES.includes(value as AiImageRecommendedSection) ? (value as AiImageRecommendedSection) : "extraSections";
+  return normalizeAiSection(value);
 }
 
 function cleanText(value: unknown, fallback = "") {
@@ -135,6 +137,11 @@ class OpenAiVisionImageAnalysisProvider implements AiImageAnalysisProvider {
       "응답의 모든 title, description, caption, warningMessage, reasoningSummary는 반드시 자연스러운 한국어로 작성하세요.",
       "사진에 보이는 내용만 근거로 판단하세요. 사진만으로 확인할 수 없는 원산지, 채취일, 국내산, 완도산, 통영산, 당일조업, 인증 여부는 단정하지 마세요.",
       categoryGuide,
+      "Role은 반드시 아래 목록 중 하나의 value만 선택합니다. 자유로운 Role 표현 생성은 금지합니다.",
+      getAiRolePromptList(),
+      "Section도 반드시 아래 목록 중 하나의 value만 선택합니다. 자유로운 Section 표현 생성은 금지합니다.",
+      getAiSectionPromptList(),
+      "아이스팩/보냉박스는 포장/배송, 조리된 음식은 조리 예시, 손에 든 상품은 크기 비교 또는 신선도/질감, 작업장/선별 장면은 선별 과정, 포장 봉투/박스는 포장/배송으로 판단합니다.",
       "다음 role 중 하나만 선택하세요: hero, origin, sizeComparison, freshness, package, shipping, cooking, components, process, review, detail, unknown.",
       "아이스팩/보냉 박스는 shipping 또는 package로 분류하세요. 죽/구이/탕/완성 요리는 cooking입니다. 손에 든 수산물은 sizeComparison 또는 freshness입니다. 작업장/선별/세척은 process 또는 origin입니다. 포장 봉투/박스는 package 또는 components입니다.",
       "다음 recommendedSection 중 하나만 선택하세요: heroImages, journey, gallery, packaging, recipes, components, process, extraSections.",

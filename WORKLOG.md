@@ -1936,3 +1936,23 @@
   - 섹션 다름
   - 품질 낮음
 - `analyze:dataset` 재실행 시 기존 운영자 승인 라벨이 덮어써지지 않도록 보존 로직을 추가했습니다.
+
+## 2026-07-10 AI 표준 Role / Section 사전 구축 V1
+
+- 표준 Role 사전 추가:
+  - `lib/admin/ai-role-dictionary.ts`
+- 표준 Section 사전 추가:
+  - `lib/admin/ai-section-dictionary.ts`
+- OpenAI Vision Provider와 dataset 분석 스크립트가 표준 사전 후보만 사용하도록 prompt와 후처리 validation을 연결했습니다.
+- 사전에 없는 Role은 `unknown`, Section은 `extraSections`로 자동 보정합니다.
+- Review Center에서 AI 추천값과 운영자 최종값이 일치하면 초록색, 다르면 주황색으로 표시하도록 개선했습니다.
+- `evaluate:review`에 Role Confusion Matrix와 기존 기준 대비 향상 수치를 추가했습니다.
+- 생성 리포트:
+  - `reports/ai-evaluation/abalone-review-latest.json`
+  - `reports/ai-evaluation/role-confusion.json`
+- 전복 30장 재분석 결과:
+  - Role Accuracy: `43%` -> `57%` (`+14%p`)
+  - Section Accuracy: `57%` -> `86%` (`+29%p`)
+  - 승인 완료: `7`
+  - 미검수: `23`
+  - fallbackCount: `12`

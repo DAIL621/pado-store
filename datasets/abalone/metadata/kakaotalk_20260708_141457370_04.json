@@ -5,14 +5,14 @@
   "category": "abalone",
   "provider": "openai",
   "fallbackUsed": false,
-  "suggestedRole": "origin",
-  "recommendedSection": "gallery",
-  "confidence": 85,
+  "suggestedRole": "process",
+  "recommendedSection": "process",
+  "confidence": 95,
   "qualityScore": 90,
-  "title": "신선한 전복",
-  "description": "자연에서 채취한 신선한 전복입니다. 풍부한 맛과 영양을 자랑합니다.",
-  "caption": "자연 그대로의 전복, 신선함을 느껴보세요.",
-  "warningMessage": "원산지 및 조업일은 확인이 필요합니다.",
-  "reasoningSummary": "사진 속 전복은 신선하고 자연적인 상태로 보이며, 소비자에게 매력적인 요소를 제공합니다.",
-  "analyzedAt": "2026-07-09T08:25:52.901Z"
+  "title": "신선한 전복 선별 과정",
+  "description": "전복의 신선도를 유지하기 위한 선별 과정이 진행되고 있습니다.",
+  "caption": "신선한 전복을 선별하는 모습",
+  "warningMessage": "전복의 상태는 사진과 다를 수 있습니다.",
+  "reasoningSummary": "사진은 전복의 선별 과정을 보여주고 있으며, 신선도를 강조하는 내용으로 적합합니다.",
+  "analyzedAt": "2026-07-10T04:05:54.658Z"
 }

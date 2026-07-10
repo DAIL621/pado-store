@@ -1,6 +1,6 @@
 {
   "category": "abalone",
-  "generatedAt": "2026-07-09T08:27:42.724Z",
+  "generatedAt": "2026-07-10T04:11:35.487Z",
   "totalImages": 30,
   "labelCount": 30,
   "metadataCount": 30,
@@ -8,13 +8,39 @@
   "approvedCount": 7,
   "pendingCount": 23,
   "heldCount": 0,
-  "roleAccuracy": 43,
-  "sectionAccuracy": 57,
+  "roleAccuracy": 57,
+  "sectionAccuracy": 86,
+  "baseline": {
+    "roleAccuracy": 43,
+    "sectionAccuracy": 57
+  },
+  "improvement": {
+    "roleAccuracy": 14,
+    "sectionAccuracy": 29
+  },
+  "roleConfusionMatrix": {
+    "freshness": {
+      "freshness": 1,
+      "sizeComparison": 1
+    },
+    "cooking": {
+      "cooking": 2
+    },
+    "hero": {
+      "freshness": 1
+    },
+    "components": {
+      "shipping": 1
+    },
+    "shipping": {
+      "shipping": 1
+    }
+  },
   "titleChangedCount": 7,
   "descriptionChangedCount": 7,
   "qualityChangedCount": 6,
-  "roleMismatchCount": 4,
-  "sectionMismatchCount": 3,
+  "roleMismatchCount": 3,
+  "sectionMismatchCount": 1,
   "reviewedFiles": [
     {
       "fileName": "018.png",
@@ -36,25 +62,25 @@
     },
     {
       "fileName": "030.png",
-      "aiRole": "unknown",
+      "aiRole": "cooking",
       "finalRole": "cooking",
-      "aiSection": "gallery",
+      "aiSection": "recipes",
       "finalSection": "recipes",
-      "roleMatch": false,
-      "sectionMatch": false
-    },
-    {
-      "fileName": "ㄴ.png",
-      "aiRole": "freshness",
-      "finalRole": "freshness",
-      "aiSection": "gallery",
-      "finalSection": "gallery",
       "roleMatch": true,
       "sectionMatch": true
     },
     {
+      "fileName": "ㄴ.png",
+      "aiRole": "sizeComparison",
+      "finalRole": "freshness",
+      "aiSection": "gallery",
+      "finalSection": "gallery",
+      "roleMatch": false,
+      "sectionMatch": true
+    },
+    {
       "fileName": "ㄹ.png",
-      "aiRole": "origin",
+      "aiRole": "freshness",
       "finalRole": "hero",
       "aiSection": "gallery",
       "finalSection": "heroImages",
@@ -63,7 +89,7 @@
     },
     {
       "fileName": "ㅁ.png",
-      "aiRole": "unknown",
+      "aiRole": "shipping",
       "finalRole": "components",
       "aiSection": "packaging",
       "finalSection": "packaging",
@@ -72,12 +98,12 @@
     },
     {
       "fileName": "ㅇ.png",
-      "aiRole": "process",
+      "aiRole": "shipping",
       "finalRole": "shipping",
-      "aiSection": "process",
+      "aiSection": "packaging",
       "finalSection": "packaging",
-      "roleMatch": false,
-      "sectionMatch": false
+      "roleMatch": true,
+      "sectionMatch": true
     }
   ],
   "missingLabels": [],

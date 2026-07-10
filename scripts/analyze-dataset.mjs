@@ -6,6 +6,30 @@ const root = process.cwd();
 const envStatus = loadProjectEnv(root);
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const MAX_OPENAI_DATA_URL_LENGTH = 8 * 1024 * 1024;
+const STANDARD_ROLE_DICTIONARY = [
+  ["hero", "대표사진", ["대표사진", "메인사진", "hero", "main", "cover"]],
+  ["freshness", "신선도/질감", ["신선도", "질감", "신선한 상태", "전복 상태", "freshness", "texture"]],
+  ["cooking", "조리 예시", ["조리사진", "먹는방법", "요리", "레시피", "cooking", "recipe", "dish"]],
+  ["components", "구성품", ["구성품", "내용물", "components", "set", "inside"]],
+  ["shipping", "포장/배송", ["포장", "배송", "배송사진", "아이스팩", "박스", "package", "shipping", "delivery", "icepack", "box"]],
+  ["process", "선별 과정", ["선별", "작업", "공정", "process", "sorting", "workshop"]],
+  ["detail", "손질 방법", ["손질", "손질 방법", "cleaning", "trim", "prepare"]],
+  ["sizeComparison", "크기 비교", ["크기", "크기 비교", "손에 든", "비교", "size", "compare", "hand", "ruler"]],
+  ["origin", "브랜드", ["브랜드", "산지 이야기", "생산자", "현장", "origin", "brand", "producer"]],
+  ["unknown", "기타", ["기타", "알 수 없음", "확인 필요", "unknown", "other"]]
+];
+const STANDARD_SECTION_DICTIONARY = [
+  ["heroImages", "대표사진 영역", ["대표사진 영역", "대표사진", "hero", "heroImages"]],
+  ["gallery", "상세 갤러리", ["상세 갤러리", "갤러리", "gallery"]],
+  ["gallery", "상품 특징", ["상품 특징", "특징", "benefit", "feature"]],
+  ["recipes", "먹는 방법", ["먹는 방법", "먹는법", "how to eat", "serving"]],
+  ["recipes", "조리법", ["조리법", "레시피", "recipe", "cooking"]],
+  ["packaging", "포장/배송 안내", ["포장/배송 안내", "포장", "배송", "packaging", "shipping"]],
+  ["components", "상품 구성", ["상품 구성", "구성품", "components"]],
+  ["process", "선별 과정", ["선별 과정", "공정", "process", "sorting"]],
+  ["journey", "브랜드 소개", ["브랜드 소개", "산지", "브랜드", "journey", "origin"]],
+  ["extraSections", "기타", ["기타", "확인 필요", "unknown", "other", "extraSections"]]
+];
 
 function argValue(name, fallback) {
   const prefix = `--${name}=`;
@@ -58,6 +82,27 @@ function toDataUrl(filePath, fileName) {
 
 function normalize(value) {
   return String(value || "").toLowerCase().replace(/[_-]+/g, " ");
+}
+
+function compact(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+}
+
+function dictionaryPromptList(dictionary) {
+  return dictionary.map(([value, label]) => `- ${value}: ${label}`).join("\n");
+}
+
+function normalizeByDictionary(value, dictionary, fallback) {
+  const target = compact(value);
+  for (const [canonical, label, aliases] of dictionary) {
+    if (compact(canonical) === target || compact(label) === target || aliases.some((alias) => compact(alias) === target)) {
+      return canonical;
+    }
+  }
+  return fallback;
 }
 
 function roleCopy(role) {
@@ -143,6 +188,11 @@ async function openAiAnalyze({ dataUrl, fileName, category }) {
   if (dataUrl.length > MAX_OPENAI_DATA_URL_LENGTH) throw new Error("이미지가 안전한 OpenAI data URL 분석 기준보다 큽니다.");
 
   const prompt = [
+    "Role은 반드시 아래 목록 중 하나의 value만 선택한다. 자유로운 Role 표현 생성은 금지한다.",
+    dictionaryPromptList(STANDARD_ROLE_DICTIONARY),
+    "Section도 반드시 아래 목록 중 하나의 value만 선택한다. 자유로운 Section 표현 생성은 금지한다.",
+    dictionaryPromptList(STANDARD_SECTION_DICTIONARY),
+    "아이스팩/보냉박스는 포장/배송, 조리된 음식은 조리 예시, 손에 든 상품은 크기 비교 또는 신선도/질감, 작업장/선별 장면은 선별 과정, 포장 봉투/박스는 포장/배송으로 판단한다.",
     "파도스토리 수산물 상품 사진을 분석하세요.",
     "응답의 title, description, caption, warningMessage, reasoningSummary는 반드시 자연스러운 한국어로 작성하세요.",
     "엄격한 JSON만 반환하세요. 키: suggestedRole, recommendedSection, confidence, qualityScore, title, description, caption, warningMessage, reasoningSummary.",
@@ -183,10 +233,8 @@ async function openAiAnalyze({ dataUrl, fileName, category }) {
 }
 
 function normalizeAnalysis(raw, fallback) {
-  const roleValues = new Set(["hero", "origin", "process", "freshness", "sizeComparison", "package", "shipping", "components", "cooking", "detail", "review", "unknown"]);
-  const sectionValues = new Set(["heroImages", "journey", "gallery", "packaging", "recipes", "components", "process", "extraSections"]);
-  const role = roleValues.has(raw.suggestedRole) ? raw.suggestedRole : fallback.suggestedRole;
-  const section = sectionValues.has(raw.recommendedSection) ? raw.recommendedSection : fallback.recommendedSection;
+  const role = normalizeByDictionary(raw.suggestedRole, STANDARD_ROLE_DICTIONARY, "unknown");
+  const section = normalizeByDictionary(raw.recommendedSection, STANDARD_SECTION_DICTIONARY, "extraSections");
   const score = (value, fallbackValue) => {
     const numeric = Number(value ?? fallbackValue);
     if (!Number.isFinite(numeric)) return fallbackValue;
@@ -274,33 +322,7 @@ function readExistingLabel(fileName) {
 function mergeLabel(metadata, fileName) {
   const next = labelFrom(metadata);
   const existing = readExistingLabel(fileName);
-  if (!existing) return next;
-
-  const wasReviewed = Boolean(existing.reviewed || existing.approved);
-  if (!wasReviewed) {
-    return {
-      ...next,
-      createdAt: existing.createdAt || next.createdAt,
-      reviewerNotes: existing.reviewerNotes || next.reviewerNotes
-    };
-  }
-
-  return {
-    ...next,
-    expectedRole: existing.expectedRole ?? next.expectedRole,
-    expectedSection: existing.expectedSection ?? next.expectedSection,
-    expectedHeroRank: existing.expectedHeroRank ?? next.expectedHeroRank,
-    expectedQualityScore: existing.expectedQualityScore ?? next.expectedQualityScore,
-    expectedWarnings: Array.isArray(existing.expectedWarnings) ? existing.expectedWarnings : next.expectedWarnings,
-    expectedCaption: existing.expectedCaption ?? next.expectedCaption,
-    expectedTitle: existing.expectedTitle ?? next.expectedTitle,
-    expectedDescription: existing.expectedDescription ?? next.expectedDescription,
-    reviewed: Boolean(existing.reviewed),
-    approved: Boolean(existing.approved),
-    reviewerNotes: existing.reviewerNotes || next.reviewerNotes,
-    createdAt: existing.createdAt || next.createdAt,
-    updatedAt: new Date().toISOString()
-  };
+  return existing || next;
 }
 
 function roleCounts(results) {

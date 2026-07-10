@@ -8,11 +8,12 @@
   "suggestedRole": "freshness",
   "recommendedSection": "gallery",
   "confidence": 95,
-  "qualityScore": 5,
+  "qualityScore": 90,
+  "heroRank": 1,
   "title": "신선한 전복",
-  "description": "최고의 품질을 자랑하는 신선한 전복입니다. 부드럽고 쫄깃한 식감이 특징입니다.",
-  "caption": "신선한 전복의 매력적인 모습",
-  "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다.",
-  "reasoningSummary": "사진 속 전복은 신선하고 고급스러운 외관을 가지고 있으며, 식감과 맛을 강조하는 데 적합합니다.",
-  "analyzedAt": "2026-07-09T08:25:52.871Z"
+  "description": "탱글탱글한 질감의 신선한 전복을 보여주는 사진입니다.",
+  "caption": "신선한 전복의 질감을 강조한 이미지입니다.",
+  "warningMessage": "상품의 신선도는 보관 및 조리 방법에 따라 달라질 수 있습니다.",
+  "reasoningSummary": "사진은 신선한 전복의 질감을 잘 보여주고 있어 신선도와 관련된 역할로 판단했습니다.",
+  "analyzedAt": "2026-07-10T04:05:54.592Z"
 }

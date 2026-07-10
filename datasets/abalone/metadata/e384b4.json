@@ -5,14 +5,15 @@
   "category": "abalone",
   "provider": "openai",
   "fallbackUsed": false,
-  "suggestedRole": "freshness",
+  "suggestedRole": "sizeComparison",
   "recommendedSection": "gallery",
   "confidence": 95,
-  "qualityScore": 8,
-  "title": "신선한 전복",
-  "description": "최고 품질의 신선한 전복을 제공합니다. 탱탱한 식감과 풍부한 맛을 느껴보세요.",
-  "caption": "신선한 전복의 모습",
-  "warningMessage": "원산지 및 조업일은 확인이 필요합니다.",
-  "reasoningSummary": "사진 속 전복은 신선한 상태로 보이며, 품질이 우수할 것으로 예상됩니다.",
-  "analyzedAt": "2026-07-09T08:25:52.877Z"
+  "qualityScore": 90,
+  "heroRank": 4,
+  "title": "신선한 전복 크기 비교",
+  "description": "손에 들린 신선한 전복의 크기를 보여주는 이미지입니다.",
+  "caption": "신선한 전복의 크기를 손으로 비교해보세요.",
+  "warningMessage": "전복은 신선하게 보관해야 합니다.",
+  "reasoningSummary": "손에 들린 전복의 크기를 강조하여 소비자에게 신선도를 전달하는 이미지입니다.",
+  "analyzedAt": "2026-07-10T04:05:54.604Z"
 }

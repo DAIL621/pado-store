@@ -61,6 +61,17 @@ function percent(part, total) {
   return total ? Math.round((part / total) * 100) : 0;
 }
 
+function buildRoleConfusion(rows) {
+  const matrix = {};
+  for (const row of rows) {
+    const expected = row.finalRole || "unknown";
+    const predicted = row.aiRole || "unknown";
+    matrix[expected] ??= {};
+    matrix[expected][predicted] = (matrix[expected][predicted] || 0) + 1;
+  }
+  return matrix;
+}
+
 const category = argValue("category", "abalone");
 const images = listImages(category);
 const categoryRoot = path.join(root, "datasets", category);
@@ -108,6 +119,10 @@ const heldRows = rows.filter((row) => row.held);
 const pendingRows = rows.filter((row) => !row.reviewed);
 const roleMismatchRows = reviewedRows.filter((row) => !row.roleMatch);
 const sectionMismatchRows = reviewedRows.filter((row) => !row.sectionMatch);
+const roleAccuracy = percent(reviewedRows.length - roleMismatchRows.length, reviewedRows.length);
+const sectionAccuracy = percent(reviewedRows.length - sectionMismatchRows.length, reviewedRows.length);
+const roleConfusionMatrix = buildRoleConfusion(reviewedRows);
+const baseline = category === "abalone" ? { roleAccuracy: 43, sectionAccuracy: 57 } : null;
 
 const report = {
   category,
@@ -119,8 +134,16 @@ const report = {
   approvedCount: approvedRows.length,
   pendingCount: pendingRows.length,
   heldCount: heldRows.length,
-  roleAccuracy: percent(reviewedRows.length - roleMismatchRows.length, reviewedRows.length),
-  sectionAccuracy: percent(reviewedRows.length - sectionMismatchRows.length, reviewedRows.length),
+  roleAccuracy,
+  sectionAccuracy,
+  baseline,
+  improvement: baseline
+    ? {
+        roleAccuracy: roleAccuracy - baseline.roleAccuracy,
+        sectionAccuracy: sectionAccuracy - baseline.sectionAccuracy
+      }
+    : null,
+  roleConfusionMatrix,
   titleChangedCount: reviewedRows.filter((row) => row.titleChanged).length,
   descriptionChangedCount: reviewedRows.filter((row) => row.descriptionChanged).length,
   qualityChangedCount: reviewedRows.filter((row) => row.qualityChanged).length,
@@ -141,5 +164,19 @@ const report = {
 
 const reportPath = path.join(reportDir, `${category}-review-latest.json`);
 fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+fs.writeFileSync(
+  path.join(reportDir, "role-confusion.json"),
+  `${JSON.stringify(
+    {
+      category,
+      generatedAt: report.generatedAt,
+      reviewedCount: reviewedRows.length,
+      roleAccuracy,
+      roleConfusionMatrix
+    },
+    null,
+    2
+  )}\n`
+);
 
 console.log(JSON.stringify({ ok: true, reportPath, ...report }, null, 2));

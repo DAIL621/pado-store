@@ -9,11 +9,10 @@
   "recommendedSection": "process",
   "confidence": 95,
   "qualityScore": 90,
-  "heroRank": 4,
-  "title": "신선한 전복 선별 작업",
-  "description": "전복을 정성스럽게 선별하는 과정입니다. 품질 좋은 전복만을 엄선하여 제공합니다.",
-  "caption": "전복 선별 중인 모습",
-  "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다.",
-  "reasoningSummary": "사진은 전복을 선별하는 작업을 보여주며, 신선도와 품질 관리의 중요성을 강조합니다.",
-  "analyzedAt": "2026-07-09T08:25:52.882Z"
+  "title": "전복 선별 과정",
+  "description": "신선한 전복을 선별하는 작업 장면입니다.",
+  "caption": "전복 선별 작업 중",
+  "warningMessage": "전복의 품질을 유지하기 위해 위생적인 작업이 필요합니다.",
+  "reasoningSummary": "사진은 전복을 선별하는 작업 장면으로, 선별 과정에 적합한 역할과 섹션으로 판단되었습니다.",
+  "analyzedAt": "2026-07-10T04:05:54.613Z"
 }

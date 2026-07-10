@@ -1,0 +1,24 @@
+{
+  "category": "abalone",
+  "generatedAt": "2026-07-10T04:11:35.487Z",
+  "reviewedCount": 7,
+  "roleAccuracy": 57,
+  "roleConfusionMatrix": {
+    "freshness": {
+      "freshness": 1,
+      "sizeComparison": 1
+    },
+    "cooking": {
+      "cooking": 2
+    },
+    "hero": {
+      "freshness": 1
+    },
+    "components": {
+      "shipping": 1
+    },
+    "shipping": {
+      "shipping": 1
+    }
+  }
+}

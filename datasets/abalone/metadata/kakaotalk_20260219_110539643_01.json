@@ -9,11 +9,10 @@
   "recommendedSection": "journey",
   "confidence": 85,
   "qualityScore": 90,
-  "heroRank": 5,
-  "title": "신선한 전복의 자연 서식지",
-  "description": "전복이 자생하는 청정 해역의 모습으로, 자연에서 자란 신선한 전복을 경험해보세요.",
-  "caption": "전복의 자생지에서의 모습",
-  "warningMessage": "사진에 보이는 정보는 참고용이며, 실제 상품과 다를 수 있습니다.",
-  "reasoningSummary": "사진은 전복의 자연 서식지를 보여주며, 신선함과 품질을 강조하는 데 적합합니다.",
-  "analyzedAt": "2026-07-09T08:25:52.883Z"
+  "title": "신선한 전복의 원산지",
+  "description": "전복의 자연 서식지와 조업 환경을 보여주는 사진입니다.",
+  "caption": "전복이 자생하는 청정 바다의 모습",
+  "warningMessage": "사진에 보이는 정보는 참고용입니다.",
+  "reasoningSummary": "사진은 전복의 서식지와 관련된 환경을 나타내며, 원산지와 조업 환경을 강조하는 데 적합합니다.",
+  "analyzedAt": "2026-07-10T04:05:54.616Z"
 }

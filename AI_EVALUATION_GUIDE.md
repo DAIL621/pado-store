@@ -141,3 +141,78 @@ Operator next steps:
 3. Use `/admin/ai/review?filter=roleMismatch` to focus on role disagreements.
 4. Use `/admin/ai/review?filter=sectionMismatch` to focus on section placement disagreements.
 5. Rerun `evaluate:review` after each review batch.
+
+## Standard Role / Section Dictionary
+
+AI analysis must use the PADO STORY dictionary instead of free-form labels.
+
+Role dictionary:
+
+- 대표사진
+- 신선도/질감
+- 조리 예시
+- 구성품
+- 포장/배송
+- 선별 과정
+- 손질 방법
+- 크기 비교
+- 브랜드
+- 기타
+
+Section dictionary:
+
+- 대표사진 영역
+- 상세 갤러리
+- 상품 특징
+- 먹는 방법
+- 조리법
+- 포장/배송 안내
+- 상품 구성
+- 선별 과정
+- 브랜드 소개
+- 기타
+
+Implementation files:
+
+- `lib/admin/ai-role-dictionary.ts`
+- `lib/admin/ai-section-dictionary.ts`
+
+Validation policy:
+
+- If OpenAI returns a Role outside the dictionary, it is normalized to `unknown`.
+- If OpenAI returns a Section outside the dictionary, it is normalized to `extraSections`.
+- Existing operator-approved labels are treated as ground truth.
+- `analyze:dataset` preserves reviewed and approved labels.
+
+## Role Confusion Matrix
+
+Running:
+
+```bash
+pnpm run evaluate:review -- --category=abalone
+```
+
+creates:
+
+```text
+reports/ai-evaluation/role-confusion.json
+```
+
+The matrix format is:
+
+```json
+{
+  "operatorFinalRole": {
+    "aiPredictedRole": 1
+  }
+}
+```
+
+Latest abalone result:
+
+- Role Accuracy: `57%`
+- Section Accuracy: `86%`
+- Previous Role Accuracy: `43%`
+- Previous Section Accuracy: `57%`
+- Role improvement: `+14%p`
+- Section improvement: `+29%p`

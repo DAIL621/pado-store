@@ -1,4 +1,6 @@
 import type { ProductDetail } from "@/lib/products/detail";
+import { getStandardAiRoleLabel } from "@/lib/admin/ai-role-dictionary";
+import { getStandardAiSectionLabel } from "@/lib/admin/ai-section-dictionary";
 
 export const AI_IMAGE_ANALYSIS_DRAFT_KEY = "pado-ai-image-analysis-draft";
 
@@ -334,12 +336,11 @@ function recommendedRole(input: AiImageAnalysisInput) {
 }
 
 export function getAiRoleLabel(role: AiImageRole | "gallery") {
-  if (role === "gallery") return "상세 갤러리";
-  return AI_IMAGE_ROLE_OPTIONS.find((item) => item.value === role)?.label ?? role;
+  return getStandardAiRoleLabel(role);
 }
 
 export function getAiSectionLabel(section: AiImageRecommendedSection) {
-  return AI_IMAGE_SECTION_OPTIONS.find((item) => item.value === section)?.label ?? section;
+  return getStandardAiSectionLabel(section);
 }
 
 export function sortAiImageAnalysisResults(results: AiImageAnalysisResult[]) {

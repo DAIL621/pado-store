@@ -1,9 +1,9 @@
 {
   "category": "abalone",
-  "analyzedAt": "2026-07-09T08:25:52.906Z",
+  "analyzedAt": "2026-07-10T04:05:54.668Z",
   "totalImages": 30,
   "successCount": 30,
-  "fallbackCount": 11,
+  "fallbackCount": 12,
   "envStatus": {
     "loaded": true,
     "loader": "manual-env-local",
@@ -17,7 +17,19 @@
   "providerIntent": "openai",
   "fallbackReasons": [
     {
-      "fileName": "KakaoTalk_20260219_110539643.jpg",
+      "fileName": "KakaoTalk_20260219_110539643_07.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_08.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_09.jpg",
+      "reason": "OpenAI 요청 실패: 429"
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643_10.jpg",
       "reason": "OpenAI 요청 실패: 429"
     },
     {
@@ -37,65 +49,54 @@
       "reason": "OpenAI 요청 실패: 429"
     },
     {
-      "fileName": "KakaoTalk_20260708_141457370_01.jpg",
-      "reason": "OpenAI 요청 실패: 429"
-    },
-    {
       "fileName": "KakaoTalk_20260708_141457370_02.jpg",
       "reason": "OpenAI 요청 실패: 429"
     },
     {
       "fileName": "KakaoTalk_20260708_141457370_03.jpg",
       "reason": "OpenAI 요청 실패: 429"
-    },
-    {
-      "fileName": "KakaoTalk_20260708_141457370_05.jpg",
-      "reason": "OpenAI 요청 실패: 429"
-    },
-    {
-      "fileName": "KakaoTalk_20260708_141457370_06.jpg",
-      "reason": "OpenAI 요청 실패: 429"
     }
   ],
   "roleCounts": {
-    "freshness": 2,
-    "cooking": 1,
-    "unknown": 2,
-    "origin": 10,
-    "process": 4,
-    "detail": 11
+    "freshness": 3,
+    "cooking": 2,
+    "sizeComparison": 1,
+    "shipping": 2,
+    "process": 9,
+    "origin": 1,
+    "detail": 12
   },
-  "averageConfidence": 84,
-  "averageQualityScore": 74,
+  "averageConfidence": 87,
+  "averageQualityScore": 68,
   "heroTop5": [
     {
-      "fileName": "ㄹ.png",
+      "fileName": "018.png",
       "heroRank": 1,
       "confidence": 95,
       "qualityScore": 90
     },
     {
-      "fileName": "ㅁ.png",
+      "fileName": "KakaoTalk_20260708_141457370_06.jpg",
       "heroRank": 2,
-      "confidence": 85,
+      "confidence": 95,
       "qualityScore": 90
     },
     {
-      "fileName": "ㅇ.png",
+      "fileName": "030.png",
       "heroRank": 3,
-      "confidence": 85,
+      "confidence": 95,
       "qualityScore": 90
     },
     {
-      "fileName": "전복 선별 작업.png",
+      "fileName": "ㄴ.png",
       "heroRank": 4,
       "confidence": 95,
       "qualityScore": 90
     },
     {
-      "fileName": "KakaoTalk_20260219_110539643_01.jpg",
+      "fileName": "ㅁ.png",
       "heroRank": 5,
-      "confidence": 85,
+      "confidence": 95,
       "qualityScore": 90
     }
   ],
@@ -103,194 +104,184 @@
     {
       "fileName": "018.png",
       "confidence": 95,
-      "qualityScore": 5,
-      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+      "qualityScore": 90,
+      "warningMessage": "상품의 신선도는 보관 및 조리 방법에 따라 달라질 수 있습니다."
     },
     {
       "fileName": "029.png",
       "confidence": 95,
       "qualityScore": 8,
-      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+      "warningMessage": "조리된 음식의 사진입니다."
     },
     {
       "fileName": "030.png",
-      "confidence": 90,
-      "qualityScore": 85,
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "confidence": 95,
+      "qualityScore": 90,
+      "warningMessage": "신선한 해산물은 반드시 신선하게 조리하여 드세요."
     },
     {
       "fileName": "ㄴ.png",
       "confidence": 95,
-      "qualityScore": 8,
-      "warningMessage": "원산지 및 조업일은 확인이 필요합니다."
+      "qualityScore": 90,
+      "warningMessage": "전복은 신선하게 보관해야 합니다."
     },
     {
       "fileName": "ㄹ.png",
       "confidence": 95,
-      "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+      "qualityScore": 8,
+      "warningMessage": "상품의 신선도는 보관 상태에 따라 달라질 수 있습니다."
     },
     {
       "fileName": "ㅁ.png",
-      "confidence": 85,
+      "confidence": 95,
       "qualityScore": 90,
-      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+      "warningMessage": "아이스팩은 재사용이 가능합니다."
     },
     {
       "fileName": "ㅇ.png",
-      "confidence": 85,
+      "confidence": 95,
       "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일 정보는 확인할 수 없습니다."
+      "warningMessage": "포장 과정에서의 위생 관리가 중요합니다."
     },
     {
       "fileName": "전복 선별 작업.png",
       "confidence": 95,
       "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "warningMessage": "전복의 품질을 유지하기 위해 위생적인 작업이 필요합니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_01.jpg",
       "confidence": 85,
       "qualityScore": 90,
-      "warningMessage": "사진에 보이는 정보는 참고용이며, 실제 상품과 다를 수 있습니다."
+      "warningMessage": "사진에 보이는 정보는 참고용입니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_02.jpg",
-      "confidence": 85,
-      "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+      "confidence": 95,
+      "qualityScore": 8,
+      "warningMessage": "사진 속 정보는 참고용이며, 실제 상품과 다를 수 있습니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_03.jpg",
       "confidence": 95,
       "qualityScore": 90,
-      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+      "warningMessage": "사진 속 전복의 원산지 및 조업일은 확인할 수 없습니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_04.jpg",
-      "confidence": 85,
+      "confidence": 95,
       "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "warningMessage": "사진 속 전복의 원산지 및 조업일은 확인할 수 없습니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_05.jpg",
-      "confidence": 85,
-      "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "confidence": 95,
+      "qualityScore": 8,
+      "warningMessage": "해조류의 상태는 계절과 환경에 따라 달라질 수 있습니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_06.jpg",
-      "confidence": 85,
-      "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
-    },
-    {
-      "fileName": "KakaoTalk_20260219_110539643_07.jpg",
-      "confidence": 85,
-      "qualityScore": 90,
-      "warningMessage": "사진에 보이는 정보는 참고용이며, 원산지 및 조업일은 확인이 필요합니다."
-    },
-    {
-      "fileName": "KakaoTalk_20260219_110539643_08.jpg",
-      "confidence": 85,
-      "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
-    },
-    {
-      "fileName": "KakaoTalk_20260219_110539643_09.jpg",
-      "confidence": 85,
-      "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
-    },
-    {
-      "fileName": "KakaoTalk_20260219_110539643_10.jpg",
       "confidence": 95,
       "qualityScore": 8,
-      "warningMessage": "사진에 보이지 않는 원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "warningMessage": "사진 속 전복의 원산지나 조업일은 확인할 수 없습니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260219_110539643.jpg",
+      "confidence": 95,
+      "qualityScore": 90,
+      "warningMessage": "사진 속 작업 환경은 실제 선별 과정입니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_01.jpg",
+      "confidence": 95,
+      "qualityScore": 8,
+      "warningMessage": "사진 속 작업장은 위생적으로 관리되고 있습니다."
     },
     {
       "fileName": "KakaoTalk_20260708_141457370_04.jpg",
-      "confidence": 85,
+      "confidence": 95,
       "qualityScore": 90,
-      "warningMessage": "원산지 및 조업일은 확인이 필요합니다."
+      "warningMessage": "전복의 상태는 사진과 다를 수 있습니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_06.jpg",
+      "confidence": 95,
+      "qualityScore": 90,
+      "warningMessage": "상품의 실제 상태는 사진과 다를 수 있습니다."
     }
   ],
   "warnings": [
     {
       "fileName": "018.png",
-      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+      "warningMessage": "상품의 신선도는 보관 및 조리 방법에 따라 달라질 수 있습니다."
     },
     {
       "fileName": "029.png",
-      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+      "warningMessage": "조리된 음식의 사진입니다."
     },
     {
       "fileName": "030.png",
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "warningMessage": "신선한 해산물은 반드시 신선하게 조리하여 드세요."
     },
     {
       "fileName": "ㄴ.png",
-      "warningMessage": "원산지 및 조업일은 확인이 필요합니다."
+      "warningMessage": "전복은 신선하게 보관해야 합니다."
     },
     {
       "fileName": "ㄹ.png",
-      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+      "warningMessage": "상품의 신선도는 보관 상태에 따라 달라질 수 있습니다."
     },
     {
       "fileName": "ㅁ.png",
-      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+      "warningMessage": "아이스팩은 재사용이 가능합니다."
     },
     {
       "fileName": "ㅇ.png",
-      "warningMessage": "원산지 및 조업일 정보는 확인할 수 없습니다."
+      "warningMessage": "포장 과정에서의 위생 관리가 중요합니다."
     },
     {
       "fileName": "전복 선별 작업.png",
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "warningMessage": "전복의 품질을 유지하기 위해 위생적인 작업이 필요합니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_01.jpg",
-      "warningMessage": "사진에 보이는 정보는 참고용이며, 실제 상품과 다를 수 있습니다."
+      "warningMessage": "사진에 보이는 정보는 참고용입니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_02.jpg",
-      "warningMessage": "원산지 및 조업일 정보는 확인이 필요합니다."
+      "warningMessage": "사진 속 정보는 참고용이며, 실제 상품과 다를 수 있습니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_03.jpg",
-      "warningMessage": "상품의 원산지 및 조업일은 확인이 필요합니다."
+      "warningMessage": "사진 속 전복의 원산지 및 조업일은 확인할 수 없습니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_04.jpg",
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "warningMessage": "사진 속 전복의 원산지 및 조업일은 확인할 수 없습니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_05.jpg",
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "warningMessage": "해조류의 상태는 계절과 환경에 따라 달라질 수 있습니다."
     },
     {
       "fileName": "KakaoTalk_20260219_110539643_06.jpg",
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "warningMessage": "사진 속 전복의 원산지나 조업일은 확인할 수 없습니다."
     },
     {
-      "fileName": "KakaoTalk_20260219_110539643_07.jpg",
-      "warningMessage": "사진에 보이는 정보는 참고용이며, 원산지 및 조업일은 확인이 필요합니다."
+      "fileName": "KakaoTalk_20260219_110539643.jpg",
+      "warningMessage": "사진 속 작업 환경은 실제 선별 과정입니다."
     },
     {
-      "fileName": "KakaoTalk_20260219_110539643_08.jpg",
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
-    },
-    {
-      "fileName": "KakaoTalk_20260219_110539643_09.jpg",
-      "warningMessage": "원산지 및 조업일에 대한 정보는 확인이 필요합니다."
-    },
-    {
-      "fileName": "KakaoTalk_20260219_110539643_10.jpg",
-      "warningMessage": "사진에 보이지 않는 원산지 및 조업일에 대한 정보는 확인이 필요합니다."
+      "fileName": "KakaoTalk_20260708_141457370_01.jpg",
+      "warningMessage": "사진 속 작업장은 위생적으로 관리되고 있습니다."
     },
     {
       "fileName": "KakaoTalk_20260708_141457370_04.jpg",
-      "warningMessage": "원산지 및 조업일은 확인이 필요합니다."
+      "warningMessage": "전복의 상태는 사진과 다를 수 있습니다."
+    },
+    {
+      "fileName": "KakaoTalk_20260708_141457370_06.jpg",
+      "warningMessage": "상품의 실제 상태는 사진과 다를 수 있습니다."
     }
   ]
 }
