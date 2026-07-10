@@ -2244,3 +2244,28 @@
   - `pnpm run verify:operations`: passed
   - `pnpm run verify:admin`: passed
   - `pnpm run dev:ensure`: passed
+## 2026-07-10 Sprint 13 Existing Detail Page Priority
+
+- Scope:
+  - Existing product detail page image upload and priority rendering.
+  - No AI feature changes.
+- Data shape:
+  - `detail_json.detailDisplayMode`: `legacy` or `ai`
+  - `detail_json.legacyDetailImages[]`: ordered existing detail page images
+- Verification command:
+  - `pnpm run verify:legacy-detail`
+- Verification result:
+  - Created a temporary product with `detailDisplayMode=legacy`.
+  - Saved two existing detail page image entries into `detail_json`.
+  - Opened `/products/{slug}` and confirmed `data-template-kind="legacy"`.
+  - Confirmed `.legacy-detail-pages` rendered.
+  - Confirmed AI gallery layout did not render ahead of legacy images.
+  - Soft-deleted the temporary product after verification.
+- Additional verification:
+  - `pnpm run lint`: passed
+  - `pnpm run verify:detail-json`: passed
+  - `pnpm run verify:detail-template`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run build`: passed
+- Note:
+  - The actual CEO-made abalone detail page source images were not present in the repository, so the production abalone product was not modified with placeholder detail pages.

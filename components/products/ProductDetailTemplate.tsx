@@ -32,6 +32,24 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
   const hasAutoContent = hasVisibleProductDetailContent(sections);
   const galleryImages: GalleryItem[] = auto.gallery.length ? auto.gallery : sections.heroImages.length ? sections.heroImages : heroImages;
   const mainImage = heroImages[0]?.url || product.image;
+  const legacyDetailImages = product.detail?.legacyDetailImages?.filter((image) => image.url) ?? [];
+  const useLegacyDetail = product.detail?.detailDisplayMode !== "ai" && legacyDetailImages.length > 0;
+
+  if (useLegacyDetail) {
+    return (
+      <section
+        className="detail-master detail-master-v2 detail-master-v4 detail-master-v6"
+        aria-label={`${product.name} 상품 상세`}
+        data-template-id={`${template.id}-legacy`}
+        data-template-schema={template.schemaVersion}
+        data-template-kind="legacy"
+      >
+        <HeroSection product={product} heroImage={mainImage} heroImages={heroImages} purchaseSlot={purchaseSlot} />
+        <LegacyDetailImageSection images={legacyDetailImages} productName={product.name} />
+        <FinalCtaSection product={product} />
+      </section>
+    );
+  }
 
   return (
     <section
@@ -103,6 +121,37 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
           {sections.faq.length > 0 && <a href="#detail-master-faq">FAQ</a>}
         </nav>
       )}
+    </section>
+  );
+}
+
+function LegacyDetailImageSection({
+  images,
+  productName
+}: {
+  images: Array<{ label: string; url: string; description?: string }>;
+  productName: string;
+}) {
+  return (
+    <section className="legacy-detail-pages" aria-label={`${productName} 기존 상세페이지`}>
+      <div className="legacy-detail-pages-head">
+        <span>OFFICIAL DETAIL</span>
+        <h2>제작 상세페이지</h2>
+        <p>대표가 제작한 상품별 상세페이지를 이미지 품질과 비율을 유지해 그대로 표시합니다.</p>
+      </div>
+      <div className="legacy-detail-pages-list">
+        {images.map((image, index) => (
+          <figure key={`${image.url}-${index}`}>
+            <img src={image.url} alt={image.description || image.label || `${productName} 상세페이지 ${index + 1}`} loading={index > 1 ? "lazy" : "eager"} />
+            {(image.label || image.description) && (
+              <figcaption>
+                <strong>{image.label || `상세페이지 ${index + 1}`}</strong>
+                {image.description && <span>{image.description}</span>}
+              </figcaption>
+            )}
+          </figure>
+        ))}
+      </div>
     </section>
   );
 }

@@ -220,3 +220,10 @@ alter table products add column if not exists detail_json jsonb not null default
   - Required: apply the operation automation migration before review request rehearsal can pass.
 - Major: My page order history is not fully verified with a real customer login session.
   - Required: create a real customer session and confirm user-linked order visibility after payment.
+## 2026-07-10 Sprint 13 Existing Detail Page Assets
+
+- CEO-made production detail page image files were not present in the repository during implementation.
+- Required to complete actual product application:
+  - Wando live abalone detail page PNG/JPG/WebP files
+  - Tongyeong sea eel, rock oyster, octopus, mackerel, hairtail, abalone porridge, abalone seaweed soup, and other product detail page image files
+- The upload, ordering, preview, save, and customer detail rendering pipeline is ready. Actual product application can proceed as soon as the image files are provided.

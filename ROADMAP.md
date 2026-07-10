@@ -587,3 +587,16 @@ Priority 3:
 Priority 4:
 - Re-run `pnpm run rehearsal:launch` after the external blockers are removed.
 - Target: success rate `95%+`, Go/No-Go `Go`.
+### Sprint 13 Existing Detail Page Launch Priority
+
+Completed:
+- Existing detail page image upload and ordered rendering are now supported through `detail_json`.
+- Product detail output mode can choose `legacy` or `ai`.
+- Default behavior prioritizes existing detail pages when uploaded.
+- AI generated detail pages remain available as fallback.
+
+Next launch work:
+1. Upload CEO-made detail page images for Wando live abalone.
+2. Repeat upload for Tongyeong sea eel, rock oyster, octopus, mackerel, hairtail, abalone porridge, abalone seaweed soup, and other registered products.
+3. Re-run product detail captures for PC, tablet, and mobile after each real detail page image batch is applied.
+4. Confirm image file size and mobile loading performance before production launch.

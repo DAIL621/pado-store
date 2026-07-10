@@ -17,6 +17,7 @@
     "verify:real-abalone-dataset": "node scripts/verify-real-abalone-dataset.mjs",
     "verify:ai-review-center": "node scripts/verify-ai-review-center.mjs",
     "verify:detail-json": "node scripts/verify-detail-json-flow.mjs",
+    "verify:legacy-detail": "node scripts/verify-legacy-detail-pages.mjs",
     "verify:admin-edit": "node scripts/verify-admin-product-edit.mjs",
     "verify:admin-upload": "node scripts/verify-admin-upload.mjs",
     "verify:admin-presets": "node scripts/verify-admin-presets.mjs",

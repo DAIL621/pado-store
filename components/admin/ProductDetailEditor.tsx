@@ -22,11 +22,31 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [uploadCompleteTarget, setUploadCompleteTarget] = useState<string | null>(null);
   const [dragOverHeroIndex, setDragOverHeroIndex] = useState<number | null>(null);
+  const [dragOverLegacyIndex, setDragOverLegacyIndex] = useState<number | null>(null);
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadMessageTone, setUploadMessageTone] = useState<"info" | "success" | "error">("info");
 
   const update = <K extends keyof ProductDetail>(key: K, nextValue: ProductDetail[K]) => {
     onChange({ ...value, [key]: nextValue });
+  };
+
+  const updateLegacy = (index: number, key: keyof ProductDetailImage, nextValue: string) => {
+    update(
+      "legacyDetailImages",
+      value.legacyDetailImages.map((image, imageIndex) => (imageIndex === index ? { ...image, [key]: nextValue } : image))
+    );
+  };
+
+  const moveLegacy = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= value.legacyDetailImages.length) return;
+    const next = [...value.legacyDetailImages];
+    const [item] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, item);
+    update("legacyDetailImages", next);
+  };
+
+  const removeLegacy = (index: number) => {
+    update("legacyDetailImages", value.legacyDetailImages.filter((_, imageIndex) => imageIndex !== index));
   };
 
   const updateHero = (index: number, key: keyof ProductDetailImage, nextValue: string) => {
@@ -53,6 +73,25 @@ export function ProductDetailEditor({ value, onChange }: Props) {
 
   const handleHeroDragStart = (event: DragEvent<HTMLDivElement>, index: number) => {
     event.dataTransfer.setData("text/plain", String(index));
+  };
+
+  const handleLegacyDragStart = (event: DragEvent<HTMLDivElement>, index: number) => {
+    event.dataTransfer.setData("text/plain", `legacy:${index}`);
+  };
+
+  const handleLegacyDrop = (event: DragEvent<HTMLDivElement>, index: number) => {
+    event.preventDefault();
+    setDragOverLegacyIndex(null);
+    const files = Array.from(event.dataTransfer.files ?? []).filter((file) => file.type.startsWith("image/"));
+    if (files.length) {
+      uploadLegacyFiles(files, index);
+      return;
+    }
+    const payload = event.dataTransfer.getData("text/plain");
+    if (payload.startsWith("legacy:")) {
+      const fromIndex = Number(payload.replace("legacy:", ""));
+      if (Number.isInteger(fromIndex)) moveLegacy(fromIndex, index);
+    }
   };
 
   const handleHeroDrop = (event: DragEvent<HTMLDivElement>, index: number) => {
@@ -122,6 +161,33 @@ export function ProductDetailEditor({ value, onChange }: Props) {
 
   const uploadRecipeFile = async (index: number, file: File) => {
     uploadImageFile(`recipe-${index}`, file, (url) => updateRecipe(index, "image", url));
+  };
+
+  const uploadLegacyFiles = async (files: File[], insertIndex = value.legacyDetailImages.length) => {
+    let nextImages = [...value.legacyDetailImages];
+    for (const [offset, file] of files.entries()) {
+      const targetIndex = Math.min(insertIndex + offset, nextImages.length);
+      const description = file.name.replace(/\.[^.]+$/, "");
+      const previewUrl = URL.createObjectURL(file);
+      nextImages.splice(targetIndex, 0, {
+        label: `기존 상세페이지 ${targetIndex + 1}`,
+        url: previewUrl,
+        description
+      });
+      onChange({ ...value, legacyDetailImages: nextImages });
+
+      const uploaded = await uploadImageFile(`legacy-${targetIndex}`, file, (url) => {
+        nextImages = nextImages.map((image, imageIndex) =>
+          imageIndex === targetIndex ? { ...image, url, description } : image
+        );
+        onChange({ ...value, legacyDetailImages: nextImages });
+      });
+      URL.revokeObjectURL(previewUrl);
+      if (!uploaded) {
+        nextImages = nextImages.filter((_, imageIndex) => imageIndex !== targetIndex);
+        onChange({ ...value, legacyDetailImages: nextImages });
+      }
+    }
   };
 
   const uploadImageFile = async (target: string, file: File, onUploaded: (url: string) => void) => {
@@ -238,6 +304,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
     update("faq", value.faq.length <= 1 ? [{ question: "", answer: "" }] : value.faq.filter((_, faqIndex) => faqIndex !== index));
 
   const completedHeroCount = value.heroImages.filter((image) => image.url.trim()).length;
+  const completedLegacyCount = value.legacyDetailImages.filter((image) => image.url.trim()).length;
   const completedBenefitCount = value.benefits.filter((benefit) => benefit.trim()).length;
   const completedJourneyCount = value.journey.filter((step) => step.description.trim() || step.image.trim()).length;
 
@@ -250,6 +317,111 @@ export function ProductDetailEditor({ value, onChange }: Props) {
         </div>
         <span className="admin-detail-version">v{value.schemaVersion}</span>
       </div>
+
+      <details open>
+        <summary>상세페이지 출력 방식</summary>
+        <div className="admin-detail-mode">
+          <label className={value.detailDisplayMode === "legacy" ? "active" : ""}>
+            <input
+              type="radio"
+              name="detailDisplayMode"
+              checked={value.detailDisplayMode === "legacy"}
+              onChange={() => update("detailDisplayMode", "legacy")}
+            />
+            <strong>기존 상세페이지</strong>
+            <span>대표가 제작한 PNG/JPG/WebP 이미지를 순서대로 우선 출력합니다.</span>
+          </label>
+          <label className={value.detailDisplayMode === "ai" ? "active" : ""}>
+            <input
+              type="radio"
+              name="detailDisplayMode"
+              checked={value.detailDisplayMode === "ai"}
+              onChange={() => update("detailDisplayMode", "ai")}
+            />
+            <strong>AI 자동생성</strong>
+            <span>MASTER Template 기반 자동 상세페이지를 출력합니다.</span>
+          </label>
+        </div>
+      </details>
+
+      <details open>
+        <summary>기존 상세페이지 이미지</summary>
+        <p className="admin-detail-help">PNG, JPG, WebP 이미지를 업로드하면 상품 상세페이지에서 원본 비율을 유지해 순서대로 출력합니다. 등록된 기존 상세페이지가 있으면 AI 자동생성보다 우선 표시됩니다.</p>
+        <div
+          className={`admin-legacy-dropzone ${dragOverLegacyIndex === -1 ? "drag-over" : ""}`}
+          onDragEnter={() => setDragOverLegacyIndex(-1)}
+          onDragLeave={() => setDragOverLegacyIndex((current) => (current === -1 ? null : current))}
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            setDragOverLegacyIndex(null);
+            const files = Array.from(event.dataTransfer.files ?? []).filter((file) => file.type.startsWith("image/"));
+            if (files.length) uploadLegacyFiles(files);
+          }}
+        >
+          <strong>기존 상세페이지 이미지 업로드</strong>
+          <span>여러 장을 한 번에 드롭하거나 클릭해서 추가하세요. 순서는 아래 카드에서 조정할 수 있습니다.</span>
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            multiple
+            aria-label="기존 상세페이지 이미지 업로드"
+            onChange={(event) => {
+              const files = Array.from(event.target.files ?? []);
+              if (files.length) uploadLegacyFiles(files);
+              event.currentTarget.value = "";
+            }}
+          />
+        </div>
+        <div className="admin-detail-progress" aria-label="기존 상세페이지 이미지 수">
+          <span>기존 상세 {completedLegacyCount}장</span>
+          <span>출력 {value.detailDisplayMode === "legacy" ? "기존 상세페이지" : "AI 자동생성"}</span>
+        </div>
+        {value.legacyDetailImages.length > 0 && (
+          <div className="admin-legacy-detail-list">
+            {value.legacyDetailImages.map((image, index) => (
+              <div
+                className={`admin-legacy-detail-card ${dragOverLegacyIndex === index ? "drag-over" : ""}`}
+                draggable
+                key={`${image.url}-${index}`}
+                onDragStart={(event) => handleLegacyDragStart(event, index)}
+                onDragEnter={() => setDragOverLegacyIndex(index)}
+                onDragLeave={() => setDragOverLegacyIndex((current) => (current === index ? null : current))}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => handleLegacyDrop(event, index)}
+              >
+                <div className="admin-legacy-detail-preview">
+                  <img src={image.url} alt={image.label || `기존 상세페이지 ${index + 1}`} />
+                </div>
+                <div className="admin-legacy-detail-fields">
+                  <div className="admin-detail-card-head">
+                    <b>{index + 1}. {image.label || "기존 상세페이지"}</b>
+                    <span>
+                      <button type="button" onClick={() => moveLegacy(index, index - 1)} disabled={index === 0}>위</button>
+                      <button type="button" onClick={() => moveLegacy(index, index + 1)} disabled={index === value.legacyDetailImages.length - 1}>아래</button>
+                      <button type="button" onClick={() => removeLegacy(index)}>삭제</button>
+                    </span>
+                  </div>
+                  <label>
+                    이미지 라벨
+                    <input value={image.label} onChange={(event) => updateLegacy(index, "label", event.target.value)} placeholder="상세페이지 이미지 라벨" />
+                  </label>
+                  <label>
+                    이미지 경로
+                    <input value={image.url} onChange={(event) => updateLegacy(index, "url", event.target.value)} placeholder="/uploads/detail/sample.webp" />
+                  </label>
+                  <label>
+                    설명 optional
+                    <input value={image.description ?? ""} onChange={(event) => updateLegacy(index, "description", event.target.value)} placeholder="관리자 메모 또는 alt 설명" />
+                  </label>
+                  {uploadingTarget === `legacy-${index}` && <small className="admin-upload-progress">업로드 중...</small>}
+                  {uploadCompleteTarget === `legacy-${index}` && <small className="admin-upload-progress">업로드 완료</small>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </details>
 
       <div className="admin-detail-progress" aria-label="상세페이지 입력 진행률">
         <span>사진 {completedHeroCount}/6</span>

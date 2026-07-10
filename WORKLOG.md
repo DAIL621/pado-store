@@ -2011,3 +2011,26 @@
   - `pnpm run verify:operations`: passed
   - `pnpm run verify:admin`: passed
   - `pnpm run dev:ensure`: passed
+## 2026-07-10 Sprint 13 - Existing Detail Page Launch Priority
+
+- AI 상세페이지 자동생성 기능은 유지한 채, 상품별 기존 상세페이지 이미지를 우선 출력할 수 있는 구조를 추가했습니다.
+- `detail_json`에 다음 필드를 추가했습니다.
+  - `detailDisplayMode`: `legacy` 또는 `ai`
+  - `legacyDetailImages`: 기존 상세페이지 이미지 목록
+- 관리자 상품등록 상세 입력 영역에 기존 상세페이지 업로드 섹션을 추가했습니다.
+  - PNG, JPG, WebP 다중 업로드
+  - 드래그 앤 드롭
+  - 순서 변경
+  - 삭제
+  - 라벨/설명/경로 수정
+  - 미리보기
+- 상품 상세페이지에서는 `detailDisplayMode`가 `legacy`이고 이미지가 있으면 기존 상세페이지 이미지를 원본 비율로 우선 출력합니다.
+- 기존 상세페이지 이미지가 없거나 `AI 자동생성`을 선택하면 기존 MASTER Template 흐름을 그대로 사용합니다.
+- 전복 대표 제작 상세페이지 원본 파일은 현재 저장소에서 확인되지 않아 실제 전복 상품에 임의 적용하지 않았습니다. 원본 PNG/JPG/WebP 수령 후 관리자 업로드 영역에서 바로 적용 가능합니다.
+- 검증:
+  - `pnpm run verify:legacy-detail`: passed
+  - `pnpm run lint`: passed
+  - `pnpm run verify:detail-json`: passed
+  - `pnpm run verify:detail-template`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run build`: passed

@@ -40,9 +40,13 @@ export type ProductDetailExtraSection = {
   items?: unknown[];
 };
 
+export type ProductDetailDisplayMode = "legacy" | "ai";
+
 export type ProductDetail = {
   schemaVersion: number;
+  detailDisplayMode: ProductDetailDisplayMode;
   heroImages: ProductDetailImage[];
+  legacyDetailImages: ProductDetailImage[];
   benefits: string[];
   journey: ProductDetailJourneyStep[];
   packaging: string[];
@@ -88,6 +92,25 @@ const cleanText = (value: unknown) => String(value ?? "").trim();
 const cleanTextList = (value: unknown) =>
   Array.isArray(value) ? value.map(cleanText).filter(Boolean) : [];
 
+function normalizeDisplayMode(value: unknown): ProductDetailDisplayMode {
+  return value === "ai" ? "ai" : "legacy";
+}
+
+function normalizeDetailImages(value: unknown): ProductDetailImage[] {
+  return Array.isArray(value)
+    ? value
+        .map((item, index) => {
+          const record = asRecord(item);
+          return {
+            label: cleanText(record.label) || `기존 상세페이지 ${index + 1}`,
+            url: cleanText(record.url),
+            description: cleanText(record.description)
+          };
+        })
+        .filter((item) => item.url)
+    : [];
+}
+
 export function createProductDetailFormValue(input?: unknown): ProductDetail {
   const source = asRecord(input);
   const heroSource = Array.isArray(source.heroImages) ? source.heroImages : [];
@@ -95,6 +118,7 @@ export function createProductDetailFormValue(input?: unknown): ProductDetail {
 
   return {
     schemaVersion: DETAIL_SCHEMA_VERSION,
+    detailDisplayMode: normalizeDisplayMode(source.detailDisplayMode),
     heroImages: HERO_IMAGE_LABELS.map((defaultLabel, index) => {
       const item = asRecord(heroSource[index]);
       return {
@@ -103,6 +127,7 @@ export function createProductDetailFormValue(input?: unknown): ProductDetail {
         description: cleanText(item.description)
       };
     }),
+    legacyDetailImages: normalizeDetailImages(source.legacyDetailImages),
     benefits: padTextList(cleanTextList(source.benefits), 3),
     journey: JOURNEY_STEPS.map((step, index) => {
       const item = asRecord(journeySource[index]);
@@ -130,6 +155,7 @@ export function normalizeProductDetailInput(input?: unknown): ProductDetail {
 
   return {
     schemaVersion: DETAIL_SCHEMA_VERSION,
+    detailDisplayMode: normalizeDisplayMode(source.detailDisplayMode),
     heroImages: heroSource
       .map((item, index) => {
         const record = asRecord(item);
@@ -141,6 +167,7 @@ export function normalizeProductDetailInput(input?: unknown): ProductDetail {
       })
       .filter((item) => item.url)
       .slice(0, 6),
+    legacyDetailImages: normalizeDetailImages(source.legacyDetailImages),
     benefits: cleanTextList(source.benefits).slice(0, 5),
     journey: journeySource
       .map((item, index) => {
