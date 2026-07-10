@@ -115,7 +115,9 @@ const detailHtml = await detail.text();
 assert(detail.status === 200, `detail page failed: ${detail.status}`);
 assert(detailHtml.includes('data-template-kind="legacy"'), "legacy template marker was not rendered");
 assert(detailHtml.includes("legacy-detail-pages"), "legacy detail section was not rendered");
-assert(detailHtml.includes("기존 상세페이지 1"), "legacy image label was not rendered");
+assert(detailHtml.includes("/images/products/wando-abalone.webp"), "legacy detail image was not rendered");
+assert(!detailHtml.includes("<figcaption"), "legacy development captions should not render");
+assert(!detailHtml.includes("OFFICIAL DETAIL"), "legacy development heading should not render");
 assert(!detailHtml.includes("detail-master-gallery-"), "AI gallery layout should not render before legacy pages when legacy mode is active");
 
 const productId = createResult.product?.id;

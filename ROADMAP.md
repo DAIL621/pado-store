@@ -614,3 +614,17 @@ Next priority before launch:
 4. Confirm Supabase Storage bucket policy and production admin image upload.
 5. Run Toss payment approval/refund rehearsal with a refundable transaction.
 6. Re-run `pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true` and `pnpm run rehearsal:launch`.
+
+### Sprint 14 Product Detail Launch Quality
+
+Completed:
+- Existing detail page output is now customer-facing image-only content.
+- Product detail videos can be uploaded in admin and rendered on detail pages as click-to-play media.
+- Upload verification covers both image and video files.
+- Detail page CTA and media interaction styling were polished for launch readiness.
+
+Next launch work:
+1. Upload the CEO-made production detail page images for each launch product.
+2. Add product videos only where real production-ready clips exist.
+3. Capture PC/tablet/mobile detail pages after real assets are uploaded.
+4. Re-run launch rehearsal after Kakao, Toss, Supabase migration, and Production env blockers are cleared.

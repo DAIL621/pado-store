@@ -8,7 +8,9 @@ export type AdminImageUploadResult = {
 };
 
 export const allowedAdminImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+export const allowedAdminVideoTypes = new Set(["video/mp4", "video/webm"]);
 export const maxAdminImageSize = 5 * 1024 * 1024;
+export const maxAdminVideoSize = 80 * 1024 * 1024;
 
 export function createUploadFilename(originalName: string) {
   const extension = originalName.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "webp";

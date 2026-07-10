@@ -33,6 +33,8 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
   const galleryImages: GalleryItem[] = auto.gallery.length ? auto.gallery : sections.heroImages.length ? sections.heroImages : heroImages;
   const mainImage = heroImages[0]?.url || product.image;
   const legacyDetailImages = product.detail?.legacyDetailImages?.filter((image) => image.url) ?? [];
+  const topVideos = sections.videos.filter((video) => video.placement === "top");
+  const bottomVideos = sections.videos.filter((video) => video.placement !== "top");
   const useLegacyDetail = product.detail?.detailDisplayMode !== "ai" && legacyDetailImages.length > 0;
 
   if (useLegacyDetail) {
@@ -45,7 +47,9 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
         data-template-kind="legacy"
       >
         <HeroSection product={product} heroImage={mainImage} heroImages={heroImages} purchaseSlot={purchaseSlot} />
+        {topVideos.length > 0 && <VideoSection videos={topVideos} productName={product.name} />}
         <LegacyDetailImageSection images={legacyDetailImages} productName={product.name} />
+        {bottomVideos.length > 0 && <VideoSection videos={bottomVideos} productName={product.name} />}
         <FinalCtaSection product={product} />
       </section>
     );
@@ -91,6 +95,8 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
       {galleryImages.length > 0 && <GallerySection images={galleryImages} productName={product.name} />}
 
+      {topVideos.length > 0 && <VideoSection videos={topVideos} productName={product.name} />}
+
       <ComparisonSection product={product} comparison={auto.comparison} />
 
       {sections.recipes.length > 0 && <CookingSection recipes={sections.recipes} productName={product.name} />}
@@ -106,8 +112,10 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
       <ReviewReadySection product={product} reviews={auto.reviews} />
       <BrandPromiseSection />
 
-      {(sections.videos.length > 0 || sections.certificates.length > 0 || sections.extraSections.length > 0) && (
-        <ExtraSection videos={sections.videos} certificates={sections.certificates} extraSections={sections.extraSections} />
+      {bottomVideos.length > 0 && <VideoSection videos={bottomVideos} productName={product.name} />}
+
+      {(sections.certificates.length > 0 || sections.extraSections.length > 0) && (
+        <ExtraSection certificates={sections.certificates} extraSections={sections.extraSections} />
       )}
 
       <FinalCtaSection product={product} />
@@ -133,25 +141,41 @@ function LegacyDetailImageSection({
   productName: string;
 }) {
   return (
-    <section className="legacy-detail-pages" aria-label={`${productName} 기존 상세페이지`}>
-      <div className="legacy-detail-pages-head">
-        <span>OFFICIAL DETAIL</span>
-        <h2>제작 상세페이지</h2>
-        <p>대표가 제작한 상품별 상세페이지를 이미지 품질과 비율을 유지해 그대로 표시합니다.</p>
-      </div>
+    <section className="legacy-detail-pages" aria-label={`${productName} 상세페이지`}>
       <div className="legacy-detail-pages-list">
         {images.map((image, index) => (
           <figure key={`${image.url}-${index}`}>
             <img src={image.url} alt={image.description || image.label || `${productName} 상세페이지 ${index + 1}`} loading={index > 1 ? "lazy" : "eager"} />
-            {(image.label || image.description) && (
-              <figcaption>
-                <strong>{image.label || `상세페이지 ${index + 1}`}</strong>
-                {image.description && <span>{image.description}</span>}
-              </figcaption>
-            )}
           </figure>
         ))}
       </div>
+    </section>
+  );
+}
+
+function VideoSection({
+  videos,
+  productName
+}: {
+  videos: ReturnType<typeof getVisibleProductDetailSections>["videos"];
+  productName: string;
+}) {
+  return (
+    <section className="shell detail-video-section" aria-label={`${productName} 동영상`}>
+      {videos.map((video, index) => (
+        <article key={`${video.url}-${index}`} className="detail-video-card">
+          <video
+            controls
+            preload="metadata"
+            playsInline
+            poster={video.thumbnail || undefined}
+            aria-label={video.title || `${productName} 동영상 ${index + 1}`}
+          >
+            <source src={video.url} type={video.url.endsWith(".webm") ? "video/webm" : "video/mp4"} />
+          </video>
+          {video.title && <strong>{video.title}</strong>}
+        </article>
+      ))}
     </section>
   );
 }
@@ -686,11 +710,9 @@ function BrandPromiseSection() {
 }
 
 function ExtraSection({
-  videos,
   certificates,
   extraSections
 }: {
-  videos: ReturnType<typeof getVisibleProductDetailSections>["videos"];
   certificates: ReturnType<typeof getVisibleProductDetailSections>["certificates"];
   extraSections: ReturnType<typeof getVisibleProductDetailSections>["extraSections"];
 }) {
@@ -698,11 +720,6 @@ function ExtraSection({
     <section className="shell detail-master-block" id="detail-master-extra">
       <SectionTitle eyebrow="MORE INFO" title="추가 상세 정보" />
       <div className="detail-master-extra">
-        {videos.map((video) => (
-          <a key={`${video.title}-${video.url}`} href={video.url} target="_blank" rel="noreferrer">
-            {video.title || "상품 영상 보기"}
-          </a>
-        ))}
         {certificates.map((certificate) => (
           <span key={`${certificate.title}-${certificate.image}`}>{certificate.title || "인증서"}</span>
         ))}

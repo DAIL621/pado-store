@@ -242,3 +242,15 @@ alter table products add column if not exists detail_json jsonb not null default
 - Automated preparation completed:
   - `verify:production-launch` now checks Toss duplicate approval, Toss failure rollback, refund stock restore, Kakao profile callback, admin role SQL, Storage upload path, existing detail JSON path, order status coverage, and production verification SQL coverage.
   - `supabase/phase10-production-verification.sql` now checks operation tables, indexes, policies, triggers, foreign keys, order status constraint values, `products.detail_json`, existing detail-page JSON structure, and Storage bucket/policies.
+
+## 2026-07-10 Sprint 14 Remaining Launch Blockers
+
+- No new code blocker was introduced by the existing detail page/video work.
+- Production detail page application still requires the actual CEO-made product detail images for each launch product.
+- Product video publishing requires real production-ready `mp4` or `webm` files and thumbnail assets.
+- The latest launch rehearsal still has external blockers:
+  - Kakao/Supabase production signup and login verification.
+  - Toss real payment approval/refund rehearsal.
+  - Real customer My Page order history verification.
+  - Production Supabase operation migration confirmation.
+  - Production Storage bucket and policy confirmation.

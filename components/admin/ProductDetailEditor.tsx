@@ -7,7 +7,8 @@ import {
   type ProductDetail,
   type ProductDetailFaq,
   type ProductDetailImage,
-  type ProductDetailRecipe
+  type ProductDetailRecipe,
+  type ProductDetailVideo
 } from "@/lib/products/detail";
 
 type Props = {
@@ -16,7 +17,9 @@ type Props = {
 };
 
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
+const MAX_VIDEO_UPLOAD_SIZE = 80 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm"];
 
 export function ProductDetailEditor({ value, onChange }: Props) {
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
@@ -163,6 +166,45 @@ export function ProductDetailEditor({ value, onChange }: Props) {
     uploadImageFile(`recipe-${index}`, file, (url) => updateRecipe(index, "image", url));
   };
 
+  const uploadVideoFile = async (index: number, file: File) => {
+    if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) {
+      setUploadMessageTone("error");
+      setUploadMessage("동영상은 mp4 또는 webm 파일만 업로드할 수 있습니다.");
+      return;
+    }
+    if (file.size > MAX_VIDEO_UPLOAD_SIZE) {
+      setUploadMessageTone("error");
+      setUploadMessage("동영상은 80MB 이하 파일로 업로드해주세요.");
+      return;
+    }
+    const target = `video-${index}`;
+    setUploadingTarget(target);
+    setUploadCompleteTarget(null);
+    setUploadMessageTone("info");
+    setUploadMessage("동영상을 업로드하고 있습니다...");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/admin/uploads", { method: "POST", body: formData });
+      const result = await response.json();
+      if (!response.ok) {
+        setUploadMessageTone("error");
+        setUploadMessage(result.message ?? "동영상 업로드에 실패했습니다.");
+        return;
+      }
+      updateVideo(index, "url", result.url);
+      setUploadCompleteTarget(target);
+      setUploadMessageTone("success");
+      setUploadMessage("동영상 업로드가 완료되었습니다.");
+      window.setTimeout(() => setUploadCompleteTarget((current) => (current === target ? null : current)), 2200);
+    } catch {
+      setUploadMessageTone("error");
+      setUploadMessage("동영상 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setUploadingTarget(null);
+    }
+  };
+
   const uploadLegacyFiles = async (files: File[], insertIndex = value.legacyDetailImages.length) => {
     let nextImages = [...value.legacyDetailImages];
     for (const [offset, file] of files.entries()) {
@@ -291,6 +333,23 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   const addRecipe = () => update("recipes", [...value.recipes, { title: "", description: "", image: "" }]);
   const removeRecipe = (index: number) =>
     update("recipes", value.recipes.length <= 1 ? [{ title: "", description: "", image: "" }] : value.recipes.filter((_, recipeIndex) => recipeIndex !== index));
+
+  const updateVideo = (index: number, key: keyof ProductDetailVideo, nextValue: string) => {
+    update(
+      "videos",
+      value.videos.map((video, videoIndex) => (videoIndex === index ? { ...video, [key]: nextValue } : video))
+    );
+  };
+
+  const addVideo = () => update("videos", [...value.videos, { title: "", url: "", thumbnail: "", placement: "bottom" }]);
+  const removeVideo = (index: number) => update("videos", value.videos.filter((_, videoIndex) => videoIndex !== index));
+  const moveVideo = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= value.videos.length) return;
+    const next = [...value.videos];
+    const [item] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, item);
+    update("videos", next);
+  };
 
   const updateFaq = (index: number, key: keyof ProductDetailFaq, nextValue: string) => {
     update(
@@ -664,6 +723,64 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       <details>
         <summary>향후 확장 슬롯</summary>
         <p className="admin-detail-help">동영상, 인증서, 추가 섹션은 JSON 구조에 준비되어 있습니다. 이번 단계에서는 저장 구조만 유지하고 UI는 이후 운영 데이터가 준비되면 확장합니다.</p>
+      </details>
+      <details>
+        <summary>동영상</summary>
+        <p className="admin-detail-help">mp4 또는 webm 파일을 업로드할 수 있습니다. 고객 화면에서는 자동재생 없이 클릭 재생만 지원합니다.</p>
+        <div className="admin-detail-list">
+          {value.videos.map((video, index) => (
+            <div className="admin-detail-card" key={`${video.url}-${index}`}>
+              <div className="admin-detail-card-head">
+                <b>동영상 {index + 1}</b>
+                <span>
+                  <button type="button" onClick={() => moveVideo(index, index - 1)} disabled={index === 0}>위</button>
+                  <button type="button" onClick={() => moveVideo(index, index + 1)} disabled={index === value.videos.length - 1}>아래</button>
+                  <button type="button" onClick={() => removeVideo(index)}>삭제</button>
+                </span>
+              </div>
+              {video.url && (
+                <div className="admin-video-preview">
+                  <video src={video.url} controls preload="metadata" poster={video.thumbnail || undefined} />
+                </div>
+              )}
+              <label>
+                제목
+                <input value={video.title} onChange={(event) => updateVideo(index, "title", event.target.value)} placeholder="상품 소개 영상" />
+              </label>
+              <label>
+                출력 위치
+                <select value={video.placement ?? "bottom"} onChange={(event) => updateVideo(index, "placement", event.target.value)}>
+                  <option value="bottom">상세 이미지 아래</option>
+                  <option value="top">상세 이미지 위</option>
+                </select>
+              </label>
+              <label className="admin-file-chip">
+                동영상 업로드
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm"
+                  aria-label={`동영상 ${index + 1} 업로드`}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) uploadVideoFile(index, file);
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+              {uploadingTarget === `video-${index}` && <small className="admin-upload-progress">업로드 중...</small>}
+              {uploadCompleteTarget === `video-${index}` && <small className="admin-upload-progress">업로드 완료</small>}
+              <label>
+                동영상 URL
+                <input value={video.url} onChange={(event) => updateVideo(index, "url", event.target.value)} placeholder="/uploads/products/sample.mp4" />
+              </label>
+              <label>
+                썸네일 URL optional
+                <input value={video.thumbnail ?? ""} onChange={(event) => updateVideo(index, "thumbnail", event.target.value)} placeholder="/uploads/products/sample-thumb.webp" />
+              </label>
+            </div>
+          ))}
+          <button type="button" onClick={addVideo}>+ 동영상 추가</button>
+        </div>
       </details>
     </div>
   );

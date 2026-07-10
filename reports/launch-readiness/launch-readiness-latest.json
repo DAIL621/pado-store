@@ -1,9 +1,9 @@
 {
-  "createdAt": "2026-07-10T06:41:22.824Z",
-  "successRate": 53,
+  "createdAt": "2026-07-10T08:55:37.587Z",
+  "successRate": 67,
   "goNoGo": "No-Go",
   "launchPossible": "불가",
-  "orderNo": "PADO-20260710-A981093",
+  "orderNo": "PADO-20260710-8CC7E95",
   "productSlug": "tongyeong-sea-eel",
   "steps": [
     {
@@ -57,7 +57,7 @@
     {
       "name": "⑨ 관리자 주문 확인",
       "status": "SUCCESS",
-      "details": "PADO-20260710-A981093",
+      "details": "PADO-20260710-8CC7E95",
       "screenshot": "screenshots/launch-readiness/09-admin-orders.png"
     },
     {
@@ -68,14 +68,14 @@
     },
     {
       "name": "⑪ 송장 입력",
-      "status": "PARTIAL",
-      "details": "delivery_ready 전환 실패. shipped 단계에서 송장 입력 재시도: 주문 상태 변경 실패: {\"status\":\"delivery_ready\",\"carrier\":\"CJ대한통운\",\"trackingNumber\":\"123456789012\"} status=500 body={\"ok\":false,\"message\":\"new row for relation \\\"orders\\\" violates check constraint \\\"orders_status_check\\\"\"}",
+      "status": "SUCCESS",
+      "details": "CJ대한통운 / 123456789012",
       "screenshot": ""
     },
     {
       "name": "⑫ 배송중",
       "status": "SUCCESS",
-      "details": "preparing -> shipped",
+      "details": "delivery_ready -> shipped",
       "screenshot": "screenshots/launch-readiness/12-admin-shipped.png"
     },
     {
@@ -92,8 +92,8 @@
     },
     {
       "name": "⑮ 리뷰 요청 준비",
-      "status": "PARTIAL",
-      "details": "{\"ok\":false,\"message\":\"Could not find the table 'public.review_requests' in the schema cache\",\"skipped\":true}",
+      "status": "SUCCESS",
+      "details": "{\"ok\":true}",
       "screenshot": "screenshots/launch-readiness/15-review-request.png"
     }
   ],
@@ -109,24 +109,14 @@
       "details": "운영 Toss 키, 성공/실패 URL, 실결제 카드 또는 테스트 결제 정책 확인 필요"
     },
     {
-      "title": "운영 DB 주문 상태 제약조건 미적용",
-      "level": "Major",
-      "details": "`supabase/migrations/202607060400_operation_automation.sql`의 orders_status_check 적용 필요"
-    },
-    {
       "title": "마이페이지 주문내역 실계정 검증 미완료",
       "level": "Major",
       "details": "실제 고객 로그인 후 user_id가 연결된 주문으로 확인 필요"
-    },
-    {
-      "title": "리뷰 요청 테이블 또는 예약 저장 미완료",
-      "level": "Major",
-      "details": "{\"ok\":false,\"message\":\"Could not find the table 'public.review_requests' in the schema cache\",\"skipped\":true}"
     }
   ],
   "notes": [
     "리허설 상품: 통영 바다장어 (tongyeong-sea-eel)",
-    "리허설 주문: PADO-20260710-A981093",
+    "리허설 주문: PADO-20260710-8CC7E95",
     "실결제 승인 대신 관리자 상태 변경으로 결제완료 이후 운영 흐름을 검증했습니다."
   ]
 }

@@ -88,8 +88,16 @@ try {
   assert(valid.response.status === 200, `valid upload failed: ${valid.response.status} ${JSON.stringify(valid.body)}`);
   assert(valid.body.ok && valid.body.url, "valid upload did not return a URL");
   assert(["local", "supabase"].includes(valid.body.storage), "upload storage mode is missing");
+  assert(valid.body.mediaType === "image", "valid image upload did not return mediaType=image");
+
+  const tinyMp4Bytes = Buffer.from([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32]);
+  const validVideo = await uploadFile(new Blob([tinyMp4Bytes], { type: "video/mp4" }), "sample.mp4");
+  assert(validVideo.response.status === 200, `valid video upload failed: ${validVideo.response.status} ${JSON.stringify(validVideo.body)}`);
+  assert(validVideo.body.ok && validVideo.body.url, "valid video upload did not return a URL");
+  assert(validVideo.body.mediaType === "video", "valid video upload did not return mediaType=video");
 
   const cleanedLocalFile = await cleanupLocalUpload(valid.body.url);
+  const cleanedLocalVideo = await cleanupLocalUpload(validVideo.body.url);
 
   console.log(
     JSON.stringify(
@@ -97,8 +105,11 @@ try {
         ok: true,
         invalidUploadRejected: true,
         validUploadAccepted: true,
+        validVideoUploadAccepted: true,
         storage: valid.body.storage,
-        cleanedLocalFile
+        videoStorage: validVideo.body.storage,
+        cleanedLocalFile,
+        cleanedLocalVideo
       },
       null,
       2

@@ -2295,3 +2295,27 @@
   - Product: `tongyeong-sea-eel`
   - Passed: product list, product detail, cart, checkout form, order creation, admin order lookup, status changes through shipped/delivered.
   - Blocked/partial: Kakao signup/login, Toss real approval/refund, connected DB `delivery_ready`, connected DB `review_requests`, my page real customer order history.
+
+## 2026-07-10 Sprint 14 Product Detail Launch Quality Verification
+
+- `pnpm run lint`: passed
+- `pnpm run build`: passed
+- `pnpm run verify:legacy-detail`: passed
+  - Confirms legacy detail mode renders uploaded detail images.
+  - Confirms development headings and captions are not rendered.
+  - Confirms AI gallery layout does not precede legacy detail pages.
+- `pnpm run verify:admin-upload`: passed
+  - Invalid file rejected.
+  - Image upload accepted.
+  - Video upload accepted.
+  - `mediaType=image` and `mediaType=video` responses confirmed.
+  - Local test files cleaned up.
+- `pnpm run verify:detail-json`: passed
+- `pnpm run verify:detail-template`: passed
+- `pnpm run verify:admin`: passed
+- `pnpm run verify:shopping`: passed
+- `pnpm run verify:operations`: passed
+- `pnpm run rehearsal:launch`: script passed
+  - Success rate: `67%`
+  - Go/No-Go: `No-Go`
+  - Remaining failures are external launch blockers: Kakao/Supabase Auth, Toss real payment approval/refund, and real customer My Page session.

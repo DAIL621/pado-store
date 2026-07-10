@@ -2048,3 +2048,34 @@
   - Product: `tongyeong-sea-eel`
 - Internal flows that passed in rehearsal: product list, product detail, cart, checkout form, order creation, admin order lookup, admin status updates through shipped/delivered.
 - Remaining blockers are external console or production DB application items: Toss real approval/refund, Kakao production login redirect, Vercel Production env confirmation, Supabase operation migration application, Supabase Storage bucket/policy confirmation, and Production URL SSL/robots/sitemap/metadata check.
+
+## 2026-07-10 Sprint 14 - Product Detail Launch Quality
+
+- Removed customer-facing development labels from existing detail page rendering.
+  - No `OFFICIAL DETAIL`, page numbers, or image captions are rendered in legacy detail output.
+  - Existing detail images now flow as image-only product detail content.
+- Improved existing detail page image layout for launch use.
+  - Centered max-width on desktop/tablet.
+  - Full-width, no-crop mobile rendering.
+  - Removed caption gaps and tightened scroll rhythm.
+- Added product detail video support without autoplay.
+  - Admin upload now accepts `mp4` and `webm`.
+  - Product detail renders videos with `controls`, `preload="metadata"`, `playsInline`, optional poster, and top/bottom placement.
+  - Videos remain click-to-play for mobile.
+- Improved product media interaction and final CTA polish.
+  - Thumbnail hover/active state is clearer.
+  - Hero image receives subtle hover transition.
+  - Final CTA uses stronger PADO brand color treatment.
+- Strengthened upload verification.
+  - `verify:admin-upload` now checks invalid upload rejection, image upload, video upload, media type response, and local cleanup.
+- Verification completed:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run verify:legacy-detail`: passed
+  - `pnpm run verify:admin-upload`: passed
+  - `pnpm run verify:detail-json`: passed
+  - `pnpm run verify:detail-template`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:shopping`: passed
+  - `pnpm run verify:operations`: passed
+  - `pnpm run rehearsal:launch`: script passed, external blockers remain

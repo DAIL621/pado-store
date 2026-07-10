@@ -26,6 +26,7 @@ export type ProductDetailVideo = {
   title: string;
   url: string;
   thumbnail?: string;
+  placement?: "top" | "bottom";
 };
 
 export type ProductDetailCertificate = {
@@ -239,12 +240,14 @@ function normalizeFaq(value: unknown, forForm: boolean): ProductDetailFaq[] {
 function normalizeVideos(value: unknown): ProductDetailVideo[] {
   return Array.isArray(value)
     ? value
-        .map((item) => {
+        .map((item): ProductDetailVideo => {
           const record = asRecord(item);
+          const placement = cleanText(record.placement);
           return {
             title: cleanText(record.title),
             url: cleanText(record.url),
-            thumbnail: cleanText(record.thumbnail)
+            thumbnail: cleanText(record.thumbnail),
+            placement: placement === "top" ? "top" : "bottom"
           };
         })
         .filter((item) => item.title || item.url || item.thumbnail)
