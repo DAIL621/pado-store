@@ -2110,3 +2110,34 @@
   - `pnpm run verify:detail-template`: passed
   - `pnpm run verify:shopping`: passed
   - `pnpm run dev:ensure`: passed
+
+## 2026-07-13 Sprint 17 - Operation System Admin Hardening
+
+- Strengthened product lifecycle operations without touching real launch products.
+  - Product create, update, soldout, recover, sale end, and hide now write best-effort `operation_logs` records when the table exists.
+  - Product delete remains soft-delete only. No physical product delete path is used.
+  - Option insert failure during product creation now hides the newly created product instead of physically deleting it.
+- Added sale-ended state without requiring a new DB column.
+  - Uses `detail_json.operationState = "ended"` plus `is_active=false`.
+  - Product hidden state uses `detail_json.operationState = "hidden"` and stores `operation.deletedAt/deletedBy`.
+  - Recover clears the operation state and restores `is_active=true`.
+- Improved admin product filters.
+  - Added `판매종료` status filtering.
+  - Existing production/test split remains the default operating mode.
+- Improved product duplication for operations.
+  - Detail page data, videos, options, SEO/detail JSON are copied.
+  - Stock is reset to `0` on the copied product draft.
+- Dummy lifecycle verification:
+  - Created an inactive verification product.
+  - Verified recover -> soldout -> sale end -> hide.
+  - Final state: `is_active=false`, `operationState=hidden`, `deletedAt` stored.
+- Verification:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:admin-upload`: passed
+  - `pnpm run verify:legacy-detail`: passed
+  - `pnpm run verify:detail-json`: passed
+  - `pnpm run verify:detail-template`: passed
+  - `pnpm run verify:shopping`: passed
+  - `pnpm run dev:ensure`: passed

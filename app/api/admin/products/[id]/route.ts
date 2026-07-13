@@ -5,6 +5,52 @@ import { requireAdminApi } from "@/lib/auth/admin-api";
 import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+function withOperationState(detail: unknown, state: "hidden" | "ended" | null, actorId: string) {
+  const base = normalizeProductDetailInput(detail);
+  const operation: Record<string, unknown> = {
+    ...(typeof (base as Record<string, unknown>).operation === "object" && (base as Record<string, unknown>).operation !== null
+      ? ((base as Record<string, unknown>).operation as Record<string, unknown>)
+      : {}),
+    state,
+    changedAt: new Date().toISOString(),
+    changedBy: actorId
+  };
+  if (state === "hidden") {
+    operation.deletedAt = operation.changedAt;
+    operation.deletedBy = actorId;
+  }
+  return { ...base, operationState: state, operation };
+}
+
+async function writeProductOperationLogBestEffort(
+  supabase: ReturnType<typeof createAdminClient>,
+  input: {
+    eventType: string;
+    summary: string;
+    productId: string;
+    actorId: string;
+    actorEmail?: string;
+    payload?: Record<string, unknown>;
+  }
+) {
+  await supabase
+    .from("operation_logs")
+    .insert({
+      event_type: input.eventType,
+      summary: input.summary,
+      payload: {
+        productId: input.productId,
+        ...(input.payload ?? {})
+      },
+      actor: {
+        id: input.actorId,
+        email: input.actorEmail ?? null,
+        type: "admin"
+      }
+    })
+    .then(() => undefined, () => undefined);
+}
+
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
@@ -14,6 +60,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!parsedBody.ok) return parsedBody.response;
   const body = parsedBody.body;
   const supabase = createAdminClient();
+  const actorId = admin.session.user.id;
+  const actorEmail = admin.session.user.email;
 
   if (body.action === "soldout") {
     const { error: productError } = await supabase.from("products").update({ is_active: true }).eq("id", id);
@@ -22,19 +70,57 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { error: optionError } = await supabase.from("product_options").update({ stock: 0 }).eq("product_id", id);
     if (optionError) return NextResponse.json({ ok: false, message: optionError.message }, { status: 500 });
 
+    await writeProductOperationLogBestEffort(supabase, {
+      eventType: "product.soldout",
+      summary: "상품을 품절 처리했습니다.",
+      productId: id,
+      actorId,
+      actorEmail
+    });
+
     return NextResponse.json({ ok: true, mode: "soldout" });
   }
 
   if (body.action === "recover") {
+    const { data: currentProduct } = await supabase.from("products").select("detail_json").eq("id", id).single();
     const { data: product, error } = await supabase
       .from("products")
-      .update({ is_active: true })
+      .update({ is_active: true, detail_json: withOperationState(currentProduct?.detail_json, null, actorId) })
       .eq("id", id)
       .select()
       .single();
 
     if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+    await writeProductOperationLogBestEffort(supabase, {
+      eventType: "product.recovered",
+      summary: "상품을 복원했습니다.",
+      productId: id,
+      actorId,
+      actorEmail
+    });
     return NextResponse.json({ ok: true, mode: "recover", product });
+  }
+
+  if (body.action === "end_sale") {
+    const { data: currentProduct, error: currentError } = await supabase.from("products").select("detail_json").eq("id", id).single();
+    if (currentError) return NextResponse.json({ ok: false, message: currentError.message }, { status: 500 });
+
+    const { data: product, error } = await supabase
+      .from("products")
+      .update({ is_active: false, detail_json: withOperationState(currentProduct?.detail_json, "ended", actorId) })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+    await writeProductOperationLogBestEffort(supabase, {
+      eventType: "product.sale_ended",
+      summary: "상품 판매를 종료했습니다.",
+      productId: id,
+      actorId,
+      actorEmail
+    });
+    return NextResponse.json({ ok: true, mode: "end_sale", product });
   }
 
   const updates: Record<string, unknown> = {};
@@ -84,6 +170,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       { status: isDuplicate ? 409 : 500 }
     );
   }
+
+  await writeProductOperationLogBestEffort(supabase, {
+    eventType: "product.updated",
+    summary: "상품 정보를 수정했습니다.",
+    productId: id,
+    actorId,
+    actorEmail,
+    payload: {
+      changedFields: Object.keys(updates),
+      optionsChanged: body.options !== undefined
+    }
+  });
 
   if (body.options !== undefined) {
     const options = parseProductOptions(body.options);
@@ -135,8 +233,23 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   const { id } = await params;
   const supabase = createAdminClient();
-  const { error } = await supabase.from("products").update({ is_active: false }).eq("id", id);
+  const actorId = admin.session.user.id;
+  const actorEmail = admin.session.user.email;
+  const { data: currentProduct, error: currentError } = await supabase.from("products").select("detail_json").eq("id", id).single();
+  if (currentError) return NextResponse.json({ ok: false, message: currentError.message }, { status: 500 });
+
+  const { error } = await supabase
+    .from("products")
+    .update({ is_active: false, detail_json: withOperationState(currentProduct?.detail_json, "hidden", actorId) })
+    .eq("id", id);
 
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  await writeProductOperationLogBestEffort(supabase, {
+    eventType: "product.hidden",
+    summary: "상품을 숨김 처리했습니다.",
+    productId: id,
+    actorId,
+    actorEmail
+  });
   return NextResponse.json({ ok: true, mode: "soft-delete" });
 }

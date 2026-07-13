@@ -643,3 +643,17 @@ Next launch work:
 2. Upload real production videos and thumbnails before enabling autoplay on any public product.
 3. Continue using hidden/inactive verification products for automated tests.
 4. Periodically run the admin test-product filter and soft-hide any accidental verification rows before production launch.
+
+### Sprint 17 Operation Admin Next Steps
+
+Completed:
+- Soft-delete lifecycle is enforced for product hide/delete.
+- Sale-ended status is available through `detail_json.operationState`.
+- Product operation logs are written best-effort.
+- Duplicated product stock is reset to zero.
+
+Next:
+1. Apply production operation migration so `operation_logs` is guaranteed in Supabase.
+2. Decide whether `deleted_at`, `deleted_by`, and `sale_ended_at` should become first-class product columns later.
+3. Add a dedicated product operation history panel after production DB migration is confirmed.
+4. Continue testing only with hidden verification products until CEO launch assets are ready.

@@ -6,6 +6,35 @@ import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { createProductSlug } from "@/lib/products/slug";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+async function writeProductOperationLogBestEffort(
+  supabase: ReturnType<typeof createAdminClient>,
+  input: {
+    eventType: string;
+    summary: string;
+    productId: string;
+    actorId: string;
+    actorEmail?: string;
+    payload?: Record<string, unknown>;
+  }
+) {
+  await supabase
+    .from("operation_logs")
+    .insert({
+      event_type: input.eventType,
+      summary: input.summary,
+      payload: {
+        productId: input.productId,
+        ...(input.payload ?? {})
+      },
+      actor: {
+        id: input.actorId,
+        email: input.actorEmail ?? null,
+        type: "admin"
+      }
+    })
+    .then(() => undefined, () => undefined);
+}
+
 export async function GET() {
   const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
@@ -28,6 +57,8 @@ export async function POST(request: Request) {
   if (!parsedBody.ok) return parsedBody.response;
   const body = parsedBody.body;
   const supabase = createAdminClient();
+  const actorId = admin.session.user.id;
+  const actorEmail = admin.session.user.email;
 
   const requiredFields = ["name", "origin", "category", "subtitle", "description", "basePrice"] as const;
   const missingField = requiredFields.find((field) => !String(body[field] ?? "").trim());
@@ -126,9 +157,21 @@ export async function POST(request: Request) {
 
   const { error: optionError } = await supabase.from("product_options").insert(options);
   if (optionError) {
-    await supabase.from("products").delete().eq("id", product.id);
+    await supabase.from("products").update({ is_active: false }).eq("id", product.id);
     return NextResponse.json({ ok: false, message: optionError.message }, { status: 500 });
   }
+
+  await writeProductOperationLogBestEffort(supabase, {
+    eventType: "product.created",
+    summary: "상품을 등록했습니다.",
+    productId: product.id,
+    actorId,
+    actorEmail,
+    payload: {
+      slug: product.slug,
+      isActive
+    }
+  });
 
   return NextResponse.json({
     ok: true,

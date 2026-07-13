@@ -260,3 +260,9 @@ alter table products add column if not exists detail_json jsonb not null default
 - No new external blocker was introduced.
 - The real `wando-live-abalone` product currently exists but is inactive. Public launch requires an operator decision to reactivate it after final assets, price, options, inventory, and detail media are confirmed.
 - Real product video autoplay was not enabled on the actual abalone product because production-ready video/poster assets were not provided and the task forbids modifying real operation products.
+
+## 2026-07-13 Sprint 17 Operation Admin Notes
+
+- No new external blocker was introduced.
+- Product operation logs are best-effort until the production Supabase migration creates `operation_logs`.
+- Product hidden/sale-ended metadata currently lives in `products.detail_json` for DB compatibility. A future migration can promote these values to dedicated columns if required.

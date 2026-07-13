@@ -2350,3 +2350,30 @@
   - `pnpm run verify:detail-template`: passed
   - `pnpm run verify:shopping`: passed
   - `pnpm run dev:ensure`: passed
+
+## 2026-07-13 Sprint 17 Operation Admin Verification
+
+- Lifecycle dummy product:
+  - Slug pattern: `ops-admin-lifecycle-test-*`
+  - Flow verified: create -> recover -> soldout -> sale end -> hide.
+  - Final `is_active`: `false`
+  - Final `detail_json.operationState`: `hidden`
+  - `detail_json.operation.deletedAt`: present
+- Product list browser check:
+  - `/admin/products` loaded with no console errors.
+  - Primary status filter buttons rendered: `5`.
+  - Secondary product type filter buttons rendered: `5`.
+  - Default production view did not show known English verification product names.
+- Operation logging:
+  - Product create/update/soldout/recover/sale-end/hide writes to `operation_logs` best-effort.
+  - If the production migration has not created `operation_logs`, product operations continue without failing.
+- Commands:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:admin-upload`: passed
+  - `pnpm run verify:legacy-detail`: passed
+  - `pnpm run verify:detail-json`: passed
+  - `pnpm run verify:detail-template`: passed
+  - `pnpm run verify:shopping`: passed
+  - `pnpm run dev:ensure`: passed

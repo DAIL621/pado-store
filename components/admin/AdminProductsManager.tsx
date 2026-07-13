@@ -30,7 +30,7 @@ type AdminProduct = {
   product_options?: ProductOption[];
 };
 
-type ProductStatus = "selling" | "soldout" | "hidden";
+type ProductStatus = "selling" | "soldout" | "hidden" | "ended";
 type StatusFilter = "all" | ProductStatus;
 type TestFilter = "all" | "production" | "test";
 type QualityFilter = "all" | "low" | "ready";
@@ -40,6 +40,7 @@ const getTotalStock = (product: AdminProduct) =>
   (product.product_options ?? []).reduce((total, option) => total + (Number(option.stock) || 0), 0);
 
 const getStatus = (product: AdminProduct): ProductStatus => {
+  if ((product.detail_json as Record<string, unknown> | null | undefined)?.operationState === "ended") return "ended";
   if (!product.is_active) return "hidden";
   return getTotalStock(product) > 0 ? "selling" : "soldout";
 };
@@ -71,7 +72,8 @@ const getDetailScoreLabel = (score: number) => {
 const statusLabel: Record<ProductStatus, string> = {
   selling: "판매중",
   soldout: "품절",
-  hidden: "숨김"
+  hidden: "숨김",
+  ended: "판매종료"
 };
 
 const verificationProductPattern = /(verification|admin-edit|detail-auto|ops-db-test|stock-check|test|e2e|duplicate|private-detail|private detail|legacy-detail|legacy detail|테스트|검증)/i;
@@ -81,11 +83,11 @@ const isVerificationProduct = (product: AdminProduct) =>
     .filter(Boolean)
     .some((value) => verificationProductPattern.test(String(value)));
 
-const toOptionForms = (product: AdminProduct): AdminProductOptionForm[] =>
+const toOptionForms = (product: AdminProduct, options?: { resetStock?: boolean }): AdminProductOptionForm[] =>
   (product.product_options?.length ? product.product_options : [{ id: "", name: "기본 옵션", price_delta: 0, stock: 0 }]).map((option) => ({
     name: option.name,
     priceDelta: String(option.price_delta),
-    stock: String(option.stock)
+    stock: options?.resetStock ? "0" : String(option.stock)
   }));
 
 const createCopySlug = (slug: string) => {
@@ -169,7 +171,7 @@ export function AdminProductsManager() {
   }, [highlightedProduct, products]);
 
   const counts = useMemo(() => {
-    const base = { all: products.length, selling: 0, soldout: 0, hidden: 0, test: 0, production: 0 };
+    const base = { all: products.length, selling: 0, soldout: 0, hidden: 0, ended: 0, test: 0, production: 0 };
     products.forEach((product) => {
       base[getStatus(product)] += 1;
       if (isVerificationProduct(product)) {
@@ -239,6 +241,11 @@ export function AdminProductsManager() {
     updateProductState(product, { action: "soldout" }, `${product.name} 상품을 품절 처리했습니다.`);
   };
 
+  const endSale = (product: AdminProduct) => {
+    if (!window.confirm(`${product.name} 상품의 판매를 종료할까요? 고객 상품 목록에서는 숨겨지고 관리자에서 복원할 수 있습니다.`)) return;
+    updateProductState(product, { action: "end_sale" }, `${product.name} 상품을 판매종료 처리했습니다.`);
+  };
+
   const recover = (product: AdminProduct) => {
     updateProductState(product, { action: "recover" }, `${product.name} 상품을 다시 고객 화면에 노출했습니다.`);
   };
@@ -275,7 +282,7 @@ export function AdminProductsManager() {
         badge: product.badge,
         highlights: (product.highlights ?? []).join(", "),
         detailJson: product.detail_json ?? {},
-        options: toOptionForms(product)
+        options: toOptionForms(product, { resetStock: true })
       })
     });
     const result = await response.json();
@@ -377,6 +384,7 @@ export function AdminProductsManager() {
           ["all", `전체 ${counts.all}`],
           ["selling", `판매중 ${counts.selling}`],
           ["soldout", `품절 ${counts.soldout}`],
+          ["ended", `판매종료 ${counts.ended}`],
           ["hidden", `숨김 ${counts.hidden}`]
         ].map(([value, label]) => (
           <button type="button" key={value} className={statusFilter === value ? "active" : ""} onClick={() => setStatusFilter(value as StatusFilter)}>
@@ -473,11 +481,12 @@ export function AdminProductsManager() {
                       <button type="button" onClick={() => copyDetailUrl(product)}>URL 복사</button>
                       <button type="button" onClick={() => duplicateProduct(product)}>복사</button>
                       <button type="button" onClick={() => setEditing(product)}>수정</button>
-                      {status === "hidden" ? (
+                      {status === "hidden" || status === "ended" ? (
                         <button type="button" onClick={() => recover(product)}>다시 판매하기</button>
                       ) : (
                         <>
                           <button type="button" onClick={() => makeSoldout(product)} disabled={status === "soldout"}>품절</button>
+                          <button type="button" onClick={() => endSale(product)}>판매종료</button>
                           <button type="button" onClick={() => hide(product)}>숨김</button>
                         </>
                       )}
