@@ -27,6 +27,10 @@ export type ProductDetailVideo = {
   url: string;
   thumbnail?: string;
   placement?: "top" | "bottom";
+  autoplay?: boolean;
+  muted?: boolean;
+  loop?: boolean;
+  controls?: boolean;
 };
 
 export type ProductDetailCertificate = {
@@ -242,12 +246,17 @@ function normalizeVideos(value: unknown): ProductDetailVideo[] {
     ? value
         .map((item): ProductDetailVideo => {
           const record = asRecord(item);
-          const placement = cleanText(record.placement);
+          const placement = cleanText(record.placement || record.position);
+          const autoplay = record.autoplay === true;
           return {
             title: cleanText(record.title),
             url: cleanText(record.url),
             thumbnail: cleanText(record.thumbnail),
-            placement: placement === "top" ? "top" : "bottom"
+            placement: placement === "top" ? "top" : "bottom",
+            autoplay,
+            muted: autoplay ? true : record.muted !== false,
+            loop: record.loop === true,
+            controls: record.controls !== false
           };
         })
         .filter((item) => item.title || item.url || item.thumbnail)

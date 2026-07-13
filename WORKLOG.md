@@ -2079,3 +2079,34 @@
   - `pnpm run verify:shopping`: passed
   - `pnpm run verify:operations`: passed
   - `pnpm run rehearsal:launch`: script passed, external blockers remain
+
+## 2026-07-13 Product Operation Stabilization
+
+- Stabilized the admin product list for real operation.
+  - Root cause: verification scripts created active English test products such as `Legacy Detail Verification Product`, `Detail Auto Verification Product`, `Pado E2E Product`, `Duplicate...`, and `Private Detail Preview`, while `/admin/products` defaulted to showing all products.
+  - Default admin product list now opens in `production` mode so verification/test products are hidden unless the operator chooses the test filter.
+  - Expanded the verification product classifier to include `e2e`, `duplicate`, `private-detail`, and `legacy-detail` patterns.
+  - Soft-hidden 11 accumulated active test products through the admin API. No physical deletion was performed.
+- Updated verification scripts so newly created test products are private/inactive where possible and continue to clean up with soft delete.
+- Fixed the admin edit modal preview clipping.
+  - Modal width and edit/preview grid were widened.
+  - Preview gets a minimum width on desktop and stacks below the form on tablet/mobile.
+  - Verified no horizontal clipping at 1440px, 1920px, 1152px browser-zoom equivalent, and tablet width.
+- Added admin-configurable product video playback policy.
+  - `detail_json.videos[]` now supports `autoplay`, `muted`, `loop`, and `controls` with safe defaults.
+  - Autoplay forces `muted=true`, `playsInline=true`, `preload=metadata`, and keeps controls available as a fallback.
+  - Autoplay OFF remains click-to-play with controls.
+- Real abalone check:
+  - Product found: `완도 활전복`, slug `wando-live-abalone`.
+  - Current record is `is_active=false`; admin preview route returns 200.
+  - The real product was not modified because the task explicitly forbids changing real operation products without production assets.
+- Verification:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:admin-upload`: passed
+  - `pnpm run verify:legacy-detail`: passed
+  - `pnpm run verify:detail-json`: passed
+  - `pnpm run verify:detail-template`: passed
+  - `pnpm run verify:shopping`: passed
+  - `pnpm run dev:ensure`: passed

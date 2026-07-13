@@ -7,7 +7,7 @@ const fullDetail = {
   recipes: [{ title: "구이", description: "노릇하게 구워 드세요.", image: "" }],
   components: ["본품", "아이스팩"],
   faq: [{ question: "언제 출고되나요?", answer: "평일 오후 1시 이전 당일 출고됩니다." }],
-  videos: [{ title: "상품 영상", url: "https://example.com/video" }],
+  videos: [{ title: "상품 영상", url: "https://example.com/video.mp4", autoplay: true, muted: true, loop: true, controls: true }],
   certificates: [{ title: "인증서", image: "/images/products/wando-abalone.webp" }],
   extraSections: [{ type: "notice", title: "추가 안내" }]
 };
@@ -40,5 +40,9 @@ assert(partial.heroImages.length === 0, "empty image url should be hidden");
 
 const full = visibleSections(fullDetail);
 assert(Object.values(full).every((items) => items.length > 0), "full detail should expose every master template section");
+assert(full.videos[0].autoplay === true, "video autoplay setting should be preserved");
+assert(full.videos[0].muted === true, "video muted setting should be preserved");
+assert(full.videos[0].loop === true, "video loop setting should be preserved");
+assert(full.videos[0].controls === true, "video controls setting should be preserved");
 
 console.log(JSON.stringify({ ok: true, emptyHidden: true, partialVisible: true, fullVisible: true }, null, 2));

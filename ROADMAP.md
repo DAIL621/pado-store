@@ -628,3 +628,18 @@ Next launch work:
 2. Add product videos only where real production-ready clips exist.
 3. Capture PC/tablet/mobile detail pages after real assets are uploaded.
 4. Re-run launch rehearsal after Kakao, Toss, Supabase migration, and Production env blockers are cleared.
+
+### Product Operation Stabilization Follow-up
+
+Completed:
+- Admin product list defaults to production products only.
+- Verification/test products are still recoverable through the test filter.
+- Verification scripts now create hidden/private test products where possible.
+- Admin edit live preview no longer clips on desktop/tablet/mobile widths.
+- Product video playback settings are saved in `detail_json.videos[]`.
+
+Next launch work:
+1. Reactivate `wando-live-abalone` only after its final price, options, detail images, and media are approved.
+2. Upload real production videos and thumbnails before enabling autoplay on any public product.
+3. Continue using hidden/inactive verification products for automated tests.
+4. Periodically run the admin test-product filter and soft-hide any accidental verification rows before production launch.

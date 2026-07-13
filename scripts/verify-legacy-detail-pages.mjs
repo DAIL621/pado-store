@@ -98,6 +98,7 @@ const create = await request("/api/admin/products", {
     badge: "TEST",
     highlights: "Legacy detail, Launch priority, Mobile responsive",
     options: [{ name: "Verification option 1kg", priceDelta: "0", stock: "3" }],
+    isActive: false,
     detailJson
   })
 });

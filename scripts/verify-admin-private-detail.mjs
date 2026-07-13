@@ -40,6 +40,7 @@ async function createVerificationProduct(page, slug, stamp) {
       badge: "검증",
       highlights: "admin preview",
       options: [{ name: "Preview option", priceDelta: "0", stock: "1" }],
+      isActive: false,
       detailJson: {
         benefits: ["관리자 미리보기", "검증 상품", "자동 상세페이지"],
         components: ["테스트 구성품"]
@@ -68,6 +69,7 @@ try {
   productId = await createVerificationProduct(adminPage, privateSlug, stamp);
 
   await adminPage.goto(`${baseUrl}/admin/products`, { waitUntil: "networkidle" });
+  await adminPage.locator(".admin-filter-tabs-secondary button").nth(2).click();
   const detailLink = adminPage.locator(`a[href="/products/${privateSlug}"]`).first();
   await detailLink.waitFor({ timeout: 10000 });
 
@@ -88,7 +90,7 @@ try {
       `admin preview notice missing after active goto. status=${activePageResponse?.status()} url=${adminPage.url()} body=${bodyText.slice(0, 500)} original=${error.message}`
     );
   });
-  if (!activeNotice.includes("관리자 미리보기") || !activeNotice.includes("검증 상태")) {
+  if (!activeNotice.includes("관리자 미리보기") || !activeNotice.includes("일반 고객 상품 목록에는 노출되지 않습니다")) {
     throw new Error(`admin preview notice missing for verification product: ${activeNotice}`);
   }
 

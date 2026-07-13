@@ -44,6 +44,7 @@ async function createProduct(page, slug, stamp) {
       badge: "TEST",
       highlights: "duplicate test",
       options: [{ name: "Base option", priceDelta: "0", stock: "1" }],
+      isActive: false,
       detailJson: {}
     }
   });
@@ -85,6 +86,7 @@ try {
   await fillField(page, "options.0.name", "Test option");
   await fillField(page, "options.0.priceDelta", "0");
   await fillField(page, "options.0.stock", "5");
+  await page.locator('input[name="publishMode"][value="private"]').check({ force: true });
 
   const submitButton = page.getByTestId("admin-product-submit");
   await submitButton.scrollIntoViewIfNeeded();

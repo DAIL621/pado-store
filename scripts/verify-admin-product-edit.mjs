@@ -91,6 +91,7 @@ try {
         { name: "수정 전 옵션", priceDelta: "0", stock: "5" },
         { name: "삭제될 옵션", priceDelta: "1000", stock: "2" }
       ],
+      isActive: false,
       detailJson: baseDetailJson
     })
   });

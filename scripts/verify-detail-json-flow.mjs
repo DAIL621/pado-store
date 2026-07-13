@@ -129,6 +129,7 @@ for (let attempt = 0; attempt < 3; attempt += 1) {
       badge: "TEST",
       highlights: "Automatic detail, Admin input, Save verification",
       options: [{ name: "Verification option 1kg", priceDelta: "0", stock: "3" }],
+      isActive: false,
       detailJson
     })
   });

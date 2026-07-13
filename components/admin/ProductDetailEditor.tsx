@@ -334,14 +334,22 @@ export function ProductDetailEditor({ value, onChange }: Props) {
   const removeRecipe = (index: number) =>
     update("recipes", value.recipes.length <= 1 ? [{ title: "", description: "", image: "" }] : value.recipes.filter((_, recipeIndex) => recipeIndex !== index));
 
-  const updateVideo = (index: number, key: keyof ProductDetailVideo, nextValue: string) => {
+  const updateVideo = (index: number, key: keyof ProductDetailVideo, nextValue: string | boolean) => {
     update(
       "videos",
-      value.videos.map((video, videoIndex) => (videoIndex === index ? { ...video, [key]: nextValue } : video))
+      value.videos.map((video, videoIndex) => {
+        if (videoIndex !== index) return video;
+        const nextVideo = { ...video, [key]: nextValue };
+        return key === "autoplay" && nextValue === true ? { ...nextVideo, muted: true } : nextVideo;
+      })
     );
   };
 
-  const addVideo = () => update("videos", [...value.videos, { title: "", url: "", thumbnail: "", placement: "bottom" }]);
+  const addVideo = () =>
+    update("videos", [
+      ...value.videos,
+      { title: "", url: "", thumbnail: "", placement: "bottom", autoplay: false, muted: true, loop: false, controls: true }
+    ]);
   const removeVideo = (index: number) => update("videos", value.videos.filter((_, videoIndex) => videoIndex !== index));
   const moveVideo = (fromIndex: number, toIndex: number) => {
     if (toIndex < 0 || toIndex >= value.videos.length) return;
@@ -754,6 +762,41 @@ export function ProductDetailEditor({ value, onChange }: Props) {
                   <option value="top">상세 이미지 위</option>
                 </select>
               </label>
+              <div className="admin-video-settings">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={video.autoplay === true}
+                    onChange={(event) => updateVideo(index, "autoplay", event.target.checked)}
+                  />
+                  자동재생 사용
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={video.loop === true}
+                    onChange={(event) => updateVideo(index, "loop", event.target.checked)}
+                  />
+                  반복재생
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={video.controls !== false}
+                    onChange={(event) => updateVideo(index, "controls", event.target.checked)}
+                  />
+                  재생 컨트롤 표시
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={video.autoplay === true || video.muted !== false}
+                    disabled={video.autoplay === true}
+                    onChange={(event) => updateVideo(index, "muted", event.target.checked)}
+                  />
+                  음소거 시작
+                </label>
+              </div>
               <label className="admin-file-chip">
                 동영상 업로드
                 <input

@@ -37,6 +37,13 @@ assert(productsManager.includes("copyDetailUrl"), "admin product detail URL copy
 assert(productsManager.includes("duplicateProduct"), "admin product duplicate action is missing");
 assert(productsManager.includes("createCopySlug"), "admin product copy slug generator is missing");
 assert(productsManager.includes("recoverVerificationProducts"), "admin hidden verification product recovery action is missing");
+assert(productsManager.includes('useState<TestFilter>("production")'), "admin products should hide verification products by default");
+assert(productsManager.includes("legacy-detail"), "admin products should classify legacy detail verification products as test data");
+assert(productEditor.includes("admin-video-settings"), "admin legacy detail video playback settings are missing");
+assert(productEditor.includes('"autoplay"'), "admin video autoplay setting is missing");
+assert(productEditor.includes('"loop"'), "admin video loop setting is missing");
+assert(productEditor.includes('"controls"'), "admin video controls setting is missing");
+assert(productEditor.includes('"muted"'), "admin video muted setting is missing");
 assert(productEditor.includes("handlePaste"), "admin pasted image upload handler is missing");
 assert(productEditor.includes("clipboardData.files"), "admin pasted image upload does not read clipboard files");
 assert(productBuilder.includes("SEO"), "admin quality score does not include SEO readiness");

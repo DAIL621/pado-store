@@ -2319,3 +2319,34 @@
   - Success rate: `67%`
   - Go/No-Go: `No-Go`
   - Remaining failures are external launch blockers: Kakao/Supabase Auth, Toss real payment approval/refund, and real customer My Page session.
+
+## 2026-07-13 Product Operation Stabilization Verification
+
+- Admin product list:
+  - Soft-hidden active verification/test products: `11`
+  - Browser check: default `/admin/products` did not show English verification names.
+  - Test products remain available through the dedicated test filter.
+- Real abalone:
+  - Found product: `완도 활전복`
+  - Slug: `wando-live-abalone`
+  - Current active state: `false`
+  - Admin detail preview status: `200`
+- Admin edit preview:
+  - 1440px: no clipping, no horizontal preview overflow.
+  - 1920px: no clipping, no horizontal preview overflow.
+  - 1152px browser-zoom equivalent: no clipping, no horizontal preview overflow.
+  - Tablet width: preview stacks below the form without clipping.
+- Video playback policy:
+  - Autoplay OFF: `controls=true`, `autoplay=false`, `muted=true`, `playsInline=true`, `preload=metadata`.
+  - Autoplay ON: `controls=true`, `autoplay=true`, `muted=true`, `loop=true`, `playsInline=true`, `preload=metadata`.
+  - Test used an inactive verification product and soft-deleted it after verification.
+- Commands:
+  - `pnpm run lint`: passed
+  - `pnpm run build`: passed
+  - `pnpm run verify:admin`: passed
+  - `pnpm run verify:admin-upload`: passed
+  - `pnpm run verify:legacy-detail`: passed
+  - `pnpm run verify:detail-json`: passed
+  - `pnpm run verify:detail-template`: passed
+  - `pnpm run verify:shopping`: passed
+  - `pnpm run dev:ensure`: passed

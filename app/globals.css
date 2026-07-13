@@ -482,3 +482,17 @@
 .admin-video-preview{display:grid;place-items:center;border:1px solid #dbe9e7;border-radius:12px;background:#f5fbfa;padding:10px;overflow:hidden}
 .admin-video-preview video{display:block;width:100%;max-height:280px;border-radius:10px;background:#062f35}
 @media(max-width:700px){.legacy-detail-pages{width:100%;margin:10px auto 30px;padding:0}.detail-video-section{width:100%;margin:20px auto 34px;padding:0 14px}.detail-video-card{border-radius:18px;padding:10px}.detail-video-card video{border-radius:13px}.detail-master-final-cta{margin-bottom:calc(72px + env(safe-area-inset-bottom))}}
+
+/* Operation stabilization: admin product edit preview and video options */
+.admin-modal{width:min(1500px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+.admin-modal .admin-product-builder{grid-template-columns:minmax(0,1.55fr) minmax(390px,.95fr);align-items:start}
+.admin-modal .admin-live-preview{min-width:0;width:100%;max-width:100%;overflow:hidden}
+.admin-modal .admin-live-preview-surface{overflow-x:hidden}
+.admin-modal .admin-live-preview-surface .purchase-box,.admin-modal .admin-live-preview-surface .purchase-actions,.admin-modal .admin-live-preview-surface select{min-width:0;max-width:100%}
+.admin-modal .admin-live-preview-surface .purchase-actions{grid-template-columns:1fr 1fr}
+.admin-modal .admin-live-preview-surface .button{white-space:normal;text-align:center}
+.admin-video-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border:1px solid #dbe9e7;border-radius:12px;background:#f8fcfb;padding:11px}
+.admin-video-settings label{display:flex!important;align-items:center;gap:7px;color:#425f62!important;font-size:12px!important;font-weight:900!important}
+.admin-video-settings input{width:16px;height:16px;accent-color:var(--teal)}
+@media(max-width:1280px){.admin-modal .admin-product-builder{grid-template-columns:1fr}.admin-modal .admin-live-preview{position:static;order:2}.admin-modal .admin-live-preview.mobile-preview{max-width:430px;margin:0 auto}}
+@media(max-width:720px){.admin-modal{width:calc(100vw - 18px);max-height:calc(100vh - 18px);border-radius:14px}.admin-video-settings{grid-template-columns:1fr}.admin-modal .admin-live-preview.mobile-preview{max-width:none}}

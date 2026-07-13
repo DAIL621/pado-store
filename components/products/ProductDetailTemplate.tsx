@@ -165,9 +165,12 @@ function VideoSection({
       {videos.map((video, index) => (
         <article key={`${video.url}-${index}`} className="detail-video-card">
           <video
-            controls
+            controls={video.controls !== false || video.autoplay === true}
             preload="metadata"
             playsInline
+            autoPlay={video.autoplay === true}
+            muted={video.autoplay === true || video.muted !== false}
+            loop={video.loop === true}
             poster={video.thumbnail || undefined}
             aria-label={video.title || `${productName} 동영상 ${index + 1}`}
           >

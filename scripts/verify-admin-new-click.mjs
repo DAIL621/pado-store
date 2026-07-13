@@ -77,6 +77,7 @@ try {
   await fillField(page, "options.0.name", "E2E option 1kg");
   await fillField(page, "options.0.priceDelta", "0");
   await fillField(page, "options.0.stock", "3");
+  await page.locator('input[name="publishMode"][value="private"]').check({ force: true });
   await page.screenshot({ path: "screenshots/admin-create-before-click-real-edge.png", fullPage: true });
 
   let delayedCreateOnce = false;
@@ -94,7 +95,7 @@ try {
   const savingButtonText = await submitButton.textContent();
   await page.screenshot({ path: "screenshots/admin-create-saving-real-edge.png", fullPage: false });
 
-  await page.locator('[data-testid="admin-product-submit"][data-save-state="completed"]').waitFor({ timeout: 12000 });
+  await page.locator('[data-testid="admin-product-submit"][data-save-state="completed"]').waitFor({ timeout: 25000 });
   const completedButtonText = await submitButton.textContent();
   await page.screenshot({ path: "screenshots/admin-create-completed-real-edge.png", fullPage: false });
 
@@ -141,6 +142,7 @@ try {
       badge: "E2E",
       highlights: "duplicate slug check",
       options: [{ name: "E2E option 1kg", priceDelta: "0", stock: "1" }],
+      isActive: false,
       detailJson: {}
     }
   });

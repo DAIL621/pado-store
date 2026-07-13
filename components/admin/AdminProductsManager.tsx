@@ -74,7 +74,7 @@ const statusLabel: Record<ProductStatus, string> = {
   hidden: "숨김"
 };
 
-const verificationProductPattern = /(verification|admin-edit|detail-auto|ops-db-test|stock-check|test|테스트|검증)/i;
+const verificationProductPattern = /(verification|admin-edit|detail-auto|ops-db-test|stock-check|test|e2e|duplicate|private-detail|private detail|legacy-detail|legacy detail|테스트|검증)/i;
 
 const isVerificationProduct = (product: AdminProduct) =>
   [product.slug, product.name, product.origin, product.category]
@@ -104,7 +104,7 @@ export function AdminProductsManager() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [testFilter, setTestFilter] = useState<TestFilter>("all");
+  const [testFilter, setTestFilter] = useState<TestFilter>("production");
   const [qualityFilter, setQualityFilter] = useState<QualityFilter>("all");
   const [sortMode, setSortMode] = useState<SortMode>("recent");
   const [editing, setEditing] = useState<AdminProduct | null>(null);
@@ -163,7 +163,7 @@ export function AdminProductsManager() {
       setMessage(`방금 등록한 상품이 목록에 표시되었습니다: ${matched.name} (${matched.slug})`);
       setSortMode("recent");
       setStatusFilter("all");
-      setTestFilter("all");
+      setTestFilter(isVerificationProduct(matched) ? "test" : "production");
       setQualityFilter("all");
     }
   }, [highlightedProduct, products]);
@@ -343,7 +343,7 @@ export function AdminProductsManager() {
   const resetFilters = () => {
     setQuery("");
     setStatusFilter("all");
-    setTestFilter("all");
+    setTestFilter("production");
     setQualityFilter("all");
     setSortMode("recent");
   };

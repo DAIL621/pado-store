@@ -254,3 +254,9 @@ alter table products add column if not exists detail_json jsonb not null default
   - Real customer My Page order history verification.
   - Production Supabase operation migration confirmation.
   - Production Storage bucket and policy confirmation.
+
+## 2026-07-13 Product Operation Stabilization Notes
+
+- No new external blocker was introduced.
+- The real `wando-live-abalone` product currently exists but is inactive. Public launch requires an operator decision to reactivate it after final assets, price, options, inventory, and detail media are confirmed.
+- Real product video autoplay was not enabled on the actual abalone product because production-ready video/poster assets were not provided and the task forbids modifying real operation products.
