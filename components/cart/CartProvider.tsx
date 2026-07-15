@@ -49,7 +49,7 @@ function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
     productSlug: String(item.productSlug),
     name: String(item.name),
     origin: String(item.origin ?? ""),
-    image: String(item.image ?? "/images/product-placeholder.svg"),
+    image: String(item.image || "/images/product-placeholder.svg"),
     optionId: String(item.optionId),
     optionLabel: String(item.optionLabel),
     unitPrice,
@@ -103,7 +103,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const maxQuantity = Number.isFinite(Number(next.stock)) ? Number(next.stock) : Infinity;
       if (maxQuantity <= 0) return current;
       return found
-        ? current.map((item) => item === found ? { ...item, stock: next.stock, quantity: Math.min(maxQuantity, item.quantity + next.quantity) } : item)
+        ? current.map((item) => item === found ? {
+            ...item,
+            name: next.name,
+            origin: next.origin,
+            image: next.image || item.image,
+            optionLabel: next.optionLabel,
+            unitPrice: next.unitPrice,
+            stock: next.stock,
+            quantity: Math.min(maxQuantity, item.quantity + next.quantity)
+          } : item)
         : [...current, { ...next, quantity: Math.min(maxQuantity, next.quantity) }];
     }),
     updateQuantity: (slug, optionId, quantity) => setItems((current) => current.map((item) =>

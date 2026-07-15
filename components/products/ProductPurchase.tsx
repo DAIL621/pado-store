@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatPrice, Product } from "@/data/products";
 import { useCart } from "@/components/cart/CartProvider";
 import { calculateFreeShippingProgress, calculateRemainingForFreeShipping } from "@/lib/order/pricing";
+import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
 
 export function ProductPurchase({ product }: { product: Product }) {
   const firstAvailableOption = product.options.find((item) => Number(item.stock ?? 0) > 0) ?? product.options[0];
@@ -24,7 +25,8 @@ export function ProductPurchase({ product }: { product: Product }) {
   const remainingForFreeShipping = calculateRemainingForFreeShipping(total);
   const freeShippingProgress = calculateFreeShippingProgress(total);
   const canAddSelected = !isSoldOut && remainingStock > 0;
-  const isLowStock = !isSoldOut && remainingStock <= 5;
+  const stockMessage = getCustomerStockMessage(remainingStock);
+  const isLowStock = !isSoldOut && remainingStock < 10;
   const canDecrease = canAddSelected && quantity > 1;
   const canIncrease = canAddSelected && quantity < remainingStock;
 
@@ -42,7 +44,7 @@ export function ProductPurchase({ product }: { product: Product }) {
 
   const increaseQuantity = () => {
     if (!canIncrease) {
-      if (!isSoldOut) setMessage(`현재 선택 옵션은 최대 ${selectedStock}개까지 구매할 수 있습니다.`);
+      if (!isSoldOut) setMessage("선택 가능한 최대 수량입니다.");
       return;
     }
     setQuantity((current) => Math.min(selectedStock, current + 1));
@@ -56,7 +58,7 @@ export function ProductPurchase({ product }: { product: Product }) {
       return false;
     }
     if (quantity > remainingStock) {
-      setMessage(`추가로 구매 가능한 수량은 ${remainingStock}개입니다.`);
+      setMessage(remainingStock < 10 ? `추가로 구매 가능한 수량은 ${remainingStock}개입니다.` : "선택 가능한 최대 수량입니다.");
       return false;
     }
 
@@ -108,14 +110,13 @@ export function ProductPurchase({ product }: { product: Product }) {
           const stock = Number(item.stock ?? 0);
           return (
             <option key={item.id} value={item.id}>
-              {item.label} · {formatPrice(product.price + item.priceDelta)} {stock <= 0 ? "· 품절" : `· 재고 ${stock}개`}
+              {item.label} · {formatPrice(product.price + item.priceDelta)} {stock <= 0 ? "· 품절" : stock < 10 ? `· 재고 ${stock}개 남음` : ""}
             </option>
           );
         })}
       </select>
-      {option && (
+      {option && (isSoldOut || isLowStock || cartQuantityForOption > 0) && (
         <div className={`selected-option-info ${isLowStock ? "low-stock" : ""}`}>
-          <span>{option.label}</span>
           <strong>
             {isSoldOut
               ? "품절"
@@ -123,7 +124,7 @@ export function ProductPurchase({ product }: { product: Product }) {
                 ? remainingStock > 0
                   ? `장바구니 ${cartQuantityForOption}개 · 추가 가능 ${remainingStock}개`
                   : "장바구니에 모두 담김"
-                : `구매 가능 ${selectedStock}개`}
+                : stockMessage}
           </strong>
         </div>
       )}

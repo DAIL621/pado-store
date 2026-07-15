@@ -26,6 +26,7 @@ type Props = {
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm"];
+const PHOTO_ROLE_OPTIONS = ["대표사진", "크기 비교", "신선도/질감", "구성품", "포장 상태", "산지/생산자", "작업 과정", "조리 후 모습", "배송 상태", "기타"];
 
 type LegacyUploadItem = {
   id: string;
@@ -77,6 +78,25 @@ export function ProductDetailEditor({ value, onChange, onUploadStateChange }: Pr
       "heroImages",
       value.heroImages.map((image, imageIndex) => (imageIndex === index ? { ...image, [key]: nextValue } : image))
     );
+  };
+
+  const updateHeroRole = (index: number, nextRole: string) => {
+    const cleanedRole = nextRole.trim();
+    const currentRole = value.heroImages[index]?.label;
+    if (!cleanedRole) return;
+
+    let nextImages = value.heroImages.map((image, imageIndex) => {
+      if (imageIndex === index) return { ...image, label: cleanedRole };
+      if (cleanedRole === "대표사진" && image.label === "대표사진") return { ...image, label: "기타" };
+      return image;
+    });
+
+    if (currentRole === "대표사진" && cleanedRole !== "대표사진" && !nextImages.some((image) => image.label === "대표사진")) {
+      const replacementIndex = nextImages.findIndex((image, imageIndex) => imageIndex !== index && image.url.trim());
+      if (replacementIndex < 0) return;
+      nextImages = nextImages.map((image, imageIndex) => imageIndex === replacementIndex ? { ...image, label: "대표사진" } : image);
+    }
+    update("heroImages", nextImages);
   };
 
   const updateHeroFields = (index: number, fields: Partial<ProductDetailImage>) => {
@@ -615,7 +635,15 @@ export function ProductDetailEditor({ value, onChange, onUploadStateChange }: Pr
               )}
               <label>
                 사진 역할
-                <input value={image.label} onChange={(event) => updateHero(index, "label", event.target.value)} placeholder="예: 대표사진" />
+                <input
+                  list="product-photo-role-options"
+                  value={image.label}
+                  onChange={(event) => event.target.value === "대표사진" ? updateHeroRole(index, event.target.value) : updateHero(index, "label", event.target.value)}
+                  onBlur={() => {
+                    if (!value.heroImages.some((item) => item.label === "대표사진")) updateHeroRole(index, "대표사진");
+                  }}
+                  placeholder="표준 역할 선택 또는 직접 입력"
+                />
               </label>
               <label>
                 사진 경로
@@ -629,6 +657,9 @@ export function ProductDetailEditor({ value, onChange, onUploadStateChange }: Pr
             </div>
           ))}
         </div>
+        <datalist id="product-photo-role-options">
+          {PHOTO_ROLE_OPTIONS.map((role) => <option value={role} key={role} />)}
+        </datalist>
       </details>
 
       <details>

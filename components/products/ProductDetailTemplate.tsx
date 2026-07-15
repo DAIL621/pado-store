@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { formatPrice, type Product } from "@/data/products";
 import { getVisibleProductDetailSections, hasVisibleProductDetailContent } from "@/lib/products/detail-sections";
+import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
 import {
   buildProductDetailTemplateModel,
   type DetailTemplateInfoCard,
@@ -235,7 +236,7 @@ function HeroSection({
           <div className="detail-master-price">
             {discountVisible && <del>{formatPrice(product.normalPrice)}</del>}
             <strong>{formatPrice(product.price)}~</strong>
-            <small>{isSoldOut ? "현재 품절" : `구매 가능 ${totalStock}개`}</small>
+            {getCustomerStockMessage(totalStock) && <small>{getCustomerStockMessage(totalStock)}</small>}
           </div>
         </div>
 
@@ -483,8 +484,8 @@ function MidConversionCta({ product, reasons }: { product: Product; reasons: str
           <span>판매가격</span>
         </li>
         <li>
-          <strong>{isSoldOut ? "품절" : `${totalStock}개`}</strong>
-          <span>구매 가능 재고</span>
+          <strong>{getCustomerStockMessage(totalStock) || "재고 여유"}</strong>
+          <span>재고 상태</span>
         </li>
         <li>
           <strong>13시 전</strong>
@@ -745,7 +746,7 @@ function FinalCtaSection({ product }: { product: Product }) {
         <span>PADO STORY ORDER</span>
         <h2>{product.name}, 지금 주문 전 마지막으로 확인하세요.</h2>
         <p>
-          {product.origin} 산지 기준, {optionCopy}, {isSoldOut ? "현재 품절 상태" : `현재 구매 가능 ${totalStock}개`}입니다.
+          {product.origin} 산지 기준, {optionCopy}, {getCustomerStockMessage(totalStock) || "현재 구매 가능"} 상태입니다.
           신선한 상태로 받을 수 있도록 옵션과 수량을 한 번 더 확인해주세요.
         </p>
       </div>

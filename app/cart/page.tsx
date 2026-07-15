@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { formatPrice, products } from "@/data/products";
 import { getBestProducts } from "@/lib/products/discovery";
 import { calculateFreeShippingProgress, calculateRemainingForFreeShipping, calculateShipping } from "@/lib/order/pricing";
+import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, addItem } = useCart();
@@ -94,7 +95,7 @@ export default function CartPage() {
                     <span>{item.origin}</span>
                     <Link href={`/products/${item.productSlug}`}><h3>{item.name}</h3></Link>
                     <p>{item.optionLabel}</p>
-                    {hasStockLimit && <small className={atStockLimit || isUnavailable ? "cart-stock-note limit" : "cart-stock-note"}>{isUnavailable ? "현재 품절된 옵션입니다" : `구매 가능 ${stock}개`}</small>}
+                    {hasStockLimit && getCustomerStockMessage(stock) && <small className={atStockLimit || isUnavailable ? "cart-stock-note limit" : "cart-stock-note"}>{getCustomerStockMessage(stock)}</small>}
                     <div className="cart-controls">
                       <div>
                         <button type="button" disabled={item.quantity <= 1} onClick={() => updateQuantity(item.productSlug, item.optionId, item.quantity - 1)} aria-label={`${item.name} 수량 줄이기`}>−</button>

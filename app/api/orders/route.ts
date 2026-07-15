@@ -5,6 +5,7 @@ import { calculateShipping } from "@/lib/order/pricing";
 import { writeNotificationEventsBestEffort, writeOperationLogBestEffort } from "@/lib/operations/automation";
 import type { OperationEvent } from "@/lib/operations/events";
 import { isPublicProductSlug } from "@/lib/products/public-slug";
+import { isNeutralProductPlaceholder } from "@/lib/products/stock-visibility";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -124,7 +125,9 @@ export async function POST(request: Request) {
       unitPrice,
       productName: String(product?.name ?? item.name),
       optionName: String(option?.name ?? item.optionLabel),
-      imageUrl: String(product?.image_url ?? item.image)
+      imageUrl: isNeutralProductPlaceholder(String(product?.image_url ?? ""))
+        ? String(item.image || "/images/product-placeholder.svg")
+        : String(product?.image_url)
     };
   });
   const subtotal = pricedItems.reduce((sum, { item, unitPrice }) => sum + unitPrice * Number(item.quantity), 0);
