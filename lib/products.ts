@@ -14,6 +14,7 @@ type ProductRow = {
   subtitle: string | null;
   description: string | null;
   base_price: number;
+  regular_price?: number | null;
   image_url: string | null;
   badge: string | null;
   highlights: string[] | null;
@@ -27,6 +28,7 @@ type OptionRow = {
   name: string;
   price_delta: number;
   price?: number | null;
+  regular_price?: number | null;
   stock: number;
 };
 
@@ -36,7 +38,7 @@ const hasSupabaseEnv = () =>
 function toProduct(row: ProductRow): Product {
   const optionPrices = (row.product_options ?? []).map((option) => Number(option.price ?? row.base_price + option.price_delta)).filter((value) => value > 0);
   const price = optionPrices.length ? Math.min(...optionPrices) : row.base_price;
-  const normalPrice = price + (price >= 40000 ? 6000 : 5000);
+  const normalPrice = Number(row.regular_price ?? price);
   const discountRate = Math.round((1 - price / normalPrice) * 100);
   const detail = normalizeProductDetailInput(row.detail_json);
   const primaryDetailImage = detail.heroImages.find((item) => item.label === "대표사진" && item.url)?.url
@@ -84,6 +86,7 @@ function toProduct(row: ProductRow): Product {
       label: option.name,
       priceDelta: option.price_delta,
       price: Number(option.price ?? row.base_price + option.price_delta),
+      regularPrice: option.regular_price && Number(option.regular_price) > Number(option.price ?? row.base_price + option.price_delta) ? Number(option.regular_price) : undefined,
       stock: option.stock
     }))
   };

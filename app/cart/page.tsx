@@ -14,7 +14,10 @@ export default function CartPage() {
   const { items, updateQuantity, removeItem, addItem } = useCart();
   const [removedItem, setRemovedItem] = useState<CartItem | null>(null);
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const regularSubtotal = items.reduce((sum, item) => sum + (item.regularPrice ?? item.unitPrice) * item.quantity, 0);
+  const productDiscount = Math.max(0, regularSubtotal - subtotal);
   const shipping = calculateShipping(subtotal);
+  const hasFreeShippingBenefit = items.length > 0 && shipping === 0;
   const remainingForFreeShipping = calculateRemainingForFreeShipping(subtotal);
   const freeShippingProgress = calculateFreeShippingProgress(subtotal);
   const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
@@ -88,6 +91,9 @@ export default function CartPage() {
               const hasStockLimit = Number.isFinite(stock);
               const isUnavailable = hasStockLimit && stock <= 0;
               const atStockLimit = hasStockLimit && item.quantity >= stock;
+              const regularPrice = item.regularPrice && item.regularPrice > item.unitPrice ? item.regularPrice : null;
+              const discountAmount = regularPrice ? (regularPrice - item.unitPrice) * item.quantity : 0;
+              const discountRate = regularPrice ? Math.min(100, Math.max(0, Math.round((1 - item.unitPrice / regularPrice) * 100))) : 0;
               return (
                 <article className="cart-item" key={`${item.productSlug}-${item.optionId}`}>
                   <div className="cart-thumb"><Image src={item.image} alt={item.name} fill sizes="120px" /></div>
@@ -95,6 +101,11 @@ export default function CartPage() {
                     <span>{item.origin}</span>
                     <Link href={`/products/${item.productSlug}`}><h3>{item.name}</h3></Link>
                     <p>{item.optionLabel}</p>
+                    <div className="cart-price-benefit">
+                      {regularPrice && <del>정상가 {formatPrice(regularPrice)}</del>}
+                      <strong>{discountRate > 0 && <em>{discountRate}% 할인</em>}{formatPrice(item.unitPrice)}</strong>
+                      {discountAmount > 0 && <small>{formatPrice(discountAmount)} 절약</small>}
+                    </div>
                     {hasStockLimit && getCustomerStockMessage(stock) && <small className={atStockLimit || isUnavailable ? "cart-stock-note limit" : "cart-stock-note"}>{getCustomerStockMessage(stock)}</small>}
                     <div className="cart-controls">
                       <div>
@@ -114,8 +125,10 @@ export default function CartPage() {
 
         <aside className="order-summary">
           <h2>결제 예정 금액</h2>
-          <div><span>상품 금액</span><b>{formatPrice(subtotal)}</b></div>
+          <div><span>상품 정상가 합계</span><b>{formatPrice(regularSubtotal)}</b></div>
+          {productDiscount > 0 && <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>}
           <div><span>배송비</span><b>{shipping === 0 ? "무료" : formatPrice(shipping)}</b></div>
+          {hasFreeShippingBenefit && <div className="summary-discount"><span>무료배송 혜택</span><b>적용</b></div>}
           <div className="free-shipping-meter" aria-label="무료배송 진행률">
             <div><span style={{ width: `${freeShippingProgress}%` }} /></div>
             <p>
@@ -127,6 +140,13 @@ export default function CartPage() {
             </p>
           </div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(subtotal + shipping)}</strong></div>
+          {shipping === 0 && items.length > 0 && <div className="cart-free-benefit"><b>✓ 파도스토리 무료배송 혜택이 적용되었습니다</b><span>배송비 부담 없이 신선하게 받아보세요.</span></div>}
+          <div className="fresh-food-policy">
+            <strong>신선식품 주문 전 확인해주세요</strong>
+            <p>본 상품은 신선식품 특성상 상품 준비 또는 배송이 시작된 이후에는 단순 변심에 의한 취소·교환·반품이 제한될 수 있습니다.</p>
+            <p>상품 하자, 오배송 또는 표시·광고 내용과 다른 상품이 배송된 경우에는 고객센터 확인 후 교환 또는 환불을 도와드립니다.</p>
+            <small>이상이 있는 경우 수령 직후 상품과 포장 상태를 사진으로 촬영하여 고객센터로 문의해주세요.</small>
+          </div>
           <Link
             className={`button teal full ${!canCheckout ? "disabled" : ""}`}
             href={canCheckout ? "/checkout" : "/cart"}

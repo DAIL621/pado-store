@@ -58,13 +58,16 @@ export default function CheckoutPage() {
   const { items } = useCart();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [freshFoodPolicyAccepted, setFreshFoodPolicyAccepted] = useState(false);
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const regularSubtotal = items.reduce((sum, item) => sum + (item.regularPrice ?? item.unitPrice) * item.quantity, 0);
+  const productDiscount = Math.max(0, regularSubtotal - subtotal);
   const shipping = calculateShipping(subtotal);
   const total = subtotal + shipping;
   const remainingForFreeShipping = calculateRemainingForFreeShipping(subtotal);
   const freeShippingProgress = calculateFreeShippingProgress(subtotal);
   const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
-  const canPay = items.length > 0 && unavailableItems.length === 0;
+  const canPay = items.length > 0 && unavailableItems.length === 0 && freshFoodPolicyAccepted;
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -74,6 +77,10 @@ export default function CheckoutPage() {
     }
     if (unavailableItems.length) {
       setMessage("품절된 상품을 장바구니에서 삭제한 뒤 주문해주세요.");
+      return;
+    }
+    if (!freshFoodPolicyAccepted) {
+      setMessage("신선식품 취소·교환·반품 제한 안내를 확인해주세요.");
       return;
     }
 
@@ -212,6 +219,8 @@ export default function CheckoutPage() {
               <Link href="/products">상품 선택하기</Link>
             </div>
           )}
+          <div><span>상품 정상가 합계</span><b>{formatPrice(regularSubtotal)}</b></div>
+          {productDiscount > 0 && <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>}
           <div><span>배송비</span><b>{shipping === 0 ? "무료" : formatPrice(shipping)}</b></div>
           <div className="free-shipping-meter" aria-label="무료배송 진행률">
             <div><span style={{ width: `${freeShippingProgress}%` }} /></div>
@@ -228,6 +237,11 @@ export default function CheckoutPage() {
             <span>안전결제</span>
             <span>냉장배송</span>
             <span>산지출고</span>
+          </div>
+          <div className="fresh-food-policy checkout-policy">
+            <strong>신선식품 주문 전 확인해주세요</strong>
+            <p>상품 준비 또는 배송 시작 이후에는 단순 변심에 의한 취소·교환·반품이 제한될 수 있습니다. 상품 하자·오배송·표시 내용과 다른 경우에는 고객센터 확인 후 교환 또는 환불을 도와드립니다.</p>
+            <label><input type="checkbox" checked={freshFoodPolicyAccepted} onChange={(event) => setFreshFoodPolicyAccepted(event.target.checked)} /> 신선식품의 취소·교환·반품 제한 안내를 확인했습니다.</label>
           </div>
           <button type="submit" className="button teal full" disabled={saving || !canPay}>{!items.length ? "상품을 먼저 담아주세요" : unavailableItems.length ? "품절 상품을 삭제해주세요" : saving ? "처리 중..." : "안전하게 결제하기"}</button>
           <p>결제는 Toss Payments 안전 결제창에서 진행됩니다.</p>

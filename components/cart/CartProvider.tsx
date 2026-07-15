@@ -10,6 +10,7 @@ export type CartItem = {
   optionId: string;
   optionLabel: string;
   unitPrice: number;
+  regularPrice?: number;
   quantity: number;
   stock?: number;
 };
@@ -30,6 +31,7 @@ function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
   const quantity = Number(item.quantity);
   const unitPrice = Number(item.unitPrice);
   const stock = item.stock === undefined ? undefined : Number(item.stock);
+  const regularPrice = item.regularPrice === undefined ? undefined : Number(item.regularPrice);
 
   if (
     !item.productSlug ||
@@ -53,6 +55,7 @@ function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
     optionId: String(item.optionId),
     optionLabel: String(item.optionLabel),
     unitPrice,
+    regularPrice: Number.isFinite(regularPrice) && Number(regularPrice) > unitPrice ? Number(regularPrice) : undefined,
     quantity: Math.max(1, Math.min(maxQuantity, Math.floor(quantity))),
     stock: Number.isFinite(stock) ? Math.max(0, Number(stock)) : undefined
   };
@@ -110,6 +113,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             image: next.image || item.image,
             optionLabel: next.optionLabel,
             unitPrice: next.unitPrice,
+            regularPrice: next.regularPrice,
             stock: next.stock,
             quantity: Math.min(maxQuantity, item.quantity + next.quantity)
           } : item)

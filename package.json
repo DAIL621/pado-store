@@ -32,6 +32,7 @@
     "verify:product-seo": "node scripts/verify-product-seo.mjs",
     "verify:detail-template": "node scripts/verify-detail-template-sections.mjs && pnpm run verify:product-seo",
     "verify:option-direct-price": "node scripts/verify-option-direct-price.mjs",
+    "verify:cart-benefits": "node scripts/verify-cart-benefits.mjs",
     "score:ai-image-analysis": "node scripts/score-ai-image-analysis.mjs",
     "score:review-center": "node scripts/score-review-center.mjs",
     "evaluate:dataset": "node scripts/evaluate-dataset.mjs",

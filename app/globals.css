@@ -187,9 +187,11 @@
 .checkout-empty-note a,.checkout-empty-items a{width:max-content;border-radius:999px;background:#fff;color:var(--teal);border:1px solid var(--line);padding:7px 10px;font-size:11px;font-weight:900}
 .checkout-empty-items{display:grid!important;justify-items:start!important;gap:8px!important;padding:12px!important;border:1px dashed #dbe9e7;border-radius:10px;background:#f7fbfa}
 .checkout-empty-items span{color:var(--muted);font-size:12px;font-weight:850}
+.cart-price-benefit{display:grid;justify-items:start;gap:4px;margin:0 0 12px}.cart-price-benefit del{color:#899;font-size:11px}.cart-price-benefit strong{display:flex;align-items:center;gap:7px;font-size:16px}.cart-price-benefit em{border-radius:999px;background:#fff0e9;color:var(--coral);padding:4px 7px;font-size:10px;font-style:normal}.cart-price-benefit small{color:var(--coral);font-size:11px;font-weight:900}.summary-discount{color:var(--coral)}.cart-free-benefit{display:grid!important;gap:5px!important;margin:15px 0!important;padding:13px!important;border-radius:10px;background:#eef8f6;color:var(--teal)}.cart-free-benefit b{font-size:12px}.cart-free-benefit span{font-size:10px}.fresh-food-policy{display:grid!important;gap:7px!important;margin:16px 0!important;padding:14px!important;border:1px solid #dbe9e7;border-radius:10px;background:#f7fbfa}.fresh-food-policy strong{color:var(--teal);font-size:12px}.fresh-food-policy p{margin:0!important;text-align:left!important;color:#607476!important;font-size:10.5px!important;line-height:1.55}.fresh-food-policy small{color:#7a6964;font-size:10px;line-height:1.5}.fresh-food-policy label{display:flex;align-items:flex-start;flex-direction:row;gap:8px;color:var(--ink);font-size:11px;line-height:1.45}.fresh-food-policy label input{width:16px;height:16px;flex:none;margin:0}.checkout-policy{margin-bottom:14px!important}
 @media(max-width:600px){
   .checkout-empty-note{padding:12px;margin-bottom:16px}
   .checkout-empty-note a,.checkout-empty-items a{width:100%;text-align:center}
+  .cart-price-benefit strong{font-size:15px}.fresh-food-policy{padding:12px!important}.order-summary{position:static}.cart-layout{grid-template-columns:1fr}.cart-item{align-items:start}
 }
 
 /* My page mobile order item cards */

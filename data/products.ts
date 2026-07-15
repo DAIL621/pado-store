@@ -4,6 +4,7 @@ export type ProductOption = {
   id: string;
   label: string;
   price?: number;
+  regularPrice?: number;
   priceDelta: number;
   stock?: number;
 };

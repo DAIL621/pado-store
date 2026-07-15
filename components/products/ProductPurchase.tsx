@@ -70,6 +70,11 @@ export function ProductPurchase({ product }: { product: Product }) {
       optionId,
       optionLabel: option.label,
       unitPrice,
+      regularPrice: option.regularPrice && option.regularPrice > unitPrice
+        ? option.regularPrice
+        : unitPrice === product.price && product.normalPrice > unitPrice
+          ? product.normalPrice
+          : undefined,
       quantity,
       stock: selectedStock
     });
