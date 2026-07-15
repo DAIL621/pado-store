@@ -73,9 +73,8 @@ try {
   await fillField(page, "category", "E2E");
   await fillField(page, "subtitle", "Public detail route create flow product.");
   await fillField(page, "description", "This product verifies admin create, product list visibility, and public detail page rendering.");
-  await fillField(page, "basePrice", "12300");
   await fillField(page, "options.0.name", "E2E option 1kg");
-  await fillField(page, "options.0.priceDelta", "0");
+  await fillField(page, "options.0.price", "12,300");
   await fillField(page, "options.0.stock", "3");
   await page.locator('input[name="publishMode"][value="private"]').check({ force: true });
   await page.screenshot({ path: "screenshots/admin-create-before-click-real-edge.png", fullPage: true });

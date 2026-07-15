@@ -31,6 +31,7 @@
     "verify:admin": "pnpm run verify:admin-static && pnpm run verify:detail-json && pnpm run verify:admin-edit && pnpm run verify:admin-upload && pnpm run verify:admin-presets && pnpm run verify:admin-new-click && pnpm run verify:admin-duplicate-test-slug && pnpm run verify:admin-private-detail && pnpm run verify:ai-operation-center && pnpm run verify:ai-draft-flow",
     "verify:product-seo": "node scripts/verify-product-seo.mjs",
     "verify:detail-template": "node scripts/verify-detail-template-sections.mjs && pnpm run verify:product-seo",
+    "verify:option-direct-price": "node scripts/verify-option-direct-price.mjs",
     "score:ai-image-analysis": "node scripts/score-ai-image-analysis.mjs",
     "score:review-center": "node scripts/score-review-center.mjs",
     "evaluate:dataset": "node scripts/evaluate-dataset.mjs",

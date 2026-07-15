@@ -52,6 +52,7 @@ create table if not exists product_options (
   product_id uuid not null references products(id) on delete cascade,
   name text not null,
   price_delta integer not null default 0,
+  price integer check (price is null or price > 0),
   stock integer not null default 0,
   created_at timestamptz not null default now()
 );

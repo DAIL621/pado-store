@@ -20,7 +20,7 @@ type PreviewForm = {
 
 type Props = {
   form: PreviewForm;
-  options: Array<Pick<ProductOption, "label" | "priceDelta" | "stock">>;
+  options: Array<Pick<ProductOption, "label" | "price" | "priceDelta" | "stock">>;
   detail: ProductDetail;
 };
 
@@ -39,6 +39,7 @@ function buildPreviewProduct(form: PreviewForm, options: Props["options"], detai
       id: `preview-option-${index}`,
       label: option.label,
       priceDelta: Number(option.priceDelta ?? 0),
+      price: Number(option.price ?? 0) || undefined,
       stock: Number(option.stock ?? 0)
     }));
 
@@ -81,7 +82,7 @@ function buildPreviewProduct(form: PreviewForm, options: Props["options"], detai
 
 function PreviewPurchaseSlot({ product }: { product: Product }) {
   const firstOption = product.options[0];
-  const optionPrice = product.price + Number(firstOption?.priceDelta ?? 0);
+  const optionPrice = firstOption?.price ?? product.price + Number(firstOption?.priceDelta ?? 0);
 
   return (
     <div className="purchase-box admin-preview-purchase-box" aria-label="구매 영역 미리보기">
@@ -89,7 +90,7 @@ function PreviewPurchaseSlot({ product }: { product: Product }) {
       <select value={firstOption?.id ?? ""} disabled>
         {product.options.map((option) => (
           <option key={option.id} value={option.id}>
-            {option.label} {option.priceDelta ? `(${formatPrice(product.price + option.priceDelta)})` : ""}
+            {option.label} ({formatPrice(option.price ?? product.price + option.priceDelta)})
           </option>
         ))}
       </select>

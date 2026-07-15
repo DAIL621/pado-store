@@ -25,7 +25,8 @@ export type AdminProductFormState = {
 
 export type AdminProductOptionForm = {
   name: string;
-  priceDelta: string;
+  price: string;
+  priceDelta?: string;
   stock: string;
 };
 
@@ -101,9 +102,9 @@ function validateProductPayload(payload: Pick<AdminProductBuilderPayload, "form"
 
   options.forEach((option, index) => {
     if (!option.name.trim()) issues.push({ label: `옵션 ${index + 1}`, message: `옵션 ${index + 1}의 옵션명을 입력해주세요.`, section: "options" });
-    const priceDelta = Number(option.priceDelta);
+    const price = Number(option.price.replaceAll(",", ""));
     const stock = Number(option.stock);
-    if (!Number.isFinite(priceDelta)) issues.push({ label: `옵션 ${index + 1} 추가금액`, message: `옵션 ${index + 1}의 추가금액은 숫자로 입력해주세요.`, section: "options" });
+    if (!Number.isFinite(price) || price <= 0) issues.push({ label: `옵션 ${index + 1} 판매가격`, message: `옵션 ${index + 1}의 판매가격은 0보다 큰 숫자로 입력해주세요.`, section: "options" });
     if (!Number.isFinite(stock) || stock < 0) issues.push({ label: `옵션 ${index + 1} 재고`, message: `옵션 ${index + 1}의 재고는 0개 이상의 숫자로 입력해주세요.`, section: "options" });
   });
 
@@ -140,7 +141,7 @@ export const emptyProductForm: AdminProductFormState = {
   highlights: ""
 };
 
-export const defaultProductOptions: AdminProductOptionForm[] = [{ name: "", priceDelta: "0", stock: "0" }];
+export const defaultProductOptions: AdminProductOptionForm[] = [{ name: "", price: "", stock: "0" }];
 
 function debugTime() {
   return new Date().toLocaleTimeString("ko-KR", { hour12: false });
@@ -431,6 +432,11 @@ export function AdminProductBuilder({
     setCreatedInfo("");
   };
 
+  useEffect(() => {
+    const prices = options.map((option) => Number(option.price.replaceAll(",", ""))).filter((price) => Number.isFinite(price) && price > 0);
+    if (prices.length) setForm((current) => ({ ...current, basePrice: String(Math.min(...prices)) }));
+  }, [options]);
+
   const updateDetailJson = (nextDetail: ProductDetail) => {
     enableDraftAutosave();
     setDetailJson(nextDetail);
@@ -440,7 +446,7 @@ export function AdminProductBuilder({
 
   const addOption = () => {
     enableDraftAutosave();
-    setOptions((current) => [...current, { name: "", priceDelta: "0", stock: "0" }]);
+    setOptions((current) => [...current, { name: "", price: "", stock: "0" }]);
   };
 
   const removeOption = (index: number) => {
@@ -671,7 +677,11 @@ export function AdminProductBuilder({
     }));
     setOptions((current) => {
       const hasCustomOption = current.some((option) => option.name.trim() && option.name !== "기본 옵션");
-      return hasCustomOption ? current : preset.options;
+      return hasCustomOption ? current : preset.options.map((option) => ({
+        name: option.name,
+        price: String(Number(form.basePrice || 0) + Number(option.priceDelta || 0)),
+        stock: option.stock
+      }));
     });
     setDetailJson((current) => ({
       ...current,
@@ -714,7 +724,7 @@ export function AdminProductBuilder({
     };
     const submittedOptions = options.map((option, index) => ({
       name: String(formData.get(`options.${index}.name`) ?? option.name).trim(),
-      priceDelta: String(formData.get(`options.${index}.priceDelta`) ?? option.priceDelta).trim(),
+      price: String(formData.get(`options.${index}.price`) ?? option.price).replaceAll(",", "").trim(),
       stock: String(formData.get(`options.${index}.stock`) ?? option.stock).trim()
     }));
     const submitBlockingIssues = validateProductPayload({ form: submittedForm, options: submittedOptions });
@@ -1007,8 +1017,8 @@ export function AdminProductBuilder({
               <summary>② 가격 / 옵션</summary>
               <div className="admin-form section-grid">
                 <label>
-                  기본 판매가 <em>필수</em>
-                  <input name="basePrice" ref={inputRef} className={fieldClass(form.basePrice)} type="number" value={form.basePrice} onChange={(event) => update("basePrice", event.target.value)} required placeholder="39900" />
+                  대표 판매가 <em>옵션 최저가 자동 반영</em>
+                  <input name="basePrice" ref={inputRef} className={fieldClass(form.basePrice)} type="number" value={form.basePrice} readOnly required placeholder="옵션 판매가격 입력 시 자동 계산" />
                 </label>
               </div>
               <div className="option-editor">
@@ -1022,7 +1032,7 @@ export function AdminProductBuilder({
                 {options.map((option, index) => (
                   <div className="option-row" key={index}>
                     <label>옵션명<input name={`options.${index}.name`} className={fieldClass(option.name)} value={option.name} onChange={(event) => updateOption(index, "name", event.target.value)} required placeholder="예: 1kg" /></label>
-                    <label>추가금액<input name={`options.${index}.priceDelta`} className={fieldClass(option.priceDelta)} type="number" value={option.priceDelta} onChange={(event) => updateOption(index, "priceDelta", event.target.value)} required /></label>
+                    <label>판매가격<input name={`options.${index}.price`} className={fieldClass(option.price)} type="text" inputMode="numeric" value={option.price} onChange={(event) => { const digits = event.target.value.replace(/\D/g, ""); updateOption(index, "price", digits ? Number(digits).toLocaleString("ko-KR") : ""); }} required /></label>
                     <label>재고<input name={`options.${index}.stock`} className={fieldClass(option.stock)} type="number" value={option.stock} onChange={(event) => updateOption(index, "stock", event.target.value)} required min="0" /></label>
                     <button type="button" className="remove-option" onClick={() => removeOption(index)} disabled={options.length === 1}>삭제</button>
                   </div>
@@ -1148,7 +1158,8 @@ export function AdminProductBuilder({
             form={form}
             options={options.map((option) => ({
               label: option.name,
-              priceDelta: Number(option.priceDelta) || 0,
+              price: Number(option.price.replaceAll(",", "")) || 0,
+              priceDelta: 0,
               stock: Number(option.stock) || 0
             }))}
             detail={detailJson}

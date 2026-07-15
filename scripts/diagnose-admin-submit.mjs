@@ -78,9 +78,8 @@ try {
   await fillField(page, "category", "Diagnose");
   await fillField(page, "subtitle", "Submit diagnostic product.");
   await fillField(page, "description", "Checks actual browser click, submit handler, and network request.");
-  await fillField(page, "basePrice", "444");
   await fillField(page, "options.0.name", "Diagnostic option");
-  await fillField(page, "options.0.priceDelta", "0");
+  await fillField(page, "options.0.price", "444");
   await fillField(page, "options.0.stock", "5");
 
   await page.locator('[data-testid="admin-product-submit"]').scrollIntoViewIfNeeded();

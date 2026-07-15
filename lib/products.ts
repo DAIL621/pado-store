@@ -26,6 +26,7 @@ type OptionRow = {
   id: string;
   name: string;
   price_delta: number;
+  price?: number | null;
   stock: number;
 };
 
@@ -33,7 +34,8 @@ const hasSupabaseEnv = () =>
   Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 function toProduct(row: ProductRow): Product {
-  const price = row.base_price;
+  const optionPrices = (row.product_options ?? []).map((option) => Number(option.price ?? row.base_price + option.price_delta)).filter((value) => value > 0);
+  const price = optionPrices.length ? Math.min(...optionPrices) : row.base_price;
   const normalPrice = price + (price >= 40000 ? 6000 : 5000);
   const discountRate = Math.round((1 - price / normalPrice) * 100);
   const detail = normalizeProductDetailInput(row.detail_json);
@@ -81,6 +83,7 @@ function toProduct(row: ProductRow): Product {
       id: option.id,
       label: option.name,
       priceDelta: option.price_delta,
+      price: Number(option.price ?? row.base_price + option.price_delta),
       stock: option.stock
     }))
   };
@@ -93,7 +96,7 @@ export async function getProducts(): Promise<Product[]> {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("products")
-      .select("*, product_options(id, name, price_delta, stock)")
+      .select("*, product_options(*)")
       .eq("is_active", true)
       .order("created_at", { ascending: false });
 
@@ -131,7 +134,7 @@ export async function getProductBySlug(slug: string, options: { includePrivate?:
 
       const { data: optionRows } = await supabase
         .from("product_options")
-        .select("id, name, price_delta, stock")
+        .select("*")
         .eq("product_id", productRow.id)
         .order("created_at", { ascending: true });
 
@@ -141,7 +144,7 @@ export async function getProductBySlug(slug: string, options: { includePrivate?:
     const supabase = await createClient();
     let query = supabase
       .from("products")
-      .select("*, product_options(id, name, price_delta, stock)")
+      .select("*, product_options(*)")
       .eq("slug", slug);
 
     if (!includePrivate) {

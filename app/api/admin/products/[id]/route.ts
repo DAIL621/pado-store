@@ -5,6 +5,9 @@ import { requireAdminApi } from "@/lib/auth/admin-api";
 import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const isMissingOptionPriceColumn = (error: { code?: string; message: string } | null) =>
+  Boolean(error && (error.code === "PGRST204" || (error.message.includes("schema cache") && error.message.includes("price"))));
+
 function withOperationState(detail: unknown, state: "hidden" | "ended" | null, actorId: string) {
   const base = normalizeProductDetailInput(detail);
   const operation: Record<string, unknown> = {
@@ -124,6 +127,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const updates: Record<string, unknown> = {};
+  const parsedOptions = body.options !== undefined
+    ? parseProductOptions(body.options, "", Number(body.basePrice ?? 0))
+    : null;
   if (body.slug !== undefined) updates.slug = String(body.slug).trim();
   if (body.name !== undefined) updates.name = String(body.name).trim();
   if (body.origin !== undefined) updates.origin = String(body.origin).trim();
@@ -131,6 +137,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (body.subtitle !== undefined) updates.subtitle = String(body.subtitle).trim();
   if (body.description !== undefined) updates.description = String(body.description).trim();
   if (body.basePrice !== undefined) updates.base_price = Number(body.basePrice);
+  if (parsedOptions?.length && !hasInvalidProductOption(parsedOptions)) {
+    updates.base_price = Math.min(...parsedOptions.map((option) => option.price));
+  }
   if (body.imageUrl !== undefined) updates.image_url = String(body.imageUrl).trim();
   if (body.badge !== undefined) updates.badge = String(body.badge).trim() || null;
   if (body.isActive !== undefined) updates.is_active = Boolean(body.isActive);
@@ -184,7 +193,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   });
 
   if (body.options !== undefined) {
-    const options = parseProductOptions(body.options);
+    const basePriceForOptions = Number(product.base_price ?? body.basePrice ?? 0);
+    const options = parsedOptions ?? [];
     if (!options.length || hasInvalidProductOption(options)) {
       return NextResponse.json({ ok: false, message: "옵션 형식을 확인해주세요. 예: 1kg|0|30" }, { status: 400 });
     }
@@ -202,16 +212,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     for (const [index, option] of options.entries()) {
       const existingOptionId = existingOptions?.[index]?.id;
       if (existingOptionId) {
-        const { error: updateOptionError } = await supabase
+        let { error: updateOptionError } = await supabase
           .from("product_options")
           .update(option)
           .eq("id", existingOptionId);
 
+        if (isMissingOptionPriceColumn(updateOptionError)) {
+          const { price, ...legacyOption } = option;
+          ({ error: updateOptionError } = await supabase.from("product_options").update({ ...legacyOption, price_delta: price - basePriceForOptions }).eq("id", existingOptionId));
+        }
+
         if (updateOptionError) return NextResponse.json({ ok: false, message: updateOptionError.message }, { status: 500 });
       } else {
-        const { error: insertOptionError } = await supabase
+        let { error: insertOptionError } = await supabase
           .from("product_options")
           .insert({ ...option, product_id: id });
+
+        if (isMissingOptionPriceColumn(insertOptionError)) {
+          const { price, ...legacyOption } = option;
+          ({ error: insertOptionError } = await supabase.from("product_options").insert({ ...legacyOption, price_delta: price - basePriceForOptions, product_id: id }));
+        }
 
         if (insertOptionError) return NextResponse.json({ ok: false, message: insertOptionError.message }, { status: 500 });
       }

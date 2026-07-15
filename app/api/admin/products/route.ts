@@ -6,6 +6,9 @@ import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { createProductSlug } from "@/lib/products/slug";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const isMissingOptionPriceColumn = (error: { code?: string; message: string } | null) =>
+  Boolean(error && (error.code === "PGRST204" || (error.message.includes("schema cache") && error.message.includes("price"))));
+
 async function writeProductOperationLogBestEffort(
   supabase: ReturnType<typeof createAdminClient>,
   input: {
@@ -53,7 +56,7 @@ export async function GET(request: Request) {
   }
   const { data, error } = await supabase
     .from("products")
-    .select("*, product_options(id, name, price_delta, stock)")
+    .select("*, product_options(*)")
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
@@ -83,7 +86,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "필수 상품 정보를 모두 입력해주세요." }, { status: 400 });
   }
 
-  const basePrice = Number(body.basePrice);
+  let basePrice = Number(body.basePrice);
   if (!Number.isFinite(basePrice) || basePrice < 0) {
     return NextResponse.json({ ok: false, message: "기본 가격은 0원 이상의 숫자로 입력해주세요." }, { status: 400 });
   }
@@ -129,7 +132,7 @@ export async function POST(request: Request) {
     }
   }
 
-  const optionInputs = parseProductOptions(body.options, "기본 옵션");
+  const optionInputs = parseProductOptions(body.options, "기본 옵션", basePrice);
 
   if (!optionInputs.length || hasInvalidProductOption(optionInputs)) {
     return NextResponse.json(
@@ -137,6 +140,7 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+  basePrice = Math.min(...optionInputs.map((option) => option.price));
 
   const isActive = body.isActive === undefined ? true : Boolean(body.isActive);
   const reservedNote =
@@ -185,7 +189,11 @@ export async function POST(request: Request) {
 
   const options = optionInputs.map((option) => ({ ...option, product_id: product.id }));
 
-  const { error: optionError } = await supabase.from("product_options").insert(options);
+  let { error: optionError } = await supabase.from("product_options").insert(options);
+  if (isMissingOptionPriceColumn(optionError)) {
+    const legacyOptions = options.map(({ price, ...option }) => ({ ...option, price_delta: price - basePrice }));
+    ({ error: optionError } = await supabase.from("product_options").insert(legacyOptions));
+  }
   if (optionError) {
     await supabase.from("products").update({ is_active: false }).eq("id", product.id);
     return NextResponse.json({ ok: false, message: optionError.message }, { status: 500 });

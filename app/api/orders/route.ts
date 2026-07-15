@@ -88,7 +88,7 @@ export async function POST(request: Request) {
   const optionIds = [...new Set(items.map((item) => String(item.optionId)))];
   const { data: options, error: optionError } = await supabase
     .from("product_options")
-    .select("id, product_id, name, price_delta, stock, products(slug, name, base_price, image_url, is_active)")
+    .select("*, products(slug, name, base_price, image_url, is_active)")
     .in("id", optionIds);
 
   if (optionError) return NextResponse.json({ ok: false, message: optionError.message }, { status: 500 });
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
   const pricedItems = items.map((item) => {
     const option = optionMap.get(String(item.optionId));
     const product = Array.isArray(option?.products) ? option?.products[0] : option?.products;
-    const unitPrice = Number(product?.base_price ?? 0) + Number(option?.price_delta ?? 0);
+    const unitPrice = Number(option?.price ?? (Number(product?.base_price ?? 0) + Number(option?.price_delta ?? 0)));
 
     return {
       item,

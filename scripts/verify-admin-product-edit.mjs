@@ -88,8 +88,8 @@ try {
       badge: "검증",
       highlights: "수정 전, 자동화, 검증",
       options: [
-        { name: "수정 전 옵션", priceDelta: "0", stock: "5" },
-        { name: "삭제될 옵션", priceDelta: "1000", stock: "2" }
+        { name: "수정 전 옵션", price: "16600", stock: "5" },
+        { name: "삭제될 옵션", price: "17600", stock: "2" }
       ],
       isActive: false,
       detailJson: baseDetailJson
@@ -134,7 +134,7 @@ try {
       imageUrl: "/images/products/tongyeong-conch.webp",
       badge: "수정",
       highlights: "수정 후, 옵션 교체, 상세 반영",
-      options: [{ name: "수정 후 옵션", priceDelta: "500", stock: "7" }],
+      options: [{ name: "수정 후 옵션", price: "17700", stock: "7" }],
       detailJson: editedDetailJson
     })
   });

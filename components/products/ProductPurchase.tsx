@@ -20,7 +20,7 @@ export function ProductPurchase({ product }: { product: Product }) {
   const cartQuantityForOption = items.find((item) => item.productSlug === product.slug && item.optionId === optionId)?.quantity ?? 0;
   const remainingStock = Math.max(0, selectedStock - cartQuantityForOption);
   const isSoldOut = !option || selectedStock <= 0;
-  const unitPrice = option ? product.price + option.priceDelta : product.price;
+  const unitPrice = option ? option.price ?? product.price + option.priceDelta : product.price;
   const total = unitPrice * quantity;
   const remainingForFreeShipping = calculateRemainingForFreeShipping(total);
   const freeShippingProgress = calculateFreeShippingProgress(total);
@@ -110,7 +110,7 @@ export function ProductPurchase({ product }: { product: Product }) {
           const stock = Number(item.stock ?? 0);
           return (
             <option key={item.id} value={item.id}>
-              {item.label} · {formatPrice(product.price + item.priceDelta)} {stock <= 0 ? "· 품절" : stock < 10 ? `· 재고 ${stock}개 남음` : ""}
+              {item.label} · {formatPrice(item.price ?? product.price + item.priceDelta)} {stock <= 0 ? "· 품절" : stock < 10 ? `· 재고 ${stock}개 남음` : ""}
             </option>
           );
         })}

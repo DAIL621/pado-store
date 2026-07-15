@@ -82,9 +82,8 @@ try {
   await fillField(page, "category", "DuplicateTest");
   await fillField(page, "subtitle", "Duplicate slug recovery product.");
   await fillField(page, "description", "Checks the test slug auto generation button after duplicate slug error.");
-  await fillField(page, "basePrice", "444");
   await fillField(page, "options.0.name", "Test option");
-  await fillField(page, "options.0.priceDelta", "0");
+  await fillField(page, "options.0.price", "444");
   await fillField(page, "options.0.stock", "5");
   await page.locator('input[name="publishMode"][value="private"]').check({ force: true });
 

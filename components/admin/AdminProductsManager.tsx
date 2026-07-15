@@ -10,7 +10,7 @@ import {
 } from "@/components/admin/AdminProductBuilder";
 import type { ProductDetail } from "@/lib/products/detail";
 
-type ProductOption = { id: string; name: string; price_delta: number; stock: number };
+type ProductOption = { id: string; name: string; price?: number | null; price_delta: number; stock: number };
 
 type AdminProduct = {
   id: string;
@@ -84,9 +84,9 @@ const isVerificationProduct = (product: AdminProduct) =>
     .some((value) => verificationProductPattern.test(String(value)));
 
 const toOptionForms = (product: AdminProduct, options?: { resetStock?: boolean }): AdminProductOptionForm[] =>
-  (product.product_options?.length ? product.product_options : [{ id: "", name: "기본 옵션", price_delta: 0, stock: 0 }]).map((option) => ({
+  (product.product_options?.length ? product.product_options : [{ id: "", name: "기본 옵션", price: product.base_price, price_delta: 0, stock: 0 }]).map((option) => ({
     name: option.name,
-    priceDelta: String(option.price_delta),
+    price: String(option.price ?? product.base_price + option.price_delta),
     stock: options?.resetStock ? "0" : String(option.stock)
   }));
 

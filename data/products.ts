@@ -3,6 +3,7 @@ import type { ProductDetail } from "@/lib/products/detail";
 export type ProductOption = {
   id: string;
   label: string;
+  price?: number;
   priceDelta: number;
   stock?: number;
 };
