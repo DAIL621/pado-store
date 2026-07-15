@@ -106,6 +106,12 @@ try {
   }, aiDraft);
 
   await page.goto(`${baseUrl}/admin/new?source=ai-images`, { waitUntil: "networkidle" });
+  const initialName = await page.locator('input[name="name"]').inputValue();
+  const autoLoadedNotice = await page.getByTestId("admin-ai-draft-notice").count();
+  if (initialName !== "") throw new Error(`Admin new form auto-loaded a draft name: ${initialName}`);
+  if (autoLoadedNotice !== 0) throw new Error("AI draft was automatically loaded on admin new entry");
+
+  await page.getByTestId("admin-draft-load").click();
   await page.getByTestId("admin-ai-draft-notice").waitFor({ timeout: 10000 });
 
   const notice = await page.getByTestId("admin-ai-draft-notice").innerText();
@@ -128,6 +134,17 @@ try {
   const storedAfterClear = await page.evaluate(() => window.localStorage.getItem("pado-ai-image-analysis-draft"));
   if (storedAfterClear !== null) throw new Error("AI draft clear button did not remove localStorage draft");
 
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByTestId("admin-new-reset").click();
+  const resetState = await page.evaluate(() => ({
+    createDraft: window.localStorage.getItem("pado-admin-product-create-draft"),
+    aiDraft: window.localStorage.getItem("pado-ai-image-analysis-draft")
+  }));
+  if (resetState.createDraft !== null || resetState.aiDraft !== null) throw new Error("New product reset did not delete draft keys");
+  if (await page.locator('input[name="name"]').inputValue()) throw new Error("New product reset did not clear the form");
+  await page.reload({ waitUntil: "networkidle" });
+  if (await page.locator('input[name="name"]').inputValue()) throw new Error("Deleted draft returned after reload");
+
   console.log(
     JSON.stringify(
       {
@@ -135,11 +152,15 @@ try {
         checks: [
           "ai-image-page-access",
           "ai-draft-local-storage",
+          "admin-new-empty-by-default",
+          "admin-new-explicit-draft-load",
           "admin-new-ai-draft-notice",
           "admin-new-hero-image-prefill",
           "admin-new-packaging-prefill",
           "admin-new-extra-section-prefill",
-          "ai-draft-clear"
+          "ai-draft-clear",
+          "admin-new-reset-clears-all-drafts",
+          "admin-new-remains-empty-after-reload"
         ]
       },
       null,

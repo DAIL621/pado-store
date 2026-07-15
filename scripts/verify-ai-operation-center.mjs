@@ -77,6 +77,8 @@ assert(aiRoute.includes("fallbackUsed"), "AI analysis API should return fallback
 
 assert(productBuilder.includes("AI_IMAGE_ANALYSIS_DRAFT_KEY"), "product registration should read AI image analysis draft");
 assert(productBuilder.includes("clearAiDraft"), "product registration should expose AI draft clear action");
+assert(productBuilder.includes("loadStoredDraft"), "product registration should require an explicit draft load action");
+assert(productBuilder.includes("startNewProduct"), "product registration should expose a full new-product reset action");
 assert(productBuilder.includes("createProductDetailFormValue"), "product registration should normalize AI detail_json draft");
 assert(productBuilder.includes("extraSections"), "product registration should preserve AI extra sections");
 
@@ -113,7 +115,7 @@ console.log(
         "mock-fallback-provider",
         "editable-analysis-result",
         "analysis-to-registration-draft",
-        "admin-new-auto-ai-draft",
+        "admin-new-explicit-ai-draft",
         "ai-draft-clear-action",
         "ai-gallery-extra-section",
         "detail-json-converter",

@@ -657,3 +657,8 @@ Next:
 2. Decide whether `deleted_at`, `deleted_by`, and `sale_ended_at` should become first-class product columns later.
 3. Add a dedicated product operation history panel after production DB migration is confirmed.
 4. Continue testing only with hidden verification products until CEO launch assets are ready.
+### 2026-07-15 Draft Safety Completed
+
+- New product creation is isolated from prior product/edit drafts.
+- Draft recovery is now an explicit operator action.
+- Next: keep the draft-safety browser scenario in the admin regression suite.

@@ -109,6 +109,8 @@ function validateProductPayload(payload: Pick<AdminProductBuilderPayload, "form"
 }
 
 type Props = {
+  mode: "create" | "edit";
+  productId?: string;
   title: string;
   initialMessage: string;
   submitLabel: string;
@@ -131,12 +133,12 @@ export const emptyProductForm: AdminProductFormState = {
   subtitle: "",
   description: "",
   basePrice: "",
-  imageUrl: "/images/products/wando-abalone.webp",
+  imageUrl: "",
   badge: "",
-  highlights: "산지 선별, 신선 포장, 빠른 출고"
+  highlights: ""
 };
 
-export const defaultProductOptions: AdminProductOptionForm[] = [{ name: "기본 옵션", priceDelta: "0", stock: "30" }];
+export const defaultProductOptions: AdminProductOptionForm[] = [{ name: "", priceDelta: "0", stock: "0" }];
 
 function debugTime() {
   return new Date().toLocaleTimeString("ko-KR", { hour12: false });
@@ -192,6 +194,8 @@ function withReviewPlaceholder(detail: ProductDetail): ProductDetail {
 }
 
 export function AdminProductBuilder({
+  mode,
+  productId,
   title,
   initialMessage,
   submitLabel,
@@ -215,6 +219,10 @@ export function AdminProductBuilder({
   const [saveCompleted, setSaveCompleted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [draftStatus, setDraftStatus] = useState("");
+  const [hasStoredDraft, setHasStoredDraft] = useState(false);
+  const [draftAutosaveEnabled, setDraftAutosaveEnabled] = useState(mode === "edit");
+  const [loadedDraftSlug, setLoadedDraftSlug] = useState("");
+  const [editorResetKey, setEditorResetKey] = useState(0);
   const [toastMessage, setToastMessage] = useState("");
   const [draftReady, setDraftReady] = useState(!draftStorageKey);
   const [aiDraftLoaded, setAiDraftLoaded] = useState(false);
@@ -222,7 +230,7 @@ export function AdminProductBuilder({
   const [reservedAt, setReservedAt] = useState("");
   const [submitDebug, setSubmitDebug] = useState<SubmitDebugState>({ mountedAt: "-", clickCount: 0 });
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
-  const showSubmitDebug = process.env.NODE_ENV !== "production";
+  const showSubmitDebug = process.env.NEXT_PUBLIC_ADMIN_SUBMIT_DEBUG === "true";
 
   const updateSubmitDebug = (patch: Partial<SubmitDebugState>) => {
     if (!showSubmitDebug) return;
@@ -233,59 +241,13 @@ export function AdminProductBuilder({
     updateSubmitDebug({ mountedAt: debugTime(), apiStatus: "hydrated" });
 
     try {
-      let loadedAiDraft = false;
-      const aiRaw = window.localStorage.getItem(AI_IMAGE_ANALYSIS_DRAFT_KEY);
-      if (aiRaw) {
-        const aiDraft = JSON.parse(aiRaw) as AiImageAnalysisDraft;
-        if (aiDraft.detailJson) {
-          setDetailJson((current) =>
-            withReviewPlaceholder(createProductDetailFormValue({
-              ...current,
-              ...aiDraft.detailJson,
-              heroImages: aiDraft.detailJson.heroImages?.length ? aiDraft.detailJson.heroImages : current.heroImages,
-              journey: aiDraft.detailJson.journey?.length ? aiDraft.detailJson.journey : current.journey,
-              packaging: aiDraft.detailJson.packaging?.length ? aiDraft.detailJson.packaging : current.packaging,
-              recipes: aiDraft.detailJson.recipes?.length ? aiDraft.detailJson.recipes : current.recipes,
-              components: aiDraft.detailJson.components?.length ? aiDraft.detailJson.components : current.components,
-              faq: aiDraft.detailJson.faq?.length ? aiDraft.detailJson.faq : current.faq,
-              benefits: aiDraft.detailJson.benefits?.length ? aiDraft.detailJson.benefits : current.benefits,
-              extraSections: aiDraft.detailJson.extraSections?.length ? aiDraft.detailJson.extraSections : current.extraSections
-            }))
-          );
-        }
-        const heroImage = aiDraft.detailJson.heroImages?.[0];
-        const firstBenefit = aiDraft.detailJson.benefits?.find(Boolean);
-        const firstFaq = aiDraft.detailJson.faq?.find((item) => item.question || item.answer);
-        const generatedTitle = firstText([heroImage?.label, aiDraft.results?.[0]?.title]);
-        const generatedDescription = firstText([
-          heroImage?.description,
-          aiDraft.results?.[0]?.description,
-          firstFaq?.answer,
-          firstBenefit
-        ]);
-        setForm((current) => ({
-          ...current,
-          name: current.name || generatedTitle,
-          category: current.category || aiDraft.category || "",
-          subtitle: current.subtitle || generatedTitle || firstBenefit || "",
-          description: current.description || generatedDescription,
-          badge: current.badge || "AI 초안",
-          highlights: current.highlights || (aiDraft.detailJson.benefits ?? []).filter(Boolean).slice(0, 3).join(", "),
-          imageUrl:
-            !current.imageUrl || current.imageUrl === initialForm.imageUrl
-              ? aiDraft.detailJson.heroImages?.[0]?.url || current.imageUrl
-              : current.imageUrl
-        }));
-        setAiDraftLoaded(true);
-        loadedAiDraft = true;
-        setMessage("AI 사진분석 결과를 불러왔습니다. 대표사진과 상세페이지 초안을 확인한 뒤 수정할 수 있습니다.");
-        setDraftStatus("AI 사진분석 결과를 불러왔습니다.");
-      }
-
       if (!draftStorageKey) return;
-      if (loadedAiDraft) return;
       const raw = window.localStorage.getItem(draftStorageKey);
-      if (raw) {
+      const aiRaw = mode === "create" ? window.localStorage.getItem(AI_IMAGE_ANALYSIS_DRAFT_KEY) : null;
+      if (mode === "create") {
+        setHasStoredDraft(Boolean(raw || aiRaw));
+        setDraftStatus(raw || aiRaw ? "저장된 초안이 있습니다." : "새 상품은 빈 상태로 시작합니다.");
+      } else if (raw) {
         const draft = JSON.parse(raw) as Partial<AdminProductBuilderPayload> & { savedAt?: string };
         if (draft.form) setForm((current) => ({ ...current, ...draft.form }));
         if (draft.options?.length) setOptions(draft.options);
@@ -302,10 +264,10 @@ export function AdminProductBuilder({
     } finally {
       setDraftReady(true);
     }
-  }, [draftStorageKey]);
+  }, [draftStorageKey, mode]);
 
   useEffect(() => {
-    if (!draftStorageKey || !draftReady || saving) return;
+    if (!draftStorageKey || !draftReady || !draftAutosaveEnabled || saving) return;
 
     const timer = window.setTimeout(() => {
       try {
@@ -327,9 +289,96 @@ export function AdminProductBuilder({
     }, 800);
 
     return () => window.clearTimeout(timer);
-  }, [detailJson, draftReady, draftStorageKey, form, options, publishMode, reservedAt, saving]);
+  }, [detailJson, draftAutosaveEnabled, draftReady, draftStorageKey, form, options, publishMode, reservedAt, saving]);
+
+  const enableDraftAutosave = () => setDraftAutosaveEnabled(true);
+
+  const resetBuilderState = () => {
+    setForm(initialForm);
+    setOptions(initialOptions);
+    setDetailJson(createProductDetailFormValue(initialDetail));
+    setPublishMode("public");
+    setReservedAt("");
+    setAiDraftLoaded(false);
+    setLoadedDraftSlug("");
+    setCreatedUrl("");
+    setCreatedInfo("");
+    setDuplicateSlug("");
+    setSaveCompleted(false);
+    setEditorResetKey((current) => current + 1);
+  };
+
+  const loadStoredDraft = () => {
+    if (mode !== "create" || !draftStorageKey) return;
+    try {
+      const raw = window.localStorage.getItem(draftStorageKey);
+      if (raw) {
+        const draft = JSON.parse(raw) as Partial<AdminProductBuilderPayload> & { savedAt?: string; productId?: string };
+        if (draft.productId) {
+          setMessage("초안에 기존 상품 ID가 포함되어 있어 불러오기를 차단했습니다.");
+          return;
+        }
+        if (draft.form) {
+          setForm({ ...initialForm, ...draft.form });
+          setLoadedDraftSlug(draft.form.slug?.trim() ?? "");
+        }
+        if (draft.options?.length) setOptions(draft.options);
+        if (draft.detailJson) setDetailJson(createProductDetailFormValue(draft.detailJson));
+        if (draft.publishMode === "public" || draft.publishMode === "private" || draft.publishMode === "reserved") setPublishMode(draft.publishMode);
+        setReservedAt(typeof draft.reservedAt === "string" ? draft.reservedAt : "");
+        setAiDraftLoaded(false);
+        setDraftAutosaveEnabled(true);
+        setDraftStatus("저장된 초안을 불러왔습니다.");
+        setMessage("저장된 초안을 불러왔습니다. 운영 상품으로 등록하기 전에 상품명과 URL을 확인하세요.");
+        return;
+      }
+
+      const aiRaw = window.localStorage.getItem(AI_IMAGE_ANALYSIS_DRAFT_KEY);
+      if (!aiRaw) return;
+      const aiDraft = JSON.parse(aiRaw) as AiImageAnalysisDraft;
+      const nextDetail = withReviewPlaceholder(createProductDetailFormValue(aiDraft.detailJson));
+      const heroImage = aiDraft.detailJson.heroImages?.[0];
+      const firstBenefit = aiDraft.detailJson.benefits?.find(Boolean);
+      const firstFaq = aiDraft.detailJson.faq?.find((item) => item.question || item.answer);
+      const generatedTitle = firstText([heroImage?.label, aiDraft.results?.[0]?.title]);
+      setDetailJson(nextDetail);
+      setForm({
+        ...initialForm,
+        name: generatedTitle,
+        category: aiDraft.category || "",
+        subtitle: generatedTitle || firstBenefit || "",
+        description: firstText([heroImage?.description, aiDraft.results?.[0]?.description, firstFaq?.answer, firstBenefit]),
+        badge: "AI 초안",
+        highlights: (aiDraft.detailJson.benefits ?? []).filter(Boolean).slice(0, 3).join(", "),
+        imageUrl: heroImage?.url || ""
+      });
+      setAiDraftLoaded(true);
+      setDraftAutosaveEnabled(true);
+      setDraftStatus("AI 사진분석 초안을 불러왔습니다.");
+      setMessage("AI 사진분석 초안을 불러왔습니다. 운영 상품으로 등록하기 전에 내용을 확인하세요.");
+    } catch {
+      setDraftStatus("저장된 초안을 불러오지 못했습니다.");
+    }
+  };
+
+  const deleteStoredDraft = () => {
+    if (draftStorageKey) window.localStorage.removeItem(draftStorageKey);
+    if (mode === "create") window.localStorage.removeItem(AI_IMAGE_ANALYSIS_DRAFT_KEY);
+    setHasStoredDraft(false);
+    setDraftStatus("저장된 초안을 삭제했습니다.");
+  };
+
+  const startNewProduct = () => {
+    if (!window.confirm("현재 입력 중인 내용을 모두 지우고 새 상품으로 시작하시겠습니까?")) return;
+    deleteStoredDraft();
+    setDraftAutosaveEnabled(false);
+    resetBuilderState();
+    setMessage("새 상품 등록을 위해 모든 입력과 업로드 대기 상태를 초기화했습니다.");
+    setDraftStatus("새 상품은 빈 상태로 시작합니다.");
+  };
 
   const update = (key: keyof AdminProductFormState, value: string) => {
+    enableDraftAutosave();
     setForm((current) => ({ ...current, [key]: value }));
     setSaveCompleted(false);
     setCreatedInfo("");
@@ -337,22 +386,26 @@ export function AdminProductBuilder({
   };
 
   const updateOption = (index: number, key: keyof AdminProductOptionForm, value: string) => {
+    enableDraftAutosave();
     setOptions((current) => current.map((option, optionIndex) => (optionIndex === index ? { ...option, [key]: value } : option)));
     setSaveCompleted(false);
     setCreatedInfo("");
   };
 
   const updateDetailJson = (nextDetail: ProductDetail) => {
+    enableDraftAutosave();
     setDetailJson(nextDetail);
     setSaveCompleted(false);
     setCreatedInfo("");
   };
 
   const addOption = () => {
+    enableDraftAutosave();
     setOptions((current) => [...current, { name: "", priceDelta: "0", stock: "0" }]);
   };
 
   const removeOption = (index: number) => {
+    enableDraftAutosave();
     setOptions((current) => (current.length === 1 ? current : current.filter((_, optionIndex) => optionIndex !== index)));
   };
 
@@ -399,6 +452,8 @@ export function AdminProductBuilder({
     const basePrice = Number(form.basePrice);
 
     if (form.slug && !/^[a-z0-9가-힣-]+$/i.test(form.slug.trim())) warnings.push("URL 이름(slug)은 문자, 숫자, 한글, 하이픈만 권장합니다.");
+    if (mode === "create" && loadedDraftSlug && form.slug.trim() === loadedDraftSlug) warnings.push("불러온 초안과 URL(slug)이 같습니다. 이전 테스트 상품을 덮어 등록하지 않는지 확인하세요.");
+    if (mode === "create" && /(테스트|test|0710)/i.test(`${form.name} ${form.slug}`)) warnings.push("테스트 상품 초안으로 보입니다. 운영 공개 전에 상품명, URL, 공개 상태를 다시 확인하세요.");
     if (form.subtitle && form.subtitle.trim().length < 18) warnings.push("한 줄 설명은 18자 이상이면 검색/공유 화면에서 상품 매력이 더 잘 전달됩니다.");
     if (!form.badge.trim()) warnings.push("대표 배지를 입력하면 상품 목록에서 시선이 더 잘 갑니다. 예: BEST, 제철, 추천");
     if (!Number.isFinite(basePrice) || basePrice <= 0) warnings.push("기본 판매가는 0원보다 큰 금액을 권장합니다.");
@@ -411,7 +466,7 @@ export function AdminProductBuilder({
     if (totalStock === 0) warnings.push("옵션 재고가 0개이면 고객 화면에서 품절 상태로 보일 수 있습니다.");
 
     return warnings;
-  }, [detailJson, form.badge, form.basePrice, form.slug, form.subtitle, options]);
+  }, [detailJson, form.badge, form.basePrice, form.name, form.slug, form.subtitle, loadedDraftSlug, mode, options]);
 
   const qualityItems = useMemo(() => {
     const heroCount = detailJson.heroImages.filter((image) => image.url).length;
@@ -591,6 +646,11 @@ export function AdminProductBuilder({
       return;
     }
     updateSubmitDebug({ submitStartedAt: debugTime(), validationStatus: "running", apiStatus: "not-started", apiMessage: "" });
+    if (mode === "create" && productId) {
+      setMessage("등록 차단: 신규 상품 화면에 기존 상품 ID가 연결되어 있습니다. 새 상품으로 초기화하세요.");
+      setToastMessage("기존 상품 ID 감지로 등록을 차단했습니다.");
+      return;
+    }
     firstInvalidRef.current = null;
     const formData = new FormData(formElement);
     const submittedForm: AdminProductFormState = {
@@ -821,6 +881,13 @@ export function AdminProductBuilder({
           )}
         </div>
         <div className="admin-builder-actions">
+          {mode === "create" && (
+            <>
+              <button type="button" className="button outline" data-testid="admin-new-reset" onClick={startNewProduct}>새 상품으로 초기화</button>
+              <button type="button" className="button outline" data-testid="admin-draft-load" onClick={loadStoredDraft} disabled={!hasStoredDraft}>초안 불러오기</button>
+              <button type="button" className="button outline" data-testid="admin-draft-delete" onClick={deleteStoredDraft} disabled={!hasStoredDraft}>초안 삭제</button>
+            </>
+          )}
           <button type="button" className="button outline" onClick={fillDraft}>초안 자동 채우기</button>
         </div>
 
@@ -912,7 +979,7 @@ export function AdminProductBuilder({
             </details>
 
             <div data-admin-section="detail">
-              <ProductDetailEditor value={detailJson} onChange={updateDetailJson} />
+              <ProductDetailEditor key={editorResetKey} value={detailJson} onChange={updateDetailJson} />
             </div>
 
             <details className="admin-form-section" open>

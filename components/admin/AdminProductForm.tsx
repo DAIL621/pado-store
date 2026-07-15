@@ -41,6 +41,7 @@ export function AdminProductForm({ admin }: { admin: AdminUser }) {
   return (
     <AdminLayout admin={admin} active="products" title="상품 등록" subtitle="AI 초안 기반 5분 상품등록">
       <AdminProductBuilder
+        mode="create"
         title="새 상품 등록"
         initialMessage="기본정보와 사진을 넣으면 AI 초안 기반 상세페이지까지 한 흐름으로 등록할 수 있습니다."
         submitLabel="상품 등록하기"

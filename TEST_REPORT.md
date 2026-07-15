@@ -2377,3 +2377,10 @@
   - `pnpm run verify:detail-template`: passed
   - `pnpm run verify:shopping`: passed
   - `pnpm run dev:ensure`: passed
+## 2026-07-15 New Product Draft Safety
+
+- `pnpm run lint`: PASS
+- `pnpm run build`: PASS
+- `pnpm run verify:admin`: PASS, including empty-by-default, explicit AI draft restore, reset, and reload checks
+- In-app browser: PASS for `테스트 전복0710` local draft; automatic restore absent, manual restore successful, delete/reload clean, Submit Debug absent
+- Existing admin create/edit and soft-cleaned verification product flows: PASS

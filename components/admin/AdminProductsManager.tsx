@@ -550,6 +550,8 @@ function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct
           <button type="button" onClick={onClose}>닫기</button>
         </div>
         <AdminProductBuilder
+          mode="edit"
+          productId={product.id}
           title={`${product.name} 수정`}
           initialMessage="상품 정보와 상세페이지 자동 생성 데이터를 수정할 수 있습니다."
           submitLabel="수정 저장"

@@ -56,6 +56,12 @@ export async function POST(request: Request) {
   const parsedBody = await readJsonBody(request);
   if (!parsedBody.ok) return parsedBody.response;
   const body = parsedBody.body;
+  if (body.productId || body.id) {
+    return NextResponse.json(
+      { ok: false, code: "CREATE_WITH_PRODUCT_ID", message: "신규 상품 등록 요청에는 기존 상품 ID를 포함할 수 없습니다." },
+      { status: 400 }
+    );
+  }
   const supabase = createAdminClient();
   const actorId = admin.session.user.id;
   const actorEmail = admin.session.user.email;

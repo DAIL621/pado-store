@@ -206,3 +206,8 @@
 - [ ] Run Toss approval/refund rehearsal with a refundable transaction.
 - [ ] Run `pnpm run verify:production-launch -- --url=https://YOUR_DOMAIN --strict=true`.
 - [ ] Run `pnpm run rehearsal:launch` and confirm `90%+`, Critical `0`.
+- [x] `/admin/new` opens empty even when a create/AI draft exists
+- [x] Saved drafts restore only after clicking `초안 불러오기`
+- [x] Draft deletion and new-product reset survive reload
+- [x] Submit Debug is hidden unless `NEXT_PUBLIC_ADMIN_SUBMIT_DEBUG=true`
+- [x] Create API rejects requests containing an existing product ID

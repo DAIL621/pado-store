@@ -266,3 +266,7 @@ alter table products add column if not exists detail_json jsonb not null default
 - No new external blocker was introduced.
 - Product operation logs are best-effort until the production Supabase migration creates `operation_logs`.
 - Product hidden/sale-ended metadata currently lives in `products.detail_json` for DB compatibility. A future migration can promote these values to dedicated columns if required.
+## 2026-07-15 New Product Draft Safety
+
+- No blocker remains for the automatic draft restoration issue.
+- No real operation product was modified or deleted during verification.

@@ -2141,3 +2141,10 @@
   - `pnpm run verify:detail-template`: passed
   - `pnpm run verify:shopping`: passed
   - `pnpm run dev:ensure`: passed
+## 2026-07-15 Emergency Fix - New Product Draft Isolation
+
+- Changed `/admin/new` to start with a clean create form and never auto-restore local or AI drafts.
+- Added explicit draft load/delete and full new-product reset actions.
+- Split create/edit mode behavior and blocked create requests carrying an existing product ID.
+- Hid Submit Debug by default; it now requires `NEXT_PUBLIC_ADMIN_SUBMIT_DEBUG=true`.
+- Browser-verified `테스트 전복0710`: empty re-entry, explicit restore only, delete plus reload remains empty.
