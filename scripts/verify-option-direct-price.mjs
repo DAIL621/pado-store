@@ -23,6 +23,7 @@ assert(purchase.includes("option.price ??") && purchase.includes("unitPrice * qu
 assert(products.includes("Math.min(...optionPrices)"), "representative minimum price missing");
 assert(orderApi.includes("option?.price ??") && !orderApi.includes("item.unitPrice)"), "server DB option price verification missing");
 assert(optionParser.includes("option.price ??") && optionParser.includes("price_delta: 0"), "legacy read/new write normalization missing");
+assert(optionParser.includes("regular_price") && migration.includes("add column if not exists regular_price"), "option regular price persistence missing");
 assert(migration.includes("add column if not exists price") && migration.includes("base_price + po.price_delta"), "safe migration missing");
 
 console.log(JSON.stringify({

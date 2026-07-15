@@ -218,7 +218,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           .eq("id", existingOptionId);
 
         if (isMissingOptionPriceColumn(updateOptionError)) {
-          const { price, ...legacyOption } = option;
+          const { price, regular_price: _regularPrice, ...legacyOption } = option;
           ({ error: updateOptionError } = await supabase.from("product_options").update({ ...legacyOption, price_delta: price - basePriceForOptions }).eq("id", existingOptionId));
         }
 
@@ -229,7 +229,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           .insert({ ...option, product_id: id });
 
         if (isMissingOptionPriceColumn(insertOptionError)) {
-          const { price, ...legacyOption } = option;
+          const { price, regular_price: _regularPrice, ...legacyOption } = option;
           ({ error: insertOptionError } = await supabase.from("product_options").insert({ ...legacyOption, price_delta: price - basePriceForOptions, product_id: id }));
         }
 

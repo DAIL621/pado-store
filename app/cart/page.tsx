@@ -7,7 +7,7 @@ import { CartItem, useCart } from "@/components/cart/CartProvider";
 import { ProductCard } from "@/components/products/ProductCard";
 import { formatPrice, products } from "@/data/products";
 import { getBestProducts } from "@/lib/products/discovery";
-import { calculateFreeShippingProgress, calculateRemainingForFreeShipping, calculateShipping } from "@/lib/order/pricing";
+import { calculateShipping } from "@/lib/order/pricing";
 import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
 
 export default function CartPage() {
@@ -18,8 +18,6 @@ export default function CartPage() {
   const productDiscount = Math.max(0, regularSubtotal - subtotal);
   const shipping = calculateShipping(subtotal);
   const hasFreeShippingBenefit = items.length > 0 && shipping === 0;
-  const remainingForFreeShipping = calculateRemainingForFreeShipping(subtotal);
-  const freeShippingProgress = calculateFreeShippingProgress(subtotal);
   const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
   const canCheckout = items.length > 0 && unavailableItems.length === 0;
   const recommendedProducts = getBestProducts(products, 4);
@@ -127,18 +125,8 @@ export default function CartPage() {
           <h2>결제 예정 금액</h2>
           <div><span>상품 정상가 합계</span><b>{formatPrice(regularSubtotal)}</b></div>
           {productDiscount > 0 && <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>}
-          <div><span>배송비</span><b>{shipping === 0 ? "무료" : formatPrice(shipping)}</b></div>
+          <div><span>배송비</span><b>{formatPrice(shipping)}</b></div>
           {hasFreeShippingBenefit && <div className="summary-discount"><span>무료배송 혜택</span><b>적용</b></div>}
-          <div className="free-shipping-meter" aria-label="무료배송 진행률">
-            <div><span style={{ width: `${freeShippingProgress}%` }} /></div>
-            <p>
-              {items.length === 0
-                ? "5만원 이상 구매 시 무료배송"
-                : remainingForFreeShipping === 0
-                  ? "무료배송이 적용됩니다"
-                  : `${formatPrice(remainingForFreeShipping)} 더 담으면 무료배송`}
-            </p>
-          </div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(subtotal + shipping)}</strong></div>
           {shipping === 0 && items.length > 0 && <div className="cart-free-benefit"><b>✓ 파도스토리 무료배송 혜택이 적용되었습니다</b><span>배송비 부담 없이 신선하게 받아보세요.</span></div>}
           <div className="fresh-food-policy">

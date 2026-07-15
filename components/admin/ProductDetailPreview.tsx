@@ -20,13 +20,14 @@ type PreviewForm = {
 
 type Props = {
   form: PreviewForm;
-  options: Array<Pick<ProductOption, "label" | "price" | "priceDelta" | "stock">>;
+  options: Array<Pick<ProductOption, "label" | "price" | "regularPrice" | "priceDelta" | "stock">>;
   detail: ProductDetail;
 };
 
 function buildPreviewProduct(form: PreviewForm, options: Props["options"], detail: ProductDetail): Product {
   const price = Number(form.basePrice) || 0;
-  const normalPrice = price > 0 ? price + (price >= 40000 ? 6000 : 5000) : 0;
+  const representativeOption = options.find((option) => Number(option.price ?? 0) === price);
+  const normalPrice = Number(representativeOption?.regularPrice ?? price);
   const discountRate = price > 0 && normalPrice > 0 ? Math.max(0, Math.round((1 - price / normalPrice) * 100)) : 0;
   const image = form.imageUrl.trim()
     || detail.heroImages.find((item) => item.label === "대표사진" && item.url.trim())?.url
@@ -40,6 +41,7 @@ function buildPreviewProduct(form: PreviewForm, options: Props["options"], detai
       label: option.label,
       priceDelta: Number(option.priceDelta ?? 0),
       price: Number(option.price ?? 0) || undefined,
+      regularPrice: Number(option.regularPrice ?? 0) || undefined,
       stock: Number(option.stock ?? 0)
     }));
 

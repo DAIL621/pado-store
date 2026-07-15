@@ -25,6 +25,7 @@ export type AdminProductFormState = {
 
 export type AdminProductOptionForm = {
   name: string;
+  regularPrice?: string;
   price: string;
   priceDelta?: string;
   stock: string;
@@ -103,8 +104,11 @@ function validateProductPayload(payload: Pick<AdminProductBuilderPayload, "form"
   options.forEach((option, index) => {
     if (!option.name.trim()) issues.push({ label: `옵션 ${index + 1}`, message: `옵션 ${index + 1}의 옵션명을 입력해주세요.`, section: "options" });
     const price = Number(option.price.replaceAll(",", ""));
+    const regularPriceText = option.regularPrice ?? "";
+    const regularPrice = regularPriceText.trim() ? Number(regularPriceText.replaceAll(",", "")) : undefined;
     const stock = Number(option.stock);
     if (!Number.isFinite(price) || price <= 0) issues.push({ label: `옵션 ${index + 1} 판매가격`, message: `옵션 ${index + 1}의 판매가격은 0보다 큰 숫자로 입력해주세요.`, section: "options" });
+    if (regularPrice !== undefined && (!Number.isFinite(regularPrice) || regularPrice < price)) issues.push({ label: `옵션 ${index + 1} 정상가`, message: `옵션 ${index + 1}의 정상가는 판매가보다 작을 수 없습니다.`, section: "options" });
     if (!Number.isFinite(stock) || stock < 0) issues.push({ label: `옵션 ${index + 1} 재고`, message: `옵션 ${index + 1}의 재고는 0개 이상의 숫자로 입력해주세요.`, section: "options" });
   });
 
@@ -141,7 +145,7 @@ export const emptyProductForm: AdminProductFormState = {
   highlights: ""
 };
 
-export const defaultProductOptions: AdminProductOptionForm[] = [{ name: "", price: "", stock: "0" }];
+export const defaultProductOptions: AdminProductOptionForm[] = [{ name: "", regularPrice: "", price: "", stock: "0" }];
 
 function debugTime() {
   return new Date().toLocaleTimeString("ko-KR", { hour12: false });
@@ -446,7 +450,7 @@ export function AdminProductBuilder({
 
   const addOption = () => {
     enableDraftAutosave();
-    setOptions((current) => [...current, { name: "", price: "", stock: "0" }]);
+    setOptions((current) => [...current, { name: "", regularPrice: "", price: "", stock: "0" }]);
   };
 
   const removeOption = (index: number) => {
@@ -679,6 +683,7 @@ export function AdminProductBuilder({
       const hasCustomOption = current.some((option) => option.name.trim() && option.name !== "기본 옵션");
       return hasCustomOption ? current : preset.options.map((option) => ({
         name: option.name,
+        regularPrice: "",
         price: String(Number(form.basePrice || 0) + Number(option.priceDelta || 0)),
         stock: option.stock
       }));
@@ -725,6 +730,7 @@ export function AdminProductBuilder({
     const submittedOptions = options.map((option, index) => ({
       name: String(formData.get(`options.${index}.name`) ?? option.name).trim(),
       price: String(formData.get(`options.${index}.price`) ?? option.price).replaceAll(",", "").trim(),
+      regularPrice: String(formData.get(`options.${index}.regularPrice`) ?? option.regularPrice ?? "").replaceAll(",", "").trim(),
       stock: String(formData.get(`options.${index}.stock`) ?? option.stock).trim()
     }));
     const submitBlockingIssues = validateProductPayload({ form: submittedForm, options: submittedOptions });
@@ -1032,7 +1038,8 @@ export function AdminProductBuilder({
                 {options.map((option, index) => (
                   <div className="option-row" key={index}>
                     <label>옵션명<input name={`options.${index}.name`} className={fieldClass(option.name)} value={option.name} onChange={(event) => updateOption(index, "name", event.target.value)} required placeholder="예: 1kg" /></label>
-                    <label>판매가격<input name={`options.${index}.price`} className={fieldClass(option.price)} type="text" inputMode="numeric" value={option.price} onChange={(event) => { const digits = event.target.value.replace(/\D/g, ""); updateOption(index, "price", digits ? Number(digits).toLocaleString("ko-KR") : ""); }} required /></label>
+                    <label>정상가<input name={`options.${index}.regularPrice`} className={fieldClass(option.regularPrice ?? "")} type="text" inputMode="numeric" value={option.regularPrice ?? ""} onChange={(event) => { const digits = event.target.value.replace(/\D/g, ""); updateOption(index, "regularPrice", digits ? Number(digits).toLocaleString("ko-KR") : ""); }} placeholder="할인 없으면 비워두기" /></label>
+                    <label>판매가<input name={`options.${index}.price`} className={fieldClass(option.price)} type="text" inputMode="numeric" value={option.price} onChange={(event) => { const digits = event.target.value.replace(/\D/g, ""); updateOption(index, "price", digits ? Number(digits).toLocaleString("ko-KR") : ""); }} required /></label>
                     <label>재고<input name={`options.${index}.stock`} className={fieldClass(option.stock)} type="number" value={option.stock} onChange={(event) => updateOption(index, "stock", event.target.value)} required min="0" /></label>
                     <button type="button" className="remove-option" onClick={() => removeOption(index)} disabled={options.length === 1}>삭제</button>
                   </div>
@@ -1159,6 +1166,7 @@ export function AdminProductBuilder({
             options={options.map((option) => ({
               label: option.name,
               price: Number(option.price.replaceAll(",", "")) || 0,
+              regularPrice: Number((option.regularPrice ?? "").replaceAll(",", "")) || undefined,
               priceDelta: 0,
               stock: Number(option.stock) || 0
             }))}

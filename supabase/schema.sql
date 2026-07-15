@@ -53,6 +53,8 @@ create table if not exists product_options (
   name text not null,
   price_delta integer not null default 0,
   price integer check (price is null or price > 0),
+  regular_price integer check (regular_price is null or regular_price > 0),
+  check (regular_price is null or price is null or regular_price >= price),
   stock integer not null default 0,
   created_at timestamptz not null default now()
 );

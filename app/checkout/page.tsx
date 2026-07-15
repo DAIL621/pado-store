@@ -5,7 +5,7 @@ import Script from "next/script";
 import Link from "next/link";
 import { useCart, type CartItem } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
-import { calculateFreeShippingProgress, calculateRemainingForFreeShipping, calculateShipping } from "@/lib/order/pricing";
+import { calculateShipping } from "@/lib/order/pricing";
 
 type TossPayment = {
   requestPayment: (paymentRequest: {
@@ -64,8 +64,6 @@ export default function CheckoutPage() {
   const productDiscount = Math.max(0, regularSubtotal - subtotal);
   const shipping = calculateShipping(subtotal);
   const total = subtotal + shipping;
-  const remainingForFreeShipping = calculateRemainingForFreeShipping(subtotal);
-  const freeShippingProgress = calculateFreeShippingProgress(subtotal);
   const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
   const canPay = items.length > 0 && unavailableItems.length === 0 && freshFoodPolicyAccepted;
 
@@ -221,17 +219,7 @@ export default function CheckoutPage() {
           )}
           <div><span>상품 정상가 합계</span><b>{formatPrice(regularSubtotal)}</b></div>
           {productDiscount > 0 && <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>}
-          <div><span>배송비</span><b>{shipping === 0 ? "무료" : formatPrice(shipping)}</b></div>
-          <div className="free-shipping-meter" aria-label="무료배송 진행률">
-            <div><span style={{ width: `${freeShippingProgress}%` }} /></div>
-            <p>
-              {items.length === 0
-                ? "5만원 이상 구매 시 무료배송"
-                : remainingForFreeShipping === 0
-                  ? "무료배송이 적용됩니다"
-                  : `${formatPrice(remainingForFreeShipping)} 더 담으면 무료배송`}
-            </p>
-          </div>
+          <div><span>배송비</span><b>{formatPrice(shipping)}</b></div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(total)}</strong></div>
           <div className="checkout-trust-list" aria-label="결제 전 확인 사항">
             <span>안전결제</span>

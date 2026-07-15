@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { products } from "@/data/products";
 import { ProductCard } from "@/components/products/ProductCard";
 
@@ -63,14 +63,6 @@ function CampaignIcon({ name }: { name: CampaignIconName }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true">{icons[name]}</svg>;
 }
 
-const slidePlan = [
-  { slug: "wando-live-abalone", label: "완도 활전복", title: "오늘 수확한 활전복", copy: "바다 향이 살아 있는 완도 활전복을 가장 신선한 시간에 만나보세요." },
-  { slug: "tongyeong-conch", label: "통영 참소라", title: "지금 제철 참소라", copy: "쫄깃한 식감과 진한 단맛을 산지에서 바로 보내드립니다." },
-  { slug: "tongyeong-sea-eel", label: "통영 바다장어", title: "손질 완료, 당일 출고", copy: "집에서는 굽기만 하면 되는 손질 바다장어로 저녁 식탁을 빠르게 준비하세요." },
-  { slug: "abalone-porridge", label: "전복 밀키트", title: "집에서 간편하게", copy: "바쁜 날에도 깊고 고소한 전복의 맛을 간편하게 즐길 수 있습니다." },
-  { slug: "pado-gift-set", label: "명절 선물세트", title: "감사의 마음을 전하세요", copy: "받는 분의 식탁까지 신선하게 도착하는 파도스토리 선물세트입니다." }
-];
-
 const campaignLinks: Array<{ title: string; icon: CampaignIconName; href: string }> = [
   { title: "제철상품", icon: "season", href: "#season" },
   { title: "인기상품", icon: "hot", href: "#recommend" },
@@ -81,95 +73,29 @@ const campaignLinks: Array<{ title: string; icon: CampaignIconName; href: string
 ];
 
 export function Hero() {
-  const [active, setActive] = useState(0);
-  const touchStartX = useRef<number | null>(null);
-  const slides = useMemo(
-    () =>
-      slidePlan.map((slide) => {
-        const product = products.find((item) => item.slug === slide.slug) ?? products[0];
-        return {
-          ...slide,
-          image: product.image,
-          href: `/products/${product.slug}`
-        };
-      }),
-    []
-  );
-
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-
-    const timer = window.setInterval(() => {
-      if (document.hidden) return;
-      setActive((current) => (current + 1) % slides.length);
-    }, 5500);
-
-    return () => window.clearInterval(timer);
-  }, [slides.length]);
-
-  const moveSlide = (direction: -1 | 1) => {
-    setActive((current) => (current + direction + slides.length) % slides.length);
-  };
-
-  const handlePointerUp = (clientX: number) => {
-    if (touchStartX.current === null) return;
-    const diff = clientX - touchStartX.current;
-    touchStartX.current = null;
-
-    if (Math.abs(diff) < 45) return;
-    moveSlide(diff > 0 ? -1 : 1);
-  };
+  const featuredProduct = products[0];
 
   return (
     <section className="hero hero-v2" id="recommend" aria-label="파도스토리 추천 상품 슬라이드">
-      <div
-        className="hero-carousel"
-        role="region"
-        aria-roledescription="carousel"
-        onPointerDown={(event) => {
-          touchStartX.current = event.clientX;
-        }}
-        onPointerUp={(event) => handlePointerUp(event.clientX)}
-        onPointerCancel={() => {
-          touchStartX.current = null;
-        }}
-      >
-        {slides.map((slide, index) => (
-          <article className={`hero-slide ${index === active ? "active" : ""}`} key={slide.slug} aria-hidden={index !== active} aria-label={`${index + 1} / ${slides.length}`}>
-            <div className="hero-slide-image">
-              <Image src={slide.image} alt={slide.label} fill sizes="100vw" priority={index === 0} draggable={false} />
-            </div>
-            <div className="shell hero-slide-copy fade-up">
-              <span className="eyebrow light">{slide.label}</span>
-              <h1>{slide.title}</h1>
-              <p>{slide.copy}</p>
-              <div className="hero-actions">
-                <Link href={slide.href} className="button coral">상품 보기</Link>
-                <Link href="/products" className="text-link light">전체 상품 보기</Link>
-              </div>
-              <div className="hero-proof-row" aria-label="배송 및 신선도 안내">
-                <span><b>✓</b>산지 직송</span>
-                <span><b>✓</b>오후 1시 이전 당일 출고</span>
-                <span><b>✓</b>전국 냉장배송</span>
-              </div>
-            </div>
-          </article>
-        ))}
-
-        <button className="hero-arrow hero-arrow-prev" type="button" onClick={() => moveSlide(-1)} aria-label="이전 슬라이드">‹</button>
-        <button className="hero-arrow hero-arrow-next" type="button" onClick={() => moveSlide(1)} aria-label="다음 슬라이드">›</button>
-        <div className="hero-indicators" aria-label="슬라이드 선택">
-          {slides.map((slide, index) => (
-            <button
-              type="button"
-              key={slide.slug}
-              className={index === active ? "active" : ""}
-              onClick={() => setActive(index)}
-              aria-label={`${index + 1}번 슬라이드 보기`}
-            />
-          ))}
-        </div>
+      <div className="shell home-hero-dashboard">
+        <article className="home-hero-story fade-up">
+          <Image src="/images/story/timeline-dawn-fishing.png" alt="새벽 바다에서 조업하는 파도스토리 산지 현장" fill sizes="(max-width: 900px) 100vw, 66vw" priority />
+          <div>
+            <span className="eyebrow light">FROM SEA TO TABLE</span>
+            <h1>산지의 오늘을<br />식탁까지</h1>
+            <p>새벽 조업부터 선별과 신선 포장까지, 파도스토리가 직접 확인한 바다의 시간을 전합니다.</p>
+            <div className="hero-actions"><Link href="#today-sea" className="button coral">오늘의 산지 보기</Link><Link href="/products" className="text-link light">전체 상품 보기</Link></div>
+          </div>
+        </article>
+        <aside className="home-hero-side">
+          <Link href="/products" className="home-hero-benefit fade-up">
+            <span>EVERYDAY BENEFIT</span><strong>전 상품<br />기본 무료배송</strong><small>배송비 부담 없이 신선하게 받아보세요.</small>
+          </Link>
+          <Link href={`/products/${featuredProduct.slug}`} className="home-hero-product fade-up">
+            <div><Image src={featuredProduct.image} alt={featuredProduct.name} fill sizes="(max-width: 900px) 44vw, 18vw" /></div>
+            <section><span>오늘의 제철상품</span><strong>{featuredProduct.name}</strong><small>{featuredProduct.origin} · {featuredProduct.price.toLocaleString("ko-KR")}원~</small></section>
+          </Link>
+        </aside>
       </div>
 
       <nav className="shell campaign-menu fade-up" aria-label="기획전 바로가기">

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice, Product } from "@/data/products";
 import { useCart } from "@/components/cart/CartProvider";
-import { calculateFreeShippingProgress, calculateRemainingForFreeShipping } from "@/lib/order/pricing";
 import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
 
 export function ProductPurchase({ product }: { product: Product }) {
@@ -21,9 +20,9 @@ export function ProductPurchase({ product }: { product: Product }) {
   const remainingStock = Math.max(0, selectedStock - cartQuantityForOption);
   const isSoldOut = !option || selectedStock <= 0;
   const unitPrice = option ? option.price ?? product.price + option.priceDelta : product.price;
+  const regularPrice = option?.regularPrice && option.regularPrice >= unitPrice ? option.regularPrice : undefined;
+  const discountRate = regularPrice && regularPrice > unitPrice ? Math.round(((regularPrice - unitPrice) / regularPrice) * 100) : 0;
   const total = unitPrice * quantity;
-  const remainingForFreeShipping = calculateRemainingForFreeShipping(total);
-  const freeShippingProgress = calculateFreeShippingProgress(total);
   const canAddSelected = !isSoldOut && remainingStock > 0;
   const stockMessage = getCustomerStockMessage(remainingStock);
   const isLowStock = !isSoldOut && remainingStock < 10;
@@ -95,8 +94,9 @@ export function ProductPurchase({ product }: { product: Product }) {
           <span>예상 결제금액</span>
           <strong>{formatPrice(total)}</strong>
         </div>
-        <small>배송비 4,000원 · 5만원 이상 무료배송</small>
+        <small>파도스토리 기본 무료배송</small>
       </div>
+      {regularPrice && regularPrice > unitPrice && <div className="purchase-price-benefit"><del>정상가 {formatPrice(regularPrice)}</del><b>{discountRate}% 할인</b><strong>판매가 {formatPrice(unitPrice)}</strong></div>}
       <div className="purchase-benefits" aria-label="구매 혜택">
         <span>평일 13시 전 당일 출고</span>
         <span>냉장 신선 배송</span>
@@ -143,14 +143,7 @@ export function ProductPurchase({ product }: { product: Product }) {
           <button type="button" disabled={!canIncrease} onClick={increaseQuantity} aria-label={`${product.name} 수량 늘리기`}>+</button>
         </div>
       </div>
-      <div className="purchase-free-shipping" aria-label="무료배송 진행률">
-        <div><span style={{ width: `${freeShippingProgress}%` }} /></div>
-        <p>
-          {remainingForFreeShipping === 0
-            ? "무료배송이 적용됩니다."
-            : `${formatPrice(remainingForFreeShipping)} 더 담으면 무료배송`}
-        </p>
-      </div>
+      <div className="purchase-free-shipping"><p>✓ 파도스토리 기본 무료배송</p></div>
       <div className="total-row"><span>총 상품금액</span><strong>{formatPrice(total)}</strong></div>
       <div className="purchase-actions">
         <button type="button" className="button outline" disabled={!canAddSelected} onClick={add}>{added ? "장바구니에 담았습니다" : "장바구니"}</button>
