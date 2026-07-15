@@ -49,7 +49,7 @@ function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
     productSlug: String(item.productSlug),
     name: String(item.name),
     origin: String(item.origin ?? ""),
-    image: String(item.image ?? "/images/products/wando-abalone.webp"),
+    image: String(item.image ?? "/images/product-placeholder.svg"),
     optionId: String(item.optionId),
     optionLabel: String(item.optionLabel),
     unitPrice,

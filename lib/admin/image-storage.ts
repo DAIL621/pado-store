@@ -1,6 +1,10 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  MAX_PRODUCT_IMAGE_SIZE,
+  MAX_PRODUCT_VIDEO_SIZE
+} from "@/lib/admin/upload-limits";
 
 export type AdminImageUploadResult = {
   url: string;
@@ -9,8 +13,8 @@ export type AdminImageUploadResult = {
 
 export const allowedAdminImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 export const allowedAdminVideoTypes = new Set(["video/mp4", "video/webm"]);
-export const maxAdminImageSize = 5 * 1024 * 1024;
-export const maxAdminVideoSize = 80 * 1024 * 1024;
+export const maxAdminImageSize = MAX_PRODUCT_IMAGE_SIZE;
+export const maxAdminVideoSize = MAX_PRODUCT_VIDEO_SIZE;
 
 export function createUploadFilename(originalName: string) {
   const extension = originalName.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "webp";

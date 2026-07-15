@@ -218,6 +218,7 @@ export function AdminProductBuilder({
   const [duplicateSlug, setDuplicateSlug] = useState("");
   const [saveCompleted, setSaveCompleted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadsInProgress, setUploadsInProgress] = useState(false);
   const [draftStatus, setDraftStatus] = useState("");
   const [hasStoredDraft, setHasStoredDraft] = useState(false);
   const [draftAutosaveEnabled, setDraftAutosaveEnabled] = useState(mode === "edit");
@@ -979,7 +980,7 @@ export function AdminProductBuilder({
             </details>
 
             <div data-admin-section="detail">
-              <ProductDetailEditor key={editorResetKey} value={detailJson} onChange={updateDetailJson} />
+              <ProductDetailEditor key={editorResetKey} value={detailJson} onChange={updateDetailJson} onUploadStateChange={setUploadsInProgress} />
             </div>
 
             <details className="admin-form-section" open>
@@ -1058,14 +1059,14 @@ export function AdminProductBuilder({
                 <button
                   type="button"
                   className="button teal"
-                  disabled={saving || saveCompleted}
+                  disabled={saving || saveCompleted || uploadsInProgress}
                   aria-busy={saving}
                   data-testid="admin-product-submit"
                   data-save-state={saving ? "saving" : saveCompleted ? "completed" : "idle"}
                   onPointerDown={recordPointerDown}
                   onClick={clickSave}
                 >
-                  {saving ? savingLabel : saveCompleted ? "상품 등록완료" : submitLabel}
+                  {uploadsInProgress ? "이미지 업로드 중..." : saving ? savingLabel : saveCompleted ? "상품 등록완료" : submitLabel}
                 </button>
               </div>
               {showSubmitDebug && (

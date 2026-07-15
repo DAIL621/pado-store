@@ -270,3 +270,7 @@ alter table products add column if not exists detail_json jsonb not null default
 
 - No blocker remains for the automatic draft restoration issue.
 - No real operation product was modified or deleted during verification.
+## 2026-07-15 Product Media Storage Migration
+
+- Local/API 20MB detail image validation is complete.
+- Production Supabase still requires `supabase/phase18-product-media-upload-limits.sql` to be applied to the actual product media bucket. It was not applied automatically because production data/config changes are prohibited without explicit operator approval.

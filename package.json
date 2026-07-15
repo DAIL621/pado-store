@@ -20,6 +20,7 @@
     "verify:legacy-detail": "node scripts/verify-legacy-detail-pages.mjs",
     "verify:admin-edit": "node scripts/verify-admin-product-edit.mjs",
     "verify:admin-upload": "node scripts/verify-admin-upload.mjs",
+    "verify:large-detail-upload": "node scripts/verify-large-detail-upload.mjs",
     "verify:admin-presets": "node scripts/verify-admin-presets.mjs",
     "verify:admin-new-click": "node scripts/verify-admin-new-click.mjs",
     "verify:admin-duplicate-test-slug": "node scripts/verify-admin-duplicate-test-slug.mjs",

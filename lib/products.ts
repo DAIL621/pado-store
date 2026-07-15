@@ -35,7 +35,7 @@ function toProduct(row: ProductRow): Product {
   const price = row.base_price;
   const normalPrice = price + (price >= 40000 ? 6000 : 5000);
   const discountRate = Math.round((1 - price / normalPrice) * 100);
-  const image = row.image_url ?? "/images/products/wando-abalone.webp";
+  const image = row.image_url ?? "/images/product-placeholder.svg";
   const detail = normalizeProductDetailInput(row.detail_json);
   const detailImages = detail.heroImages.length ? detail.heroImages.map((item) => item.url) : [image];
 

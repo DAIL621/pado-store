@@ -130,7 +130,7 @@ export async function POST(request: Request) {
       subtitle: body.subtitle,
       description: body.description,
       base_price: basePrice,
-      image_url: body.imageUrl || "/images/products/wando-abalone.webp",
+      image_url: body.imageUrl || "/images/product-placeholder.svg",
       badge: body.badge || null,
       detail_json: normalizeProductDetailInput(body.detailJson ?? body.detail_json),
       highlights: String(body.highlights ?? "")

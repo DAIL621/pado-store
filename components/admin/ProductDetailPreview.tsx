@@ -28,7 +28,7 @@ function buildPreviewProduct(form: PreviewForm, options: Props["options"], detai
   const price = Number(form.basePrice) || 0;
   const normalPrice = price > 0 ? price + (price >= 40000 ? 6000 : 5000) : 0;
   const discountRate = price > 0 && normalPrice > 0 ? Math.max(0, Math.round((1 - price / normalPrice) * 100)) : 0;
-  const image = form.imageUrl || detail.heroImages.find((item) => item.url)?.url || "/images/products/wando-abalone.webp";
+  const image = form.imageUrl.trim() || detail.heroImages.find((item) => item.url.trim())?.url || "/images/product-placeholder.svg";
   const visibleSections = getVisibleProductDetailSections(detail);
   const previewOptions = options
     .filter((option) => option.label)

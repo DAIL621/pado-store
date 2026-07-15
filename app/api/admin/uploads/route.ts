@@ -3,17 +3,34 @@ import { requireAdminApi } from "@/lib/auth/admin-api";
 import {
   allowedAdminImageTypes,
   allowedAdminVideoTypes,
-  maxAdminImageSize,
   maxAdminVideoSize,
   uploadAdminProductImage
 } from "@/lib/admin/image-storage";
+import {
+  getAdminUploadLimit,
+  MAX_PRODUCT_VIDEO_SIZE,
+  type AdminUploadPurpose
+} from "@/lib/admin/upload-limits";
+
+export const runtime = "nodejs";
+
+const MAX_MULTIPART_REQUEST_SIZE = MAX_PRODUCT_VIDEO_SIZE + 2 * 1024 * 1024;
 
 export async function POST(request: Request) {
   const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
 
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > MAX_MULTIPART_REQUEST_SIZE) {
+    return NextResponse.json({ ok: false, message: "업로드 요청 용량이 서버 제한을 초과했습니다." }, { status: 413 });
+  }
+
   const formData = await request.formData();
   const file = formData.get("file");
+  const rawPurpose = String(formData.get("purpose") || "product");
+  const purpose: AdminUploadPurpose = ["product", "legacy-detail", "video-thumbnail", "video"].includes(rawPurpose)
+    ? rawPurpose as AdminUploadPurpose
+    : "product";
 
   if (!(file instanceof File)) {
     return NextResponse.json({ ok: false, message: "업로드할 이미지 또는 동영상 파일을 선택해주세요." }, { status: 400 });
@@ -29,8 +46,14 @@ export async function POST(request: Request) {
     );
   }
 
-  if (isImage && file.size > maxAdminImageSize) {
-    return NextResponse.json({ ok: false, message: "이미지는 5MB 이하로 업로드해주세요." }, { status: 400 });
+  const imageLimit = getAdminUploadLimit(purpose);
+  if (isImage && file.size > imageLimit) {
+    const message = purpose === "legacy-detail"
+      ? "상세페이지 이미지는 파일당 최대 20MB까지 업로드할 수 있습니다."
+      : purpose === "video-thumbnail"
+        ? "동영상 썸네일은 파일당 최대 10MB까지 업로드할 수 있습니다."
+        : "일반 상품 이미지는 파일당 최대 5MB까지 업로드할 수 있습니다.";
+    return NextResponse.json({ ok: false, message }, { status: 413 });
   }
 
   if (isVideo && file.size > maxAdminVideoSize) {
@@ -46,7 +69,9 @@ export async function POST(request: Request) {
       storage: uploaded.storage,
       size: file.size,
       type: file.type,
-      mediaType: isVideo ? "video" : "image"
+      mediaType: isVideo ? "video" : "image",
+      purpose,
+      maxSize: isVideo ? maxAdminVideoSize : imageLimit
     });
   } catch (error) {
     return NextResponse.json(

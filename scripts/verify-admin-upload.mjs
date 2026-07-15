@@ -47,9 +47,10 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-async function uploadFile(blob, filename) {
+async function uploadFile(blob, filename, purpose = "product") {
   const form = new FormData();
   form.append("file", blob, filename);
+  form.append("purpose", purpose);
   const response = await request("/api/admin/uploads", {
     method: "POST",
     body: form
@@ -90,6 +91,20 @@ try {
   assert(["local", "supabase"].includes(valid.body.storage), "upload storage mode is missing");
   assert(valid.body.mediaType === "image", "valid image upload did not return mediaType=image");
 
+  const tenMbDetail = await uploadFile(new Blob([Buffer.alloc(10 * 1024 * 1024)], { type: "image/png" }), "detail-10mb.png", "legacy-detail");
+  assert(tenMbDetail.response.status === 200, `10MB detail upload failed: ${tenMbDetail.response.status} ${JSON.stringify(tenMbDetail.body)}`);
+  const twentyMbDetail = await uploadFile(new Blob([Buffer.alloc(20 * 1024 * 1024)], { type: "image/jpeg" }), "detail-20mb.jpg", "legacy-detail");
+  assert(twentyMbDetail.response.status === 200, `20MB detail upload failed: ${twentyMbDetail.response.status} ${JSON.stringify(twentyMbDetail.body)}`);
+  const tooLargeDetail = await uploadFile(new Blob([Buffer.alloc(20 * 1024 * 1024 + 1)], { type: "image/webp" }), "detail-too-large.webp", "legacy-detail");
+  assert(tooLargeDetail.response.status === 413, `oversized detail upload should fail with 413, got ${tooLargeDetail.response.status}`);
+  assert(String(tooLargeDetail.body.message).includes("20MB"), "oversized detail upload should explain the 20MB limit");
+
+  const multiDetail = await Promise.all([
+    uploadFile(new Blob([Buffer.alloc(10 * 1024 * 1024)], { type: "image/png" }), "detail-multi-001.png", "legacy-detail"),
+    uploadFile(new Blob([Buffer.alloc(10 * 1024 * 1024)], { type: "image/png" }), "detail-multi-002.png", "legacy-detail")
+  ]);
+  assert(multiDetail.every((item) => item.response.status === 200), "multiple 10MB detail uploads should all succeed");
+
   const tinyMp4Bytes = Buffer.from([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32]);
   const validVideo = await uploadFile(new Blob([tinyMp4Bytes], { type: "video/mp4" }), "sample.mp4");
   assert(validVideo.response.status === 200, `valid video upload failed: ${validVideo.response.status} ${JSON.stringify(validVideo.body)}`);
@@ -98,6 +113,11 @@ try {
 
   const cleanedLocalFile = await cleanupLocalUpload(valid.body.url);
   const cleanedLocalVideo = await cleanupLocalUpload(validVideo.body.url);
+  const cleanedLargeUploads = await Promise.all([
+    cleanupLocalUpload(tenMbDetail.body.url),
+    cleanupLocalUpload(twentyMbDetail.body.url),
+    ...multiDetail.map((item) => cleanupLocalUpload(item.body.url))
+  ]);
 
   console.log(
     JSON.stringify(
@@ -106,10 +126,15 @@ try {
         invalidUploadRejected: true,
         validUploadAccepted: true,
         validVideoUploadAccepted: true,
+        tenMbDetailUploadAccepted: true,
+        twentyMbDetailUploadAccepted: true,
+        multipleLargeDetailUploadsAccepted: true,
+        oversizedDetailUploadRejected: true,
         storage: valid.body.storage,
         videoStorage: validVideo.body.storage,
         cleanedLocalFile,
-        cleanedLocalVideo
+        cleanedLocalVideo,
+        cleanedLargeUploads: cleanedLargeUploads.every(Boolean)
       },
       null,
       2

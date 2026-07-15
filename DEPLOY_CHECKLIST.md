@@ -211,3 +211,8 @@
 - [x] Draft deletion and new-product reset survive reload
 - [x] Submit Debug is hidden unless `NEXT_PUBLIC_ADMIN_SUBMIT_DEBUG=true`
 - [x] Create API rejects requests containing an existing product ID
+- [x] Admin product preview remains fully visible at 1440/1920 and stacked at zoom/tablet/mobile widths
+- [x] Neutral placeholder replaces product-specific image fallbacks
+- [x] Legacy detail image frontend/API limit is 20MB per file
+- [x] 10MB, 20MB, and multiple large upload verification passes
+- [ ] Apply `supabase/phase18-product-media-upload-limits.sql` to the production product media bucket

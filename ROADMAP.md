@@ -662,3 +662,7 @@ Next:
 - New product creation is isolated from prior product/edit drafts.
 - Draft recovery is now an explicit operator action.
 - Next: keep the draft-safety browser scenario in the admin regression suite.
+### 2026-07-15 Product Registration Operations Stabilized
+
+- Preview clipping, product-specific fallback leakage, and 5MB legacy detail image restriction are resolved.
+- Next production step: apply `supabase/phase18-product-media-upload-limits.sql` to the configured product media bucket before public large-file uploads.

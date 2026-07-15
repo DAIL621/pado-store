@@ -2148,3 +2148,10 @@
 - Split create/edit mode behavior and blocked create requests carrying an existing product ID.
 - Hid Submit Debug by default; it now requires `NEXT_PUBLIC_ADMIN_SUBMIT_DEBUG=true`.
 - Browser-verified `테스트 전복0710`: empty re-entry, explicit restore only, delete plus reload remains empty.
+## 2026-07-15 Emergency Product Registration Operations Fix
+
+- Reworked the new/edit product builder to use a fluid 64:36 desktop grid with a 360px preview minimum and stacked preview below the form at narrow/zoomed widths.
+- Removed abalone image fallbacks from product preview, create API, DB row mapping, and cart normalization; added a neutral product placeholder.
+- Added purpose-specific upload limits: product image 5MB, legacy detail image 20MB, thumbnail 10MB, video 80MB.
+- Added legacy detail upload filename/size/status UI, failed-file retry, order preservation, and save blocking while uploads are active.
+- Verified 10MB, 20MB, and concurrent large uploads with cleanup; no operation product was modified.

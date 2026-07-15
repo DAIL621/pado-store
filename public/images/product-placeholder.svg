@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title description">
+  <title id="title">대표 이미지 준비 중</title>
+  <desc id="description">파도스토리 상품 대표 이미지를 업로드해주세요.</desc>
+  <rect width="1200" height="900" fill="#edf3f2"/>
+  <path d="M0 615c165-78 289-77 430 0s270 77 430 0 261-76 340-42v327H0Z" fill="#d7e7e4"/>
+  <path d="M0 684c151-66 278-65 417 0s275 66 433 0 270-64 350-27" fill="none" stroke="#9bc9c4" stroke-width="24"/>
+  <circle cx="600" cy="354" r="92" fill="#fff" stroke="#aaccc8" stroke-width="12"/>
+  <path d="m545 373 40-44 42 35 28-25 43 48H532Z" fill="#77aaa5"/>
+  <text x="600" y="500" text-anchor="middle" fill="#426b6d" font-family="Arial,sans-serif" font-size="38" font-weight="700">대표 이미지를 업로드해주세요</text>
+</svg>

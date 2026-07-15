@@ -496,3 +496,26 @@
 .admin-video-settings input{width:16px;height:16px;accent-color:var(--teal)}
 @media(max-width:1280px){.admin-modal .admin-product-builder{grid-template-columns:1fr}.admin-modal .admin-live-preview{position:static;order:2}.admin-modal .admin-live-preview.mobile-preview{max-width:430px;margin:0 auto}}
 @media(max-width:720px){.admin-modal{width:calc(100vw - 18px);max-height:calc(100vh - 18px);border-radius:14px}.admin-video-settings{grid-template-columns:1fr}.admin-modal .admin-live-preview.mobile-preview{max-width:none}}
+
+/* Product registration operations: unclipped preview and large detail uploads */
+.admin-main,.admin-panel,.admin-product-builder,.admin-live-preview,.admin-live-preview-surface{min-width:0}
+.admin-product-builder{grid-template-columns:minmax(0,1.72fr) minmax(360px,1fr);gap:clamp(18px,2vw,30px);align-items:start}
+.admin-live-preview{width:100%!important;max-width:100%!important;overflow:hidden}
+.admin-live-preview-surface{width:100%;max-width:100%;overflow-x:hidden}
+.admin-live-preview-surface .detail-page,.admin-live-preview-surface .detail-master,.admin-live-preview-surface .detail-master-hero-copy,.admin-live-preview-surface .purchase-box{min-width:0;max-width:100%}
+.admin-live-preview-surface .detail-master{overflow:hidden}
+.admin-live-preview-surface .detail-layout-split,.admin-live-preview-surface .detail-layout-split.text-left,.admin-live-preview-surface .detail-mid-cta,.admin-live-preview-surface .detail-review-highlight{width:100%;grid-template-columns:minmax(0,1fr)}
+.admin-live-preview-surface .detail-layout-image{min-width:0;min-height:220px}
+.admin-live-preview-surface .detail-layout-split>*{min-width:0;width:100%;max-width:100%}.admin-live-preview-surface .detail-layout-copy{min-width:0;width:100%;max-width:100%;overflow:hidden}.admin-live-preview-surface .detail-layout-copy>*{width:100%!important;max-width:100%!important;overflow-wrap:anywhere;white-space:normal}
+.admin-live-preview-surface .detail-master-hero-media,.admin-live-preview-surface .detail-master-block{max-width:100%;overflow:hidden}
+.admin-live-preview-surface .detail-mid-cta ul,.admin-live-preview-surface .detail-comparison>div:last-child,.admin-live-preview-surface .detail-review-cards{grid-template-columns:minmax(0,1fr)}
+.admin-product-builder input,.admin-product-builder textarea,.admin-product-builder select{min-width:0;max-width:100%}
+.admin-live-preview-surface .purchase-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)}
+.admin-live-preview-surface .purchase-actions .button,.admin-live-preview-surface select{min-width:0;max-width:100%;white-space:normal;text-align:center}
+.admin-live-preview-surface h1,.admin-live-preview-surface h2,.admin-live-preview-surface h3,.admin-live-preview-head strong{overflow-wrap:anywhere;word-break:keep-all}
+.admin-upload-file-list{display:grid;gap:8px;margin:0 0 14px}
+.admin-upload-file-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;border:1px solid #dbe9e7;border-radius:10px;background:#f8fcfb;padding:10px 12px}
+.admin-upload-file-item>span{display:flex;min-width:0;gap:8px;align-items:center}.admin-upload-file-item b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}.admin-upload-file-item small{flex:none;color:#71878a;font-size:10px}.admin-upload-file-item em{color:#567174;font-size:10px;font-style:normal;font-weight:900}.admin-upload-file-item.success{border-color:#bfe3de;background:#ecfaf7}.admin-upload-file-item.error{border-color:#ffd2be;background:#fff8f5}.admin-upload-file-item.error em{color:#bd512f}.admin-upload-file-item button{border:1px solid #efb9a8;border-radius:999px;background:#fff;color:#a84425;padding:6px 8px;font-size:10px;font-weight:900}
+@media(max-width:1180px){.admin-product-builder,.admin-modal .admin-product-builder{grid-template-columns:1fr}.admin-live-preview,.admin-modal .admin-live-preview{position:static;order:2;max-width:100%!important}.admin-live-preview-surface{max-height:none}}
+@media(max-width:600px){.admin-upload-file-item{grid-template-columns:1fr}.admin-upload-file-item>span{justify-content:space-between}.admin-upload-file-item button{width:max-content}.admin-product-builder{gap:14px}}
+@media(max-width:600px){.admin-product-builder-main,.admin-product-builder-main>div{overflow-x:hidden}}

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ClipboardEvent, DragEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DEFAULT_PACKAGING,
   type ProductDetail,
@@ -10,24 +10,44 @@ import {
   type ProductDetailRecipe,
   type ProductDetailVideo
 } from "@/lib/products/detail";
+import {
+  formatUploadSize,
+  MAX_LEGACY_DETAIL_IMAGE_SIZE,
+  MAX_PRODUCT_IMAGE_SIZE,
+  MAX_PRODUCT_VIDEO_SIZE,
+  type AdminUploadPurpose
+} from "@/lib/admin/upload-limits";
 
 type Props = {
   value: ProductDetail;
   onChange: (value: ProductDetail) => void;
+  onUploadStateChange?: (uploading: boolean) => void;
 };
 
-const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
-const MAX_VIDEO_UPLOAD_SIZE = 80 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/webm"];
 
-export function ProductDetailEditor({ value, onChange }: Props) {
+type LegacyUploadItem = {
+  id: string;
+  file: File;
+  name: string;
+  size: number;
+  status: "waiting" | "uploading" | "success" | "error";
+  error?: string;
+};
+
+export function ProductDetailEditor({ value, onChange, onUploadStateChange }: Props) {
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [uploadCompleteTarget, setUploadCompleteTarget] = useState<string | null>(null);
   const [dragOverHeroIndex, setDragOverHeroIndex] = useState<number | null>(null);
   const [dragOverLegacyIndex, setDragOverLegacyIndex] = useState<number | null>(null);
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadMessageTone, setUploadMessageTone] = useState<"info" | "success" | "error">("info");
+  const [legacyUploadItems, setLegacyUploadItems] = useState<LegacyUploadItem[]>([]);
+
+  useEffect(() => {
+    onUploadStateChange?.(Boolean(uploadingTarget));
+  }, [onUploadStateChange, uploadingTarget]);
 
   const update = <K extends keyof ProductDetail>(key: K, nextValue: ProductDetail[K]) => {
     onChange({ ...value, [key]: nextValue });
@@ -172,7 +192,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       setUploadMessage("동영상은 mp4 또는 webm 파일만 업로드할 수 있습니다.");
       return;
     }
-    if (file.size > MAX_VIDEO_UPLOAD_SIZE) {
+    if (file.size > MAX_PRODUCT_VIDEO_SIZE) {
       setUploadMessageTone("error");
       setUploadMessage("동영상은 80MB 이하 파일로 업로드해주세요.");
       return;
@@ -185,6 +205,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("purpose", "video");
       const response = await fetch("/api/admin/uploads", { method: "POST", body: formData });
       const result = await response.json();
       if (!response.ok) {
@@ -207,9 +228,29 @@ export function ProductDetailEditor({ value, onChange }: Props) {
 
   const uploadLegacyFiles = async (files: File[], insertIndex = value.legacyDetailImages.length) => {
     let nextImages = [...value.legacyDetailImages];
-    for (const [offset, file] of files.entries()) {
-      const targetIndex = Math.min(insertIndex + offset, nextImages.length);
+    let successfulCount = 0;
+    const queue = files.map((file, index) => ({
+      id: `${Date.now()}-${index}-${file.name}`,
+      file,
+      name: file.name,
+      size: file.size,
+      status: "waiting" as const
+    }));
+    setLegacyUploadItems((current) => [...current.filter((item) => item.status === "uploading"), ...queue]);
+
+    for (const item of queue) {
+      const { file } = item;
+      const targetIndex = Math.min(insertIndex + successfulCount, nextImages.length);
       const description = file.name.replace(/\.[^.]+$/, "");
+      if (file.size > MAX_LEGACY_DETAIL_IMAGE_SIZE) {
+        const error = "상세페이지 이미지는 파일당 최대 20MB까지 업로드할 수 있습니다.";
+        setLegacyUploadItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, status: "error", error } : entry));
+        setUploadMessageTone("error");
+        setUploadMessage(`${file.name}: ${error}`);
+        continue;
+      }
+
+      setLegacyUploadItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, status: "uploading", error: undefined } : entry));
       const previewUrl = URL.createObjectURL(file);
       nextImages.splice(targetIndex, 0, {
         label: `기존 상세페이지 ${targetIndex + 1}`,
@@ -223,24 +264,36 @@ export function ProductDetailEditor({ value, onChange }: Props) {
           imageIndex === targetIndex ? { ...image, url, description } : image
         );
         onChange({ ...value, legacyDetailImages: nextImages });
-      });
+      }, "legacy-detail");
       URL.revokeObjectURL(previewUrl);
       if (!uploaded) {
         nextImages = nextImages.filter((_, imageIndex) => imageIndex !== targetIndex);
         onChange({ ...value, legacyDetailImages: nextImages });
+        setLegacyUploadItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, status: "error", error: "업로드에 실패했습니다. 다시 시도해주세요." } : entry));
+      } else {
+        successfulCount += 1;
+        setLegacyUploadItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, status: "success", error: undefined } : entry));
       }
     }
   };
 
-  const uploadImageFile = async (target: string, file: File, onUploaded: (url: string) => void) => {
+  const retryLegacyUpload = (item: LegacyUploadItem) => {
+    setLegacyUploadItems((current) => current.filter((entry) => entry.id !== item.id));
+    void uploadLegacyFiles([item.file]);
+  };
+
+  const uploadImageFile = async (target: string, file: File, onUploaded: (url: string) => void, purpose: AdminUploadPurpose = "product") => {
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
       setUploadMessageTone("error");
       setUploadMessage("지원하지 않는 이미지 형식입니다. JPG, PNG, WebP, GIF 파일을 사용해주세요.");
       return false;
     }
-    if (file.size > MAX_UPLOAD_SIZE) {
+    const maxSize = purpose === "legacy-detail" ? MAX_LEGACY_DETAIL_IMAGE_SIZE : MAX_PRODUCT_IMAGE_SIZE;
+    if (file.size > maxSize) {
       setUploadMessageTone("error");
-      setUploadMessage("이미지 용량이 너무 큽니다. 5MB 이하 파일로 다시 업로드해주세요.");
+      setUploadMessage(purpose === "legacy-detail"
+        ? `${file.name}: 상세페이지 이미지는 파일당 최대 20MB까지 업로드할 수 있습니다.`
+        : `${file.name}: 일반 상품 이미지는 파일당 최대 5MB까지 업로드할 수 있습니다.`);
       return false;
     }
 
@@ -255,6 +308,7 @@ export function ProductDetailEditor({ value, onChange }: Props) {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("purpose", purpose);
       const response = await fetch("/api/admin/uploads", {
         method: "POST",
         body: formData
@@ -444,6 +498,19 @@ export function ProductDetailEditor({ value, onChange }: Props) {
           <span>기존 상세 {completedLegacyCount}장</span>
           <span>출력 {value.detailDisplayMode === "legacy" ? "기존 상세페이지" : "AI 자동생성"}</span>
         </div>
+        <p className="admin-detail-help">상세페이지 이미지는 JPG · PNG · WebP 파일당 최대 20MB까지 업로드할 수 있습니다.</p>
+        {uploadMessage && <p className={`admin-detail-upload-message ${uploadMessageTone}`} role="status">{uploadMessage}</p>}
+        {legacyUploadItems.length > 0 && (
+          <div className="admin-upload-file-list" aria-label="상세페이지 이미지 업로드 상태">
+            {legacyUploadItems.map((item) => (
+              <div className={`admin-upload-file-item ${item.status}`} key={item.id}>
+                <span><b>{item.name}</b><small>{formatUploadSize(item.size)}</small></span>
+                <em>{item.status === "waiting" ? "대기" : item.status === "uploading" ? "업로드 중" : item.status === "success" ? "업로드 완료" : item.error}</em>
+                {item.status === "error" && <button type="button" onClick={() => retryLegacyUpload(item)}>실패 파일 재시도</button>}
+              </div>
+            ))}
+          </div>
+        )}
         {value.legacyDetailImages.length > 0 && (
           <div className="admin-legacy-detail-list">
             {value.legacyDetailImages.map((image, index) => (
@@ -499,7 +566,6 @@ export function ProductDetailEditor({ value, onChange }: Props) {
       <details open>
         <summary>상세페이지 대표사진 6장</summary>
         <p className="admin-detail-help">카드를 드래그하거나 위/아래 버튼으로 순서를 조정할 수 있습니다. 여러 이미지를 한 번에 드롭하거나 복사한 이미지를 붙여넣으면 빈 칸부터 채워집니다.</p>
-        {uploadMessage && <p className={`admin-detail-upload-message ${uploadMessageTone}`} role="status">{uploadMessage}</p>}
         <div className="admin-detail-grid">
           {value.heroImages.map((image, index) => (
             <div

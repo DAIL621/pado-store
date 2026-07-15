@@ -2384,3 +2384,10 @@
 - `pnpm run verify:admin`: PASS, including empty-by-default, explicit AI draft restore, reset, and reload checks
 - In-app browser: PASS for `테스트 전복0710` local draft; automatic restore absent, manual restore successful, delete/reload clean, Submit Debug absent
 - Existing admin create/edit and soft-cleaned verification product flows: PASS
+## 2026-07-15 Product Registration Preview and Large Uploads
+
+- Browser layout: PASS at 1440, 1920, 125%/150% equivalent widths, tablet, and mobile; no page or preview horizontal scroll.
+- Preview image: PASS for neutral empty placeholder, immediate alternate product image update, and immediate placeholder restore after removal.
+- `verify:admin-upload`: PASS for 10MB, 20MB, concurrent 10MB uploads, 20MB+1 rejection, and cleanup.
+- `verify:large-detail-upload`: PASS for UI filename/size/status and 001→002 order preservation.
+- Full admin/create/edit/detail/shopping regressions: PASS; verification products were soft-hidden by existing cleanup.
