@@ -81,7 +81,7 @@ const verificationProductPattern = /(verification|admin-edit|detail-auto|ops-db-
 const isVerificationProduct = (product: AdminProduct) =>
   [product.slug, product.name, product.origin, product.category]
     .filter(Boolean)
-    .some((value) => verificationProductPattern.test(String(value)));
+    .some((value) => verificationProductPattern.test(String(value)) || /(diagnose|debug)/i.test(String(value)));
 
 const toOptionForms = (product: AdminProduct, options?: { resetStock?: boolean }): AdminProductOptionForm[] =>
   (product.product_options?.length ? product.product_options : [{ id: "", name: "기본 옵션", price: product.base_price, price_delta: 0, stock: 0 }]).map((option) => ({

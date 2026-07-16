@@ -96,9 +96,10 @@ export function AdminOrdersManager() {
   const [selected, setSelected] = useState<AdminOrder | null>(null);
   const [message, setMessage] = useState("주문 목록을 불러오는 중입니다...");
   const [copyMessage, setCopyMessage] = useState("");
+  const [showTestOrders, setShowTestOrders] = useState(false);
 
   const loadOrders = async () => {
-    const response = await fetch("/api/admin/orders", { cache: "no-store" });
+    const response = await fetch(`/api/admin/orders${showTestOrders ? "?includeTest=true" : ""}`, { cache: "no-store" });
     const result = await response.json();
     if (!response.ok) {
       setMessage(result.message ?? "주문 목록을 불러오지 못했습니다.");
@@ -110,7 +111,7 @@ export function AdminOrdersManager() {
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [showTestOrders]);
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
@@ -189,6 +190,7 @@ export function AdminOrdersManager() {
   return (
     <>
       <div className="admin-toolbar">
+        <button type="button" className={showTestOrders ? "active" : ""} onClick={() => setShowTestOrders((current) => !current)}>{showTestOrders ? "운영 주문만 보기" : "테스트 주문 보기"}</button>
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="주문번호, 주문자, 연락처, 상품명, 송장번호 검색" />
         <label>시작일<input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} /></label>
         <label>종료일<input type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} /></label>

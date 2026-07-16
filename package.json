@@ -37,6 +37,8 @@
     "verify:product-typography": "node scripts/verify-product-typography.mjs",
     "verify:detail-video-layout": "node scripts/verify-detail-video-layout.mjs",
     "verify:product-gallery": "node scripts/verify-product-gallery.mjs",
+    "cleanup:prelaunch": "node scripts/cleanup-prelaunch-data.mjs",
+    "verify:prelaunch-cleanup": "node scripts/verify-prelaunch-cleanup.mjs",
     "score:ai-image-analysis": "node scripts/score-ai-image-analysis.mjs",
     "score:review-center": "node scripts/score-review-center.mjs",
     "evaluate:dataset": "node scripts/evaluate-dataset.mjs",

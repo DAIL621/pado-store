@@ -1,0 +1,34 @@
+import { createClient } from "@supabase/supabase-js";
+import { readFile } from "node:fs/promises";
+import { loadProjectEnv } from "./lib/load-next-env.mjs";
+
+loadProjectEnv();
+const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+const required = async (promise, label) => { const { data, error, count } = await promise; if (error) throw new Error(`${label}: ${error.message}`); return { data: data || [], count }; };
+const protectedSlugs = new Set(["tongyeong-conch", "tongyeong-triploid-oyster", "tongyeong-sea-eel", "mokpo-hairtail", "tongyeong-rock-octopus", "wando-live-abalone", "통영-아나고회", "완도-활전복", "hairtail"]);
+const protectedOrders = new Set(["PADO-20260623-2K1RL", "PADO-20260625-WJK88"]);
+const products = (await required(db.from("products").select("id,slug,is_active,detail_json"), "products")).data;
+const orders = (await required(db.from("orders").select("id,order_no,status,created_at"), "orders")).data;
+const options = (await required(db.from("product_options").select("id,product_id"), "options")).data;
+const orderItems = (await required(db.from("order_items").select("id,order_id,product_id,option_id"), "order items")).data;
+const marks = (await required(db.from("operation_logs").select("order_id").eq("event_type", "prelaunch.test_order"), "marks")).data;
+const profiles = await required(db.from("profiles").select("id", { count: "exact", head: true }), "profiles");
+const productBackup = JSON.parse(await readFile("reports/prelaunch-backup/products-before-cleanup.json", "utf8"));
+const orderBackup = JSON.parse(await readFile("reports/prelaunch-backup/orders-before-cleanup.json", "utf8"));
+const hiddenTests = products.filter((row) => !protectedSlugs.has(row.slug) && !row.is_active && row.detail_json?.operationState === "hidden" && row.detail_json?.testData === true);
+const preservedProducts = products.filter((row) => protectedSlugs.has(row.slug));
+const marked = new Set(marks.map((row) => row.order_id));
+const markedOrders = orders.filter((row) => marked.has(row.id));
+const preservedOrderRows = orders.filter((row) => protectedOrders.has(row.order_no));
+const backupProductsBySlug = new Map(productBackup.products.map((row) => [row.slug, row]));
+const protectedProductsUnchanged = preservedProducts.every((row) => { const before = backupProductsBySlug.get(row.slug); return before && before.is_active === row.is_active && JSON.stringify(before.detail_json) === JSON.stringify(row.detail_json); });
+const backupOrdersByNo = new Map(orderBackup.orders.map((row) => [row.order_no, row]));
+const protectedOrdersUnchanged = preservedOrderRows.every((row) => { const before = backupOrdersByNo.get(row.order_no); return before && before.status === row.status && before.created_at === row.created_at && !marked.has(row.id); });
+const productIds = new Set(products.map((row) => row.id));
+const optionIds = new Set(options.map((row) => row.id));
+const orderIds = new Set(orders.map((row) => row.id));
+const fkValid = options.every((row) => productIds.has(row.product_id)) && orderItems.every((row) => orderIds.has(row.order_id) && (!row.product_id || productIds.has(row.product_id)) && (!row.option_id || optionIds.has(row.option_id)));
+const checks = { backupProducts: productBackup.count === 460, backupOrders: orderBackup.count === 10, totalProducts: products.length === 460, hiddenTests: hiddenTests.length === 451, protectedProducts: preservedProducts.length === 9, protectedProductsUnchanged, totalOrders: orders.length === 10, markedTestOrders: markedOrders.length === 8, protectedOrders: preservedOrderRows.length === 2, protectedOrdersUnchanged, profiles: profiles.count === 1, fkValid };
+const failed = Object.entries(checks).filter(([, ok]) => !ok).map(([name]) => name);
+if (failed.length) { console.error(JSON.stringify({ ok: false, failed, checks }, null, 2)); process.exit(1); }
+console.log(JSON.stringify({ ok: true, checks }, null, 2));
