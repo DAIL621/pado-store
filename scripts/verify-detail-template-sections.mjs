@@ -7,7 +7,7 @@ const fullDetail = {
   recipes: [{ title: "구이", description: "노릇하게 구워 드세요.", image: "" }],
   components: ["본품", "아이스팩"],
   faq: [{ question: "언제 출고되나요?", answer: "평일 오후 1시 이전 당일 출고됩니다." }],
-  videos: [{ title: "상품 영상", url: "https://example.com/video.mp4", autoplay: true, muted: true, loop: true, controls: true }],
+  videos: [{ title: "상품 영상", url: "https://example.com/video.mp4", placement: "between", legacyImageIndex: 1, autoplay: true, muted: true, loop: true, controls: true }],
   certificates: [{ title: "인증서", image: "/images/products/wando-abalone.webp" }],
   extraSections: [{ type: "notice", title: "추가 안내" }]
 };
@@ -44,5 +44,6 @@ assert(full.videos[0].autoplay === true, "video autoplay setting should be prese
 assert(full.videos[0].muted === true, "video muted setting should be preserved");
 assert(full.videos[0].loop === true, "video loop setting should be preserved");
 assert(full.videos[0].controls === true, "video controls setting should be preserved");
+assert(full.videos[0].placement === "between" && full.videos[0].legacyImageIndex === 1, "video detail-image insertion position should be preserved");
 
 console.log(JSON.stringify({ ok: true, emptyHidden: true, partialVisible: true, fullVisible: true }, null, 2));

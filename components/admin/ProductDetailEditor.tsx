@@ -408,7 +408,7 @@ export function ProductDetailEditor({ value, onChange, onUploadStateChange }: Pr
   const removeRecipe = (index: number) =>
     update("recipes", value.recipes.length <= 1 ? [{ title: "", description: "", image: "" }] : value.recipes.filter((_, recipeIndex) => recipeIndex !== index));
 
-  const updateVideo = (index: number, key: keyof ProductDetailVideo, nextValue: string | boolean) => {
+  const updateVideo = (index: number, key: keyof ProductDetailVideo, nextValue: string | boolean | number | undefined) => {
     update(
       "videos",
       value.videos.map((video, videoIndex) => {
@@ -431,6 +431,17 @@ export function ProductDetailEditor({ value, onChange, onUploadStateChange }: Pr
     const [item] = next.splice(fromIndex, 1);
     next.splice(toIndex, 0, item);
     update("videos", next);
+  };
+
+  const moveVideoInLegacyDetail = (index: number, direction: -1 | 1) => {
+    const current = Math.min(value.legacyDetailImages.length, Math.max(0, value.videos[index]?.legacyImageIndex ?? 0));
+    updateVideo(index, "legacyImageIndex", Math.min(value.legacyDetailImages.length, Math.max(0, current + direction)));
+  };
+
+  const updateVideoPlacement = (index: number, placement: ProductDetailVideo["placement"]) => {
+    update("videos", value.videos.map((video, videoIndex) => videoIndex === index
+      ? { ...video, placement, legacyImageIndex: placement === "between" ? video.legacyImageIndex ?? value.legacyDetailImages.length : video.legacyImageIndex }
+      : video));
   };
 
   const updateFaq = (index: number, key: keyof ProductDetailFaq, nextValue: string) => {
@@ -854,11 +865,19 @@ export function ProductDetailEditor({ value, onChange, onUploadStateChange }: Pr
               </label>
               <label>
                 출력 위치
-                <select value={video.placement ?? "bottom"} onChange={(event) => updateVideo(index, "placement", event.target.value)}>
+                <select value={video.placement ?? "bottom"} onChange={(event) => updateVideoPlacement(index, event.target.value as ProductDetailVideo["placement"])}>
                   <option value="bottom">상세 이미지 아래</option>
                   <option value="top">상세 이미지 위</option>
+                  <option value="between">상세 이미지 사이</option>
                 </select>
               </label>
+              {video.placement === "between" && (
+                <div className="admin-video-position-control">
+                  <span>{video.legacyImageIndex === 0 ? "첫 상세 이미지 앞" : `${Math.min(video.legacyImageIndex ?? 0, value.legacyDetailImages.length)}번 상세 이미지 뒤`}</span>
+                  <button type="button" onClick={() => moveVideoInLegacyDetail(index, -1)} disabled={(video.legacyImageIndex ?? 0) <= 0}>위로</button>
+                  <button type="button" onClick={() => moveVideoInLegacyDetail(index, 1)} disabled={(video.legacyImageIndex ?? 0) >= value.legacyDetailImages.length}>아래로</button>
+                </div>
+              )}
               <div className="admin-video-settings">
                 <label>
                   <input

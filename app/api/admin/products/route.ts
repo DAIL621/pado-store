@@ -191,7 +191,7 @@ export async function POST(request: Request) {
 
   let { error: optionError } = await supabase.from("product_options").insert(options);
   if (isMissingOptionPriceColumn(optionError)) {
-    const legacyOptions = options.map(({ price, regular_price: _regularPrice, ...option }) => ({ ...option, price_delta: price - basePrice }));
+    const legacyOptions = options.map(({ price, regular_price: _regularPrice, coupang_price: _coupangPrice, ...option }) => ({ ...option, price_delta: price - basePrice }));
     ({ error: optionError } = await supabase.from("product_options").insert(legacyOptions));
   }
   if (optionError) {

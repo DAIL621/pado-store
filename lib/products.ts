@@ -29,6 +29,7 @@ type OptionRow = {
   price_delta: number;
   price?: number | null;
   regular_price?: number | null;
+  coupang_price?: number | null;
   stock: number;
 };
 
@@ -87,6 +88,7 @@ function toProduct(row: ProductRow): Product {
       priceDelta: option.price_delta,
       price: Number(option.price ?? row.base_price + option.price_delta),
       regularPrice: option.regular_price && Number(option.regular_price) > Number(option.price ?? row.base_price + option.price_delta) ? Number(option.regular_price) : undefined,
+      coupangPrice: option.coupang_price && Number(option.coupang_price) > Number(option.price ?? row.base_price + option.price_delta) ? Number(option.coupang_price) : undefined,
       stock: option.stock
     }))
   };

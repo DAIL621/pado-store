@@ -4,13 +4,15 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const finalPrice = (product, option) => option.price ?? product.basePrice + (option.additionalPrice ?? option.priceDelta ?? 0);
 
-const [builder, purchase, products, orderApi, optionParser, migration] = await Promise.all([
+const [builder, purchase, products, orderApi, optionParser, migration, coupangMigration, cartProvider] = await Promise.all([
   read("components/admin/AdminProductBuilder.tsx"),
   read("components/products/ProductPurchase.tsx"),
   read("lib/products.ts"),
   read("app/api/orders/route.ts"),
   read("lib/admin/product-options.ts"),
-  read("supabase/migrations/202607150900_option_direct_price.sql")
+  read("supabase/migrations/202607150900_option_direct_price.sql"),
+  read("supabase/migrations/202607160900_option_coupang_price.sql"),
+  read("components/cart/CartProvider.tsx")
 ]);
 
 assert(finalPrice({ basePrice: 20_000 }, { price: 24_000, priceDelta: 9_000 }) === 24_000, "option.price must win");
@@ -25,8 +27,11 @@ assert(orderApi.includes("option?.price ??") && !orderApi.includes("item.unitPri
 assert(optionParser.includes("option.price ??") && optionParser.includes("price_delta: 0"), "legacy read/new write normalization missing");
 assert(optionParser.includes("regular_price") && migration.includes("add column if not exists regular_price"), "option regular price persistence missing");
 assert(migration.includes("add column if not exists price") && migration.includes("base_price + po.price_delta"), "safe migration missing");
+assert(builder.includes("쿠팡 가격") && optionParser.includes("coupang_price"), "coupang comparison price admin persistence missing");
+assert(purchase.includes("coupangSavings") && purchase.includes("더 저렴해요"), "customer coupang comparison missing");
+assert(coupangMigration.includes("add column if not exists coupang_price") && cartProvider.includes("coupangPrice"), "coupang price migration/cart snapshot missing");
 
 console.log(JSON.stringify({
   ok: true,
-  checks: ["new-option-price", "legacy-additional-price", "minimum-price", "cart-quantity", "server-db-price", "option-change-ui", "migration-prepared"]
+  checks: ["new-option-price", "legacy-additional-price", "minimum-price", "cart-quantity", "server-db-price", "option-change-ui", "migration-prepared", "coupang-price", "coupang-savings"]
 }, null, 2));

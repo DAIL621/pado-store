@@ -26,7 +26,8 @@ export type ProductDetailVideo = {
   title: string;
   url: string;
   thumbnail?: string;
-  placement?: "top" | "bottom";
+  placement?: "top" | "between" | "bottom";
+  legacyImageIndex?: number;
   autoplay?: boolean;
   muted?: boolean;
   loop?: boolean;
@@ -247,12 +248,14 @@ function normalizeVideos(value: unknown): ProductDetailVideo[] {
         .map((item): ProductDetailVideo => {
           const record = asRecord(item);
           const placement = cleanText(record.placement || record.position);
+          const legacyImageIndex = Number(record.legacyImageIndex);
           const autoplay = record.autoplay === true;
           return {
             title: cleanText(record.title),
             url: cleanText(record.url),
             thumbnail: cleanText(record.thumbnail),
-            placement: placement === "top" ? "top" : "bottom",
+            placement: placement === "top" ? "top" : placement === "between" ? "between" : "bottom",
+            legacyImageIndex: Number.isInteger(legacyImageIndex) && legacyImageIndex >= 0 ? legacyImageIndex : undefined,
             autoplay,
             muted: autoplay ? true : record.muted !== false,
             loop: record.loop === true,

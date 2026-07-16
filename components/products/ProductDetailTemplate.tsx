@@ -35,7 +35,8 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
   const mainImage = heroImages[0]?.url || product.image;
   const legacyDetailImages = product.detail?.legacyDetailImages?.filter((image) => image.url) ?? [];
   const topVideos = sections.videos.filter((video) => video.placement === "top");
-  const bottomVideos = sections.videos.filter((video) => video.placement !== "top");
+  const betweenVideos = sections.videos.filter((video) => video.placement === "between");
+  const bottomVideos = sections.videos.filter((video) => video.placement !== "top" && video.placement !== "between");
   const useLegacyDetail = product.detail?.detailDisplayMode !== "ai" && legacyDetailImages.length > 0;
 
   if (useLegacyDetail) {
@@ -49,7 +50,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
       >
         <HeroSection product={product} heroImage={mainImage} heroImages={heroImages} purchaseSlot={purchaseSlot} />
         {topVideos.length > 0 && <VideoSection videos={topVideos} productName={product.name} />}
-        <LegacyDetailImageSection images={legacyDetailImages} productName={product.name} />
+        <LegacyDetailImageSection images={legacyDetailImages} videos={betweenVideos} productName={product.name} />
         {bottomVideos.length > 0 && <VideoSection videos={bottomVideos} productName={product.name} />}
         <FinalCtaSection product={product} />
       </section>
@@ -97,6 +98,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
       {galleryImages.length > 0 && <GallerySection images={galleryImages} productName={product.name} />}
 
       {topVideos.length > 0 && <VideoSection videos={topVideos} productName={product.name} />}
+      {betweenVideos.length > 0 && <VideoSection videos={betweenVideos} productName={product.name} />}
 
       <ComparisonSection product={product} comparison={auto.comparison} />
 
@@ -136,18 +138,25 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
 
 function LegacyDetailImageSection({
   images,
+  videos,
   productName
 }: {
   images: Array<{ label: string; url: string; description?: string }>;
+  videos: ReturnType<typeof getVisibleProductDetailSections>["videos"];
   productName: string;
 }) {
+  const videosAt = (imageIndex: number) => videos.filter((video) => Math.min(images.length, Math.max(0, video.legacyImageIndex ?? 0)) === imageIndex);
   return (
     <section className="legacy-detail-pages" aria-label={`${productName} 상세페이지`}>
       <div className="legacy-detail-pages-list">
+        {videosAt(0).length > 0 && <VideoSection videos={videosAt(0)} productName={productName} embedded />}
         {images.map((image, index) => (
-          <figure key={`${image.url}-${index}`}>
-            <img src={image.url} alt={image.description || image.label || `${productName} 상세페이지 ${index + 1}`} loading={index > 1 ? "lazy" : "eager"} />
-          </figure>
+          <div key={`${image.url}-${index}`}>
+            <figure>
+              <img src={image.url} alt={image.description || image.label || `${productName} 상세페이지 ${index + 1}`} loading={index > 1 ? "lazy" : "eager"} />
+            </figure>
+            {videosAt(index + 1).length > 0 && <VideoSection videos={videosAt(index + 1)} productName={productName} embedded />}
+          </div>
         ))}
       </div>
     </section>
@@ -156,13 +165,15 @@ function LegacyDetailImageSection({
 
 function VideoSection({
   videos,
-  productName
+  productName,
+  embedded = false
 }: {
   videos: ReturnType<typeof getVisibleProductDetailSections>["videos"];
   productName: string;
+  embedded?: boolean;
 }) {
   return (
-    <section className="shell detail-video-section" aria-label={`${productName} 동영상`}>
+    <section className={`${embedded ? "" : "shell "}detail-video-section${embedded ? " embedded" : ""}`} aria-label={`${productName} 동영상`}>
       {videos.map((video, index) => (
         <article key={`${video.url}-${index}`} className="detail-video-card">
           <video

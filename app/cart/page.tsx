@@ -90,6 +90,7 @@ export default function CartPage() {
               const isUnavailable = hasStockLimit && stock <= 0;
               const atStockLimit = hasStockLimit && item.quantity >= stock;
               const regularPrice = item.regularPrice && item.regularPrice > item.unitPrice ? item.regularPrice : null;
+              const coupangPrice = item.coupangPrice && item.coupangPrice > item.unitPrice ? item.coupangPrice : null;
               const discountAmount = regularPrice ? (regularPrice - item.unitPrice) * item.quantity : 0;
               const discountRate = regularPrice ? Math.min(100, Math.max(0, Math.round((1 - item.unitPrice / regularPrice) * 100))) : 0;
               return (
@@ -104,6 +105,7 @@ export default function CartPage() {
                       <strong>{discountRate > 0 && <em>{discountRate}% 할인</em>}{formatPrice(item.unitPrice)}</strong>
                       {discountAmount > 0 && <small>{formatPrice(discountAmount)} 절약</small>}
                     </div>
+                    {coupangPrice && <small className="cart-coupang-compare">쿠팡 가격보다 {formatPrice((coupangPrice - item.unitPrice) * item.quantity)} 저렴</small>}
                     {hasStockLimit && getCustomerStockMessage(stock) && <small className={atStockLimit || isUnavailable ? "cart-stock-note limit" : "cart-stock-note"}>{getCustomerStockMessage(stock)}</small>}
                     <div className="cart-controls">
                       <div>

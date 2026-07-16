@@ -11,6 +11,7 @@ export type CartItem = {
   optionLabel: string;
   unitPrice: number;
   regularPrice?: number;
+  coupangPrice?: number;
   quantity: number;
   stock?: number;
 };
@@ -32,6 +33,7 @@ function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
   const unitPrice = Number(item.unitPrice);
   const stock = item.stock === undefined ? undefined : Number(item.stock);
   const regularPrice = item.regularPrice === undefined ? undefined : Number(item.regularPrice);
+  const coupangPrice = item.coupangPrice === undefined ? undefined : Number(item.coupangPrice);
 
   if (
     !item.productSlug ||
@@ -56,6 +58,7 @@ function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
     optionLabel: String(item.optionLabel),
     unitPrice,
     regularPrice: Number.isFinite(regularPrice) && Number(regularPrice) > unitPrice ? Number(regularPrice) : undefined,
+    coupangPrice: Number.isFinite(coupangPrice) && Number(coupangPrice) > unitPrice ? Number(coupangPrice) : undefined,
     quantity: Math.max(1, Math.min(maxQuantity, Math.floor(quantity))),
     stock: Number.isFinite(stock) ? Math.max(0, Number(stock)) : undefined
   };
@@ -114,6 +117,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             optionLabel: next.optionLabel,
             unitPrice: next.unitPrice,
             regularPrice: next.regularPrice,
+            coupangPrice: next.coupangPrice,
             stock: next.stock,
             quantity: Math.min(maxQuantity, item.quantity + next.quantity)
           } : item)

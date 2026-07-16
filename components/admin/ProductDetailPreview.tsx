@@ -20,7 +20,7 @@ type PreviewForm = {
 
 type Props = {
   form: PreviewForm;
-  options: Array<Pick<ProductOption, "label" | "price" | "regularPrice" | "priceDelta" | "stock">>;
+  options: Array<Pick<ProductOption, "label" | "price" | "regularPrice" | "coupangPrice" | "priceDelta" | "stock">>;
   detail: ProductDetail;
 };
 
@@ -42,6 +42,7 @@ function buildPreviewProduct(form: PreviewForm, options: Props["options"], detai
       priceDelta: Number(option.priceDelta ?? 0),
       price: Number(option.price ?? 0) || undefined,
       regularPrice: Number(option.regularPrice ?? 0) || undefined,
+      coupangPrice: Number(option.coupangPrice ?? 0) || undefined,
       stock: Number(option.stock ?? 0)
     }));
 

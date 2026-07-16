@@ -5,6 +5,7 @@ export type ProductOption = {
   label: string;
   price?: number;
   regularPrice?: number;
+  coupangPrice?: number;
   priceDelta: number;
   stock?: number;
 };

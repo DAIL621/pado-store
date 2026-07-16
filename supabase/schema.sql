@@ -54,7 +54,9 @@ create table if not exists product_options (
   price_delta integer not null default 0,
   price integer check (price is null or price > 0),
   regular_price integer check (regular_price is null or regular_price > 0),
+  coupang_price integer check (coupang_price is null or coupang_price > 0),
   check (regular_price is null or price is null or regular_price >= price),
+  check (coupang_price is null or price is null or coupang_price > price),
   stock integer not null default 0,
   created_at timestamptz not null default now()
 );
