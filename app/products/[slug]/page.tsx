@@ -159,8 +159,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       {isPrivatePreview && <AdminPreviewNotice product={product} />}
 
       <div className="shell breadcrumb">
-        <Link href="/">홈</Link>
-        <span>/</span>
         <Link href="/products">전체 상품</Link>
         <span>/</span>
         <b>{product.name}</b>
@@ -194,7 +192,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="shell">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">RECOMMENDED</span>
+              <span className="section-label">추천 상품</span>
               <h2>함께 보면 좋은 상품</h2>
             </div>
             <Link href="/products" className="text-link">전체 상품 보기</Link>

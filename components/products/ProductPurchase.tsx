@@ -97,7 +97,6 @@ export function ProductPurchase({ product }: { product: Product }) {
           <span>예상 결제금액</span>
           <strong>{formatPrice(total)}</strong>
         </div>
-        <small>파도스토리 기본 무료배송</small>
       </div>
       {regularPrice && regularPrice > unitPrice && <div className="purchase-price-benefit"><del>정상가 {formatPrice(regularPrice)}</del><b>{discountRate}% 할인</b><strong>판매가 {formatPrice(unitPrice)}</strong></div>}
       {coupangPrice && <div className="purchase-coupang-compare"><span>쿠팡 판매가 {formatPrice(coupangPrice)}</span><strong>자사몰이 {formatPrice(coupangSavings)} 더 저렴해요</strong></div>}
@@ -147,7 +146,7 @@ export function ProductPurchase({ product }: { product: Product }) {
           <button type="button" disabled={!canIncrease} onClick={increaseQuantity} aria-label={`${product.name} 수량 늘리기`}>+</button>
         </div>
       </div>
-      <div className="purchase-free-shipping"><p>✓ 파도스토리 기본 무료배송</p></div>
+      <div className="purchase-free-shipping"><p>✓ 파도스토리 무료배송 혜택 적용</p></div>
       <div className="total-row"><span>총 상품금액</span><strong>{formatPrice(total)}</strong></div>
       <div className="purchase-actions">
         <button type="button" className="button outline" disabled={!canAddSelected} onClick={add}>{added ? "장바구니에 담았습니다" : "장바구니"}</button>

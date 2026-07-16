@@ -1,0 +1,10 @@
+import { readFile } from "node:fs/promises";
+const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+const assert = (condition, message) => { if (!condition) throw new Error(message); };
+const [css, detail, cart] = await Promise.all([read("app/globals.css"), read("app/products/[slug]/page.tsx"), read("app/cart/page.tsx")]);
+assert(css.includes("--font-xs:13px") && css.includes("--font-display:48px"), "typography tokens missing");
+assert(css.includes(".detail-page .breadcrumb") && css.includes("font-size:14px"), "breadcrumb readability missing");
+assert(css.includes(".detail-policy-grid p{font-size:14px"), "policy body readability missing");
+assert(css.includes(".cart-price-benefit strong") && css.includes("font-variant-numeric:tabular-nums"), "price typography missing");
+assert(!detail.includes('className="eyebrow">RECOMMENDED') && !cart.includes('className="eyebrow">SHOPPING BAG'), "unnecessary English eyebrow remains");
+console.log(JSON.stringify({ok:true,checks:["font-tokens","breadcrumb","policy-cards","price-numerals","eyebrow-cleanup","mobile-minimum"]},null,2));

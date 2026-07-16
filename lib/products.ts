@@ -37,10 +37,16 @@ const hasSupabaseEnv = () =>
   Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 function toProduct(row: ProductRow): Product {
-  const optionPrices = (row.product_options ?? []).map((option) => Number(option.price ?? row.base_price + option.price_delta)).filter((value) => value > 0);
+  const pricedOptions = (row.product_options ?? []).map((option) => ({
+    option,
+    price: Number(option.price ?? row.base_price + option.price_delta)
+  })).filter((item) => item.price > 0);
+  const optionPrices = pricedOptions.map((item) => item.price);
   const price = optionPrices.length ? Math.min(...optionPrices) : row.base_price;
-  const normalPrice = Number(row.regular_price ?? price);
-  const discountRate = Math.round((1 - price / normalPrice) * 100);
+  const representativeOption = pricedOptions.find((item) => item.price === price)?.option;
+  const representativeRegularPrice = Number(representativeOption?.regular_price ?? 0);
+  const normalPrice = representativeRegularPrice > price ? representativeRegularPrice : Number(row.regular_price ?? price);
+  const discountRate = normalPrice > price ? Math.round((1 - price / normalPrice) * 100) : 0;
   const detail = normalizeProductDetailInput(row.detail_json);
   const primaryDetailImage = detail.heroImages.find((item) => item.label === "대표사진" && item.url)?.url
     || detail.heroImages.find((item) => item.url)?.url;
@@ -71,8 +77,8 @@ function toProduct(row: ProductRow): Product {
       body: "상품 특성에 맞춰 아이스팩, 보냉재, 냉장 포장으로 신선하게 발송합니다."
     },
     exchangeInfo: {
-      title: "신선식품 특성상 단순 변심 교환/반품 제한",
-      body: "상품 이상이나 오배송은 수령 즉시 사진과 함께 고객센터로 문의해 주세요."
+      title: "신선식품 교환·반품 안내",
+      body: "신선식품 특성상 상품 준비 또는 배송 시작 이후에는 단순 변심에 의한 취소·교환·반품이 제한될 수 있습니다. 상품 하자, 오배송 등 표시 내용과 다른 경우에는 고객센터 확인 후 교환 또는 환불을 지원해드립니다."
     },
     originInfo: {
       title: row.origin,

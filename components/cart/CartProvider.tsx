@@ -14,6 +14,7 @@ export type CartItem = {
   coupangPrice?: number;
   quantity: number;
   stock?: number;
+  priceChanged?: boolean;
 };
 
 type CartContextValue = {
@@ -60,7 +61,8 @@ function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
     regularPrice: Number.isFinite(regularPrice) && Number(regularPrice) > unitPrice ? Number(regularPrice) : undefined,
     coupangPrice: Number.isFinite(coupangPrice) && Number(coupangPrice) > unitPrice ? Number(coupangPrice) : undefined,
     quantity: Math.max(1, Math.min(maxQuantity, Math.floor(quantity))),
-    stock: Number.isFinite(stock) ? Math.max(0, Number(stock)) : undefined
+    stock: Number.isFinite(stock) ? Math.max(0, Number(stock)) : undefined,
+    priceChanged: item.priceChanged === true
   };
 }
 
@@ -98,6 +100,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (ready) window.localStorage.setItem("pado-cart", JSON.stringify(items));
   }, [items, ready]);
+
+  useEffect(() => {
+    if (!ready || items.length === 0) return;
+    let cancelled = false;
+    fetch("/api/products/cart-snapshot", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ items: items.map((item) => ({ productSlug: item.productSlug, optionId: item.optionId })) })
+    })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => {
+        if (cancelled || !Array.isArray(result?.items)) return;
+        const latest = new Map<string, CartItem>(result.items.map((item: CartItem) => [`${item.productSlug}:${item.optionId}`, item]));
+        setItems((current) => current.map((item) => {
+          const fresh = latest.get(`${item.productSlug}:${item.optionId}`);
+          if (!fresh) return { ...item, stock: 0 };
+          return {
+            ...item,
+            ...fresh,
+            quantity: Math.min(item.quantity, Math.max(1, Number(fresh.stock ?? item.quantity))),
+            priceChanged: item.unitPrice !== fresh.unitPrice
+          };
+        }));
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [ready]);
 
   const value = useMemo<CartContextValue>(() => ({
     items,

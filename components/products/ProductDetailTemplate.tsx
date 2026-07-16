@@ -209,6 +209,7 @@ function HeroSection({
   const totalStock = getTotalStock(product);
   const isSoldOut = totalStock <= 0;
   const discountVisible = product.discountRate > 0;
+  const optionCount = product.options.length;
   const thumbnails = heroImages.slice(0, 5);
 
   return (
@@ -246,7 +247,7 @@ function HeroSection({
           )}
           <div className="detail-master-price">
             {discountVisible && <del>{formatPrice(product.normalPrice)}</del>}
-            <strong>{formatPrice(product.price)}~</strong>
+            <strong>{formatPrice(product.price)}{optionCount > 1 ? "~" : ""}</strong>
             {getCustomerStockMessage(totalStock) && <small>{getCustomerStockMessage(totalStock)}</small>}
           </div>
         </div>

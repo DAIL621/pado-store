@@ -37,7 +37,6 @@ export default function CartPage() {
     <div className="page-wrap cart-page">
       <section className="page-hero compact">
         <div className="shell">
-          <span className="eyebrow">SHOPPING BAG</span>
           <h1>장바구니</h1>
         </div>
       </section>
@@ -72,7 +71,7 @@ export default function CartPage() {
               </div>
               <div className="cart-empty-recommend">
                 <div>
-                  <span className="eyebrow">RECOMMEND</span>
+                  <span className="section-label">추천 상품</span>
                   <h2>처음 담기 좋은 상품</h2>
                   <p>할인율과 재고를 기준으로 먼저 보기 좋은 상품을 모았습니다.</p>
                 </div>
@@ -102,9 +101,10 @@ export default function CartPage() {
                     <p>{item.optionLabel}</p>
                     <div className="cart-price-benefit">
                       {regularPrice && <del>정상가 {formatPrice(regularPrice)}</del>}
-                      <strong>{discountRate > 0 && <em>{discountRate}% 할인</em>}{formatPrice(item.unitPrice)}</strong>
+                      <strong>{discountRate > 0 && <em>{discountRate}% 할인</em>}판매가 {formatPrice(item.unitPrice)}</strong>
                       {discountAmount > 0 && <small>{formatPrice(discountAmount)} 절약</small>}
                     </div>
+                    {item.priceChanged && <small className="cart-price-updated">최신 판매가격으로 갱신되었습니다.</small>}
                     {coupangPrice && <small className="cart-coupang-compare">쿠팡 가격보다 {formatPrice((coupangPrice - item.unitPrice) * item.quantity)} 저렴</small>}
                     {hasStockLimit && getCustomerStockMessage(stock) && <small className={atStockLimit || isUnavailable ? "cart-stock-note limit" : "cart-stock-note"}>{getCustomerStockMessage(stock)}</small>}
                     <div className="cart-controls">
@@ -130,7 +130,6 @@ export default function CartPage() {
           <div><span>배송비</span><b>{formatPrice(shipping)}</b></div>
           {hasFreeShippingBenefit && <div className="summary-discount"><span>무료배송 혜택</span><b>적용</b></div>}
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(subtotal + shipping)}</strong></div>
-          {shipping === 0 && items.length > 0 && <div className="cart-free-benefit"><b>✓ 파도스토리 무료배송 혜택이 적용되었습니다</b><span>배송비 부담 없이 신선하게 받아보세요.</span></div>}
           <div className="fresh-food-policy">
             <strong>신선식품 주문 전 확인해주세요</strong>
             <p>본 상품은 신선식품 특성상 상품 준비 또는 배송이 시작된 이후에는 단순 변심에 의한 취소·교환·반품이 제한될 수 있습니다.</p>
