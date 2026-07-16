@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import ProductHeroGallery from "./ProductHeroGallery";
 import { formatPrice, type Product } from "@/data/products";
 import { getVisibleProductDetailSections, hasVisibleProductDetailContent } from "@/lib/products/detail-sections";
 import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
@@ -210,10 +211,11 @@ function HeroSection({
   const isSoldOut = totalStock <= 0;
   const discountVisible = product.discountRate > 0;
   const optionCount = product.options.length;
-  const thumbnails = heroImages.slice(0, 5);
 
   return (
     <section className="shell detail-master-hero detail-master-hero-premium">
+      <ProductHeroGallery productName={product.name} fallbackImage={heroImage} images={heroImages} badge={product.badge} />
+      {/*
       <div className="detail-master-hero-gallery">
         <div className="detail-master-hero-media">
           <Image src={heroImage} alt={product.name} fill priority sizes="(max-width: 800px) 100vw, 62vw" />
@@ -229,6 +231,7 @@ function HeroSection({
           </div>
         )}
       </div>
+      */}
 
       <div className="detail-master-hero-copy">
         <div className="detail-master-hero-kicker">
