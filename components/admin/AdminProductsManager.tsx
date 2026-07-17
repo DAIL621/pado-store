@@ -50,14 +50,22 @@ const getStatus = (product: AdminProduct): ProductStatus => {
   return getTotalStock(product) > 0 ? "selling" : "soldout";
 };
 
-const getDetailScore = (product: AdminProduct) => calculateDetailPageQuality(product.detail_json).score;
+const getDetailScore = (product: AdminProduct) => {
+  try { return calculateDetailPageQuality(product.detail_json).score; } catch { return 0; }
+};
 
-const getCompleteness = (product: AdminProduct) => calculateProductCompleteness({
-  name: product.name, origin: product.origin, category: product.category, subtitle: product.subtitle,
-  description: product.description, slug: product.slug, basePrice: product.base_price, imageUrl: product.image_url,
-  isActive: product.is_active, detail: product.detail_json,
-  options: (product.product_options ?? []).map((option) => ({ name: option.name, price: option.price ?? product.base_price + option.price_delta, regularPrice: option.regular_price, stock: option.stock }))
-});
+const getCompleteness = (product: AdminProduct) => {
+  try {
+    return calculateProductCompleteness({
+      name: product.name, origin: product.origin, category: product.category, subtitle: product.subtitle,
+      description: product.description, slug: product.slug, basePrice: product.base_price, imageUrl: product.image_url,
+      isActive: product.is_active, detail: product.detail_json,
+      options: (Array.isArray(product.product_options) ? product.product_options : []).map((option) => ({ name: option.name, price: option.price ?? product.base_price + option.price_delta, regularPrice: option.regular_price, stock: option.stock }))
+    });
+  } catch {
+    return null;
+  }
+};
 
 const statusLabel: Record<ProductStatus, string> = {
   selling: "판매중",
@@ -525,10 +533,12 @@ export function AdminProductsManager() {
                     <td>{formatPrice(product.base_price)}</td>
                     <td>{getTotalStock(product).toLocaleString("ko-KR")}개</td>
                     <td>
-                      <span className={`detail-score ${completeness.score === 100 ? "complete" : completeness.score > 0 ? "draft" : "empty"}`} title={`상세페이지 품질 ${detailScore}% · 미입력: ${completeness.missing.join(", ") || "없음"}`}>
-                        {completeness.score === 100 ? "상품 등록 완료" : `상품 등록 완성도 ${completeness.score}%`}
-                      </span>
-                      {!!completeness.missing.length && <small className="admin-missing-items">미입력: {completeness.missing.join(", ")}</small>}
+                      {completeness ? <>
+                        <span className={`detail-score ${completeness.score === 100 ? "complete" : completeness.score > 0 ? "draft" : "empty"}`} title={`상세페이지 품질 ${detailScore}% · 미입력: ${completeness.missing.join(", ") || "없음"}`}>
+                          {completeness.score === 100 ? "상품 등록 완료" : `상품 등록 완성도 ${completeness.score}%`}
+                        </span>
+                        {!!completeness.missing.length && <small className="admin-missing-items">미입력: {completeness.missing.join(", ")}</small>}
+                      </> : <span className="detail-score empty">정보 확인 필요</span>}
                     </td>
                     <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
                     <td>{new Date(product.created_at).toLocaleDateString("ko-KR")}</td>
