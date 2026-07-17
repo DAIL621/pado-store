@@ -5,6 +5,7 @@ import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/produc
 import { requireAdminApi } from "@/lib/auth/admin-api";
 import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { createProductSlug } from "@/lib/products/slug";
+import { withOptionPriceMetadata } from "@/lib/products/option-pricing";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const isMissingOptionPriceColumn = (error: { code?: string; message: string } | null) =>
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
       base_price: basePrice,
       image_url: body.imageUrl || "/images/product-placeholder.svg",
       badge: body.badge || null,
-      detail_json: normalizeProductDetailInput(body.detailJson ?? body.detail_json),
+      detail_json: withOptionPriceMetadata(normalizeProductDetailInput(body.detailJson ?? body.detail_json), optionInputs),
       highlights: String(body.highlights ?? "")
         .split(",")
         .map((item) => item.trim())

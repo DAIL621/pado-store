@@ -80,5 +80,6 @@ export function calculateProductCompleteness(inputValue?: ProductCompletenessInp
     ["SEO 정보", hasText(input.name) && hasText(input.slug) && hasText(input.subtitle)],
   ];
   const missing = checks.filter(([, done]) => !done).map(([label]) => label);
-  return { score: Math.round(checks.filter(([, done]) => done).length / checks.length * 100), missing };
+  const completed = checks.filter(([, done]) => done).length;
+  return { score: Math.round(completed / checks.length * 100), completed, total: checks.length, missing };
 }

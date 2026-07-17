@@ -10,6 +10,7 @@ import {
 } from "@/components/admin/AdminProductBuilder";
 import type { ProductDetail } from "@/lib/products/detail";
 import { calculateDetailPageQuality, calculateProductCompleteness } from "@/lib/products/quality";
+import { mapStoredOptionToPrices } from "@/lib/products/option-pricing";
 
 type ProductOption = { id: string; name: string; price?: number | null; regular_price?: number | null; coupang_price?: number | null; price_delta: number; stock: number };
 
@@ -60,7 +61,10 @@ const getCompleteness = (product: AdminProduct) => {
       name: product.name, origin: product.origin, category: product.category, subtitle: product.subtitle,
       description: product.description, slug: product.slug, basePrice: product.base_price, imageUrl: product.image_url,
       isActive: product.is_active, detail: product.detail_json,
-      options: (Array.isArray(product.product_options) ? product.product_options : []).map((option) => ({ name: option.name, price: option.price ?? product.base_price + option.price_delta, regularPrice: option.regular_price, stock: option.stock }))
+      options: (Array.isArray(product.product_options) ? product.product_options : []).map((option, index) => {
+        const pricing = mapStoredOptionToPrices(option, product.base_price, product.detail_json, index);
+        return { name: option.name, price: pricing.price, regularPrice: pricing.regularPrice, stock: option.stock };
+      })
     });
   } catch {
     return null;
@@ -82,13 +86,16 @@ const isVerificationProduct = (product: AdminProduct) =>
     .some((value) => verificationProductPattern.test(String(value)) || /(diagnose|debug)/i.test(String(value)));
 
 const toOptionForms = (product: AdminProduct, options?: { resetStock?: boolean }): AdminProductOptionForm[] =>
-  (product.product_options?.length ? product.product_options : [{ id: "", name: "기본 옵션", price: product.base_price, price_delta: 0, stock: 0 }]).map((option) => ({
-    name: option.name,
-    regularPrice: option.regular_price ? String(option.regular_price) : "",
-    coupangPrice: option.coupang_price ? String(option.coupang_price) : "",
-    price: String(option.price ?? product.base_price + option.price_delta),
-    stock: options?.resetStock ? "0" : String(option.stock)
-  }));
+  (product.product_options?.length ? product.product_options : [{ id: "", name: "기본 옵션", price: product.base_price, price_delta: 0, stock: 0 }]).map((option, index) => {
+    const pricing = mapStoredOptionToPrices(option, product.base_price, product.detail_json, index);
+    return {
+      name: option.name,
+      regularPrice: pricing.regularPrice === null ? "" : String(pricing.regularPrice),
+      coupangPrice: pricing.coupangPrice === null ? "" : String(pricing.coupangPrice),
+      price: String(pricing.price),
+      stock: options?.resetStock ? "0" : String(option.stock)
+    };
+  });
 
 const createCopySlug = (slug: string) => {
   const now = new Date();
@@ -537,6 +544,7 @@ export function AdminProductsManager() {
                         <span className={`detail-score ${completeness.score === 100 ? "complete" : completeness.score > 0 ? "draft" : "empty"}`} title={`상세페이지 품질 ${detailScore}% · 미입력: ${completeness.missing.join(", ") || "없음"}`}>
                           {completeness.score === 100 ? "상품 등록 완료" : `상품 등록 완성도 ${completeness.score}%`}
                         </span>
+                        <small className="admin-completeness-count">{completeness.completed} / {completeness.total} 완료</small>
                         {!!completeness.missing.length && <small className="admin-missing-items">미입력: {completeness.missing.join(", ")}</small>}
                       </> : <span className="detail-score empty">정보 확인 필요</span>}
                     </td>

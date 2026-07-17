@@ -23,7 +23,7 @@ assert(cart.includes("상품 하자, 오배송") && cart.includes("단순 변심
 assert(checkout.includes("freshFoodPolicyAccepted") && checkout.includes("!freshFoodPolicyAccepted"), "checkout agreement gate missing");
 assert(provider.includes("regularPrice") && provider.includes("unitPrice"), "cart price persistence missing");
 assert(css.includes("cart-price-benefit") && css.includes("checkout-policy"), "responsive benefit styles missing");
-assert(products.includes("representativeOption?.regular_price") && !products.includes("price >= 40000 ? 6000"), "fabricated regular price must not be used");
+assert(products.includes("mapStoredOptionToPrices") && !products.includes("price >= 40000 ? 6000"), "stored regular price mapping must be used without fabrication");
 assert(pricing.includes("return 0") && !cart.includes("더 담으면 무료배송") && !checkout.includes("더 담으면 무료배송"), "default free shipping policy missing");
 
 console.log(JSON.stringify({ ok: true, checks: ["discount-rate", "discount-amount", "quantity-discount", "missing-regular-price", "free-shipping-condition", "total-integrity", "fresh-food-policy", "checkout-agreement", "mobile-layout"] }, null, 2));

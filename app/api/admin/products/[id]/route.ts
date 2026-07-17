@@ -4,6 +4,7 @@ import { readJsonBody } from "@/lib/api/request";
 import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/product-options";
 import { requireAdminApi } from "@/lib/auth/admin-api";
 import { normalizeProductDetailInput } from "@/lib/products/detail";
+import { withOptionPriceMetadata } from "@/lib/products/option-pricing";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const isMissingOptionPriceColumn = (error: { code?: string; message: string } | null) =>
@@ -176,8 +177,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       .map((item) => item.trim())
       .filter(Boolean);
   }
-  if (body.detailJson !== undefined || body.detail_json !== undefined) {
-    updates.detail_json = normalizeProductDetailInput(body.detailJson ?? body.detail_json);
+  if (body.detailJson !== undefined || body.detail_json !== undefined || parsedOptions) {
+    let detailSource = body.detailJson ?? body.detail_json;
+    if (detailSource === undefined) {
+      const { data: currentDetail, error: currentDetailError } = await supabase.from("products").select("detail_json").eq("id", id).single();
+      if (currentDetailError) return NextResponse.json({ ok: false, message: currentDetailError.message }, { status: 500 });
+      detailSource = currentDetail?.detail_json;
+    }
+    const normalizedDetail = normalizeProductDetailInput(detailSource);
+    updates.detail_json = parsedOptions ? withOptionPriceMetadata(normalizedDetail, parsedOptions) : normalizedDetail;
   }
 
   if (updates.base_price !== undefined && (!Number.isFinite(updates.base_price) || Number(updates.base_price) < 0)) {

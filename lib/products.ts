@@ -2,6 +2,7 @@ import { products as fallbackProducts, type Product, type ProductOption } from "
 import { normalizeProductDetailInput } from "@/lib/products/detail";
 import { isPublicProductSlug } from "@/lib/products/public-slug";
 import { isNeutralProductPlaceholder } from "@/lib/products/stock-visibility";
+import { mapStoredOptionToPrices } from "@/lib/products/option-pricing";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -45,14 +46,16 @@ function isCustomerVisibleRow(row: ProductRow) {
 }
 
 function toProduct(row: ProductRow): Product {
-  const pricedOptions = (row.product_options ?? []).map((option) => ({
+  const pricedOptions = (row.product_options ?? []).map((option, index) => ({
     option,
-    price: Number(option.price ?? row.base_price + option.price_delta)
+    index,
+    price: mapStoredOptionToPrices(option, row.base_price, row.detail_json, index).price
   })).filter((item) => item.price > 0);
   const optionPrices = pricedOptions.map((item) => item.price);
   const price = optionPrices.length ? Math.min(...optionPrices) : row.base_price;
   const representativeOption = pricedOptions.find((item) => item.price === price)?.option;
-  const representativeRegularPrice = Number(representativeOption?.regular_price ?? 0);
+  const representativeIndex = pricedOptions.find((item) => item.price === price)?.index ?? 0;
+  const representativeRegularPrice = mapStoredOptionToPrices(representativeOption ?? {}, row.base_price, row.detail_json, representativeIndex).regularPrice ?? 0;
   const normalPrice = representativeRegularPrice > price ? representativeRegularPrice : Number(row.regular_price ?? price);
   const discountRate = normalPrice > price ? Math.round((1 - price / normalPrice) * 100) : 0;
   const detail = normalizeProductDetailInput(row.detail_json);
@@ -96,15 +99,18 @@ function toProduct(row: ProductRow): Product {
       title: `${row.origin} 생산자`,
       body: "산지와 작업장 정보를 확인해 상세페이지에 반영합니다."
     },
-    options: (row.product_options ?? []).map<ProductOption>((option) => ({
-      id: option.id,
-      label: option.name,
-      priceDelta: option.price_delta,
-      price: Number(option.price ?? row.base_price + option.price_delta),
-      regularPrice: option.regular_price && Number(option.regular_price) > Number(option.price ?? row.base_price + option.price_delta) ? Number(option.regular_price) : undefined,
-      coupangPrice: option.coupang_price && Number(option.coupang_price) > Number(option.price ?? row.base_price + option.price_delta) ? Number(option.coupang_price) : undefined,
-      stock: option.stock
-    }))
+    options: (row.product_options ?? []).map<ProductOption>((option, index) => {
+      const pricing = mapStoredOptionToPrices(option, row.base_price, row.detail_json, index);
+      return {
+        id: option.id,
+        label: option.name,
+        priceDelta: option.price_delta,
+        price: pricing.price,
+        regularPrice: pricing.regularPrice && pricing.regularPrice > pricing.price ? pricing.regularPrice : undefined,
+        coupangPrice: pricing.coupangPrice && pricing.coupangPrice > pricing.price ? pricing.coupangPrice : undefined,
+        stock: option.stock
+      };
+    })
   };
 }
 
