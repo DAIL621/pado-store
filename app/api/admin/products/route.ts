@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { readJsonBody } from "@/lib/api/request";
 import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/product-options";
 import { requireAdminApi } from "@/lib/auth/admin-api";
@@ -210,6 +211,8 @@ export async function POST(request: Request) {
       isActive
     }
   });
+
+  revalidatePath("/", "layout");
 
   return NextResponse.json({
     ok: true,

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode } from "react";
-import { products } from "@/data/products";
+import type { Product } from "@/data/products";
 import { ProductCard } from "@/components/products/ProductCard";
 
 type CampaignIconName = "season" | "hot" | "gift" | "meal" | "pin" | "new";
@@ -72,7 +72,7 @@ const campaignLinks: Array<{ title: string; icon: CampaignIconName; href: string
   { title: "신상품", icon: "new", href: "/products" }
 ];
 
-export function Hero() {
+export function Hero({ products }: { products: Product[] }) {
   const featuredProduct = products[0];
 
   return (
@@ -91,10 +91,10 @@ export function Hero() {
           <Link href="/products" className="home-hero-benefit fade-up">
             <span>EVERYDAY BENEFIT</span><strong>전 상품<br />기본 무료배송</strong><small>배송비 부담 없이 신선하게 받아보세요.</small>
           </Link>
-          <Link href={`/products/${featuredProduct.slug}`} className="home-hero-product fade-up">
+          {featuredProduct ? <Link href={`/products/${featuredProduct.slug}`} className="home-hero-product fade-up">
             <div><Image src={featuredProduct.image} alt={featuredProduct.name} fill sizes="(max-width: 900px) 44vw, 18vw" /></div>
             <section><span>오늘의 제철상품</span><strong>{featuredProduct.name}</strong><small>{featuredProduct.origin} · {featuredProduct.price.toLocaleString("ko-KR")}원~</small></section>
-          </Link>
+          </Link> : <Link href="/products" className="home-hero-product fade-up"><section><span>오늘의 제철상품</span><strong>상품 준비 중</strong><small>새로운 산지 상품을 준비하고 있습니다.</small></section></Link>}
         </aside>
       </div>
 

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { products } from "@/data/products";
+import type { Product } from "@/data/products";
 import { ProductCard } from "@/components/products/ProductCard";
 import { RecentViewedProducts } from "@/components/products/RecentViewedProducts";
 import { buildHomeShelves } from "@/lib/products/discovery";
@@ -21,8 +21,8 @@ const seasons = [
 ];
 
 const liveStats = [
-  { label: "오늘 출고 완료", value: "34건", copy: "활전복 · 참소라 · 바다장어" },
-  { label: "오늘 구매 고객", value: "18명", copy: "가장 많이 담긴 상품은 완도 활전복" },
+  { label: "오늘 출고 완료", value: "34건", copy: "산지에서 신선 포장 완료" },
+  { label: "오늘 구매 고객", value: "18명", copy: "현재 판매 상품 주문 기준" },
   { label: "출고 기준", value: "13:00", copy: "평일 오후 1시 이전 주문 당일 출고" }
 ];
 
@@ -58,26 +58,26 @@ const trustItems = [
 
 const reviewHighlights = [
   {
-    product: "완도 활전복",
+    product: "산지 직송 상품",
     title: "살아있는 상태로 도착해서 선물하기 좋았어요",
     copy: "포장이 꼼꼼했고 크기도 고르게 와서 가족 식사용으로 만족도가 높았습니다.",
     meta: "사진 후기 준비중 · 재구매 의사 높음"
   },
   {
-    product: "통영 바다장어",
+    product: "손질 수산물",
     title: "손질되어 있어 저녁 준비가 정말 빨랐어요",
     copy: "초벌 없이 바로 구워도 비린내가 적고 양념 없이도 담백했습니다.",
     meta: "조리 간편 · 당일 출고"
   },
   {
-    product: "통영 참소라",
+    product: "제철 수산물",
     title: "제철 느낌이 확실해서 술안주로 좋았습니다",
     copy: "쫄깃한 식감이 살아 있고 배송 상태도 차갑게 잘 유지됐습니다.",
     meta: "제철상품 · 신선 포장"
   }
 ];
 
-export function HomeSections() {
+export function HomeSections({ products }: { products: Product[] }) {
   const month = new Date().getMonth() + 1;
   const shelves = buildHomeShelves(products);
 
@@ -110,7 +110,7 @@ export function HomeSections() {
             <div>
               <span className="eyebrow">FROM THE COAST</span>
               <h2>전체 상품 둘러보기</h2>
-              <p>전복, 참소라, 장어, 선물세트까지 파도스토리의 판매 상품을 한눈에 확인하세요.</p>
+              <p>현재 판매 중인 파도스토리 산지 상품을 한눈에 확인하세요.</p>
             </div>
             <Link href="/products" className="text-link">전체 상품 모두 보기</Link>
           </div>
@@ -253,12 +253,12 @@ export function HomeSections() {
           </div>
           <div className="producer-grid fade-up">
             <article className="producer-card">
-              <div className="producer-image"><Image src="/images/story/eel-catch.webp" alt="통영 바다장어 조업 현장" fill sizes="50vw" /></div>
-              <div><span>경남 통영</span><h3>통영 바다장어 조업장</h3><p>통영 앞바다 조업 · 바다장어와 아나고회 취급</p><blockquote>좋은 시간부터 신선도는 시작됩니다.</blockquote></div>
+              <div className="producer-image"><Image src="/images/story/eel-catch.webp" alt="통영 앞바다 조업 현장" fill sizes="50vw" /></div>
+              <div><span>경남 통영</span><h3>통영 앞바다 조업장</h3><p>통영 앞바다 조업과 산지 선별 현장</p><blockquote>좋은 시간부터 신선도는 시작됩니다.</blockquote></div>
             </article>
             <article className="producer-card">
-              <div className="producer-image"><Image src="/images/products/wando-abalone.webp" alt="완도 활전복" fill sizes="50vw" /></div>
-              <div><span>전남 완도</span><h3>완도 활전복 양식장</h3><p>완도 청정해역 양식 · 활전복과 전복 밀키트 취급</p><blockquote>건강한 전복은 깨끗한 바다에서 자랍니다.</blockquote></div>
+              <div className="producer-image"><Image src="/images/products/wando-abalone.webp" alt="완도 청정해역 양식장" fill sizes="50vw" /></div>
+              <div><span>전남 완도</span><h3>완도 청정해역 양식장</h3><p>깨끗한 바다에서 이어지는 산지 양식 이야기</p><blockquote>건강한 수산물은 깨끗한 바다에서 자랍니다.</blockquote></div>
             </article>
           </div>
           <div className="center producer-cta"><Link href="/products" className="button teal">더 많은 산지 보기</Link></div>

@@ -9,6 +9,7 @@ import { generateProductDescription, generateProductDetailDraft } from "@/lib/ad
 import { PRODUCT_DETAIL_PRESET_OPTIONS, buildProductDetailPreset, type ProductPresetId } from "@/lib/admin/product-detail-presets";
 import { createProductDetailFormValue, type ProductDetail } from "@/lib/products/detail";
 import { createProductSlug } from "@/lib/products/slug";
+import { calculateProductCompleteness } from "@/lib/products/quality";
 
 export type AdminProductFormState = {
   name: string;
@@ -463,20 +464,13 @@ export function AdminProductBuilder({
   };
 
   const progress = useMemo(() => {
-    const checks = [
-      form.name,
-      form.origin,
-      form.category,
-      form.subtitle,
-      form.description,
-      form.basePrice,
-      options.some((option) => option.name && option.stock),
-      detailJson.heroImages.some((image) => image.url),
-      detailJson.benefits.some(Boolean),
-      detailJson.packaging.some(Boolean)
-    ];
-    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-  }, [detailJson, form, options]);
+    return calculateProductCompleteness({
+      ...form,
+      isActive: publishMode === "public",
+      detail: detailJson,
+      options
+    }).score;
+  }, [detailJson, form, options, publishMode]);
 
   const progressItems = useMemo(() => {
     const heroCount = detailJson.heroImages.filter((image) => image.url).length;

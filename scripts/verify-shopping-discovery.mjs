@@ -44,7 +44,7 @@ assert(files.layout.includes("MobileBottomNav"), "root layout should render mobi
 assert(files.bottomNav.includes("useCart"), "mobile bottom navigation should show real cart count");
 assert(files.bottomNav.includes("/categories/gift-set"), "mobile bottom navigation should include a category shortcut");
 assert(files.cartPage.includes("cart-empty-recommend"), "cart empty state should recommend products");
-assert(files.cartPage.includes("getBestProducts"), "cart empty recommendations should use product discovery helper");
+assert(files.cartPage.includes('href="/products"') && !files.cartPage.includes("recommendedProducts.map"), "cart empty recommendation must link to the live product catalog without sample cards");
 
 console.log(
   JSON.stringify(

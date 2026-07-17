@@ -4,9 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CartItem, getCartItemKey, useCart } from "@/components/cart/CartProvider";
-import { ProductCard } from "@/components/products/ProductCard";
-import { formatPrice, products } from "@/data/products";
-import { getBestProducts } from "@/lib/products/discovery";
+import { formatPrice } from "@/data/products";
 import { calculateShipping } from "@/lib/order/pricing";
 import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
 
@@ -21,7 +19,6 @@ export default function CartPage() {
   const unavailableItems = selectedItems.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
   const canCheckout = selectedItems.length > 0 && unavailableItems.length === 0;
   const allSelected = items.length > 0 && selectedItems.length === items.length;
-  const recommendedProducts = getBestProducts(products, 4);
 
   const removeWithUndo = (item: CartItem) => {
     setRemovedItem(item);
@@ -72,16 +69,8 @@ export default function CartPage() {
                 <Link href="/products" className="button teal">상품 보러 가기</Link>
               </div>
               <div className="cart-empty-recommend">
-                <div>
-                  <span className="section-label">추천 상품</span>
-                  <h2>처음 담기 좋은 상품</h2>
-                  <p>할인율과 재고를 기준으로 먼저 보기 좋은 상품을 모았습니다.</p>
-                </div>
-                <div className="product-grid featured-grid">
-                  {recommendedProducts.map((product) => (
-                    <ProductCard key={product.slug} product={product} compact />
-                  ))}
-                </div>
+                <div><span className="section-label">현재 판매 상품</span><h2>산지 상품 둘러보기</h2><p>최신 판매 상태가 반영된 상품목록에서 골라보세요.</p></div>
+                <Link href="/products" className="button outline">전체 상품 보기</Link>
               </div>
             </>
           ) : (

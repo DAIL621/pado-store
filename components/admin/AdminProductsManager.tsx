@@ -9,6 +9,7 @@ import {
   type AdminProductOptionForm
 } from "@/components/admin/AdminProductBuilder";
 import type { ProductDetail } from "@/lib/products/detail";
+import { calculateDetailPageQuality, calculateProductCompleteness } from "@/lib/products/quality";
 
 type ProductOption = { id: string; name: string; price?: number | null; regular_price?: number | null; coupang_price?: number | null; price_delta: number; stock: number };
 
@@ -49,29 +50,14 @@ const getStatus = (product: AdminProduct): ProductStatus => {
   return getTotalStock(product) > 0 ? "selling" : "soldout";
 };
 
-const getDetailScore = (product: AdminProduct) => {
-  const detail = product.detail_json;
-  if (!detail) return 0;
+const getDetailScore = (product: AdminProduct) => calculateDetailPageQuality(product.detail_json).score;
 
-  const checks = [
-    detail.heroImages?.some((image) => image.url),
-    detail.benefits?.some(Boolean),
-    detail.journey?.some((step) => step.description || step.image),
-    detail.packaging?.some(Boolean),
-    detail.recipes?.some((recipe) => recipe.title || recipe.description || recipe.image),
-    detail.components?.some(Boolean),
-    detail.faq?.some((item) => item.question || item.answer)
-  ];
-
-  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-};
-
-const getDetailScoreLabel = (score: number) => {
-  if (score >= 80) return "완성";
-  if (score >= 45) return "보강";
-  if (score > 0) return "초안";
-  return "미입력";
-};
+const getCompleteness = (product: AdminProduct) => calculateProductCompleteness({
+  name: product.name, origin: product.origin, category: product.category, subtitle: product.subtitle,
+  description: product.description, slug: product.slug, basePrice: product.base_price, imageUrl: product.image_url,
+  isActive: product.is_active, detail: product.detail_json,
+  options: (product.product_options ?? []).map((option) => ({ name: option.name, price: option.price ?? product.base_price + option.price_delta, regularPrice: option.regular_price, stock: option.stock }))
+});
 
 const statusLabel: Record<ProductStatus, string> = {
   selling: "판매중",
@@ -523,6 +509,7 @@ export function AdminProductsManager() {
               {filtered.map((product) => {
                 const status = getStatus(product);
                 const detailScore = getDetailScore(product);
+                const completeness = getCompleteness(product);
                 const verificationProduct = isVerificationProduct(product);
                 return (
                   <tr key={product.id} className={highlightedProduct && (highlightedProduct.id === product.id || highlightedProduct.slug === product.slug) ? "recently-created" : ""}>
@@ -538,9 +525,10 @@ export function AdminProductsManager() {
                     <td>{formatPrice(product.base_price)}</td>
                     <td>{getTotalStock(product).toLocaleString("ko-KR")}개</td>
                     <td>
-                      <span className={`detail-score ${detailScore >= 80 ? "complete" : detailScore > 0 ? "draft" : "empty"}`}>
-                        {getDetailScoreLabel(detailScore)} {detailScore}%
+                      <span className={`detail-score ${completeness.score === 100 ? "complete" : completeness.score > 0 ? "draft" : "empty"}`} title={`상세페이지 품질 ${detailScore}% · 미입력: ${completeness.missing.join(", ") || "없음"}`}>
+                        {completeness.score === 100 ? "상품 등록 완료" : `상품 등록 완성도 ${completeness.score}%`}
                       </span>
+                      {!!completeness.missing.length && <small className="admin-missing-items">미입력: {completeness.missing.join(", ")}</small>}
                     </td>
                     <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
                     <td>{new Date(product.created_at).toLocaleDateString("ko-KR")}</td>

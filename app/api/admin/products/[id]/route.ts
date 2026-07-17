@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { readJsonBody } from "@/lib/api/request";
 import { hasInvalidProductOption, parseProductOptions } from "@/lib/admin/product-options";
 import { requireAdminApi } from "@/lib/auth/admin-api";
@@ -7,6 +8,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const isMissingOptionPriceColumn = (error: { code?: string; message: string } | null) =>
   Boolean(error && (error.code === "PGRST204" || (error.message.includes("schema cache") && error.message.includes("price"))));
+
+const revalidateCustomerProducts = () => revalidatePath("/", "layout");
 
 function withOperationState(detail: unknown, state: "hidden" | "ended" | "deleted" | null, actorId: string) {
   const base = normalizeProductDetailInput(detail);
@@ -81,6 +84,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       actorEmail
     });
 
+    revalidateCustomerProducts();
     return NextResponse.json({ ok: true, mode: "soldout" });
   }
 
@@ -101,6 +105,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       actorId,
       actorEmail
     });
+    revalidateCustomerProducts();
     return NextResponse.json({ ok: true, mode: "recover", product });
   }
 
@@ -123,6 +128,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       actorId,
       actorEmail
     });
+    revalidateCustomerProducts();
     return NextResponse.json({ ok: true, mode: "end_sale", product });
   }
 
@@ -143,6 +149,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       actorId,
       actorEmail
     });
+    revalidateCustomerProducts();
     return NextResponse.json({ ok: true, mode: "hidden", product });
   }
 
@@ -264,6 +271,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
   }
 
+  revalidateCustomerProducts();
   return NextResponse.json({ ok: true, product });
 }
 
@@ -291,5 +299,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     actorId,
     actorEmail
   });
+  revalidateCustomerProducts();
   return NextResponse.json({ ok: true, mode: "soft-delete" });
 }

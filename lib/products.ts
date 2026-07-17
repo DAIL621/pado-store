@@ -36,6 +36,14 @@ type OptionRow = {
 const hasSupabaseEnv = () =>
   Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
+const demoProductsEnabled = () => process.env.ENABLE_DEMO_PRODUCTS === "true";
+
+function isCustomerVisibleRow(row: ProductRow) {
+  const detail = (row.detail_json && typeof row.detail_json === "object" ? row.detail_json : {}) as Record<string, unknown>;
+  const state = detail.operationState;
+  return row.is_active === true && state !== "deleted" && state !== "hidden" && state !== "ended" && isPublicProductSlug(row.slug);
+}
+
 function toProduct(row: ProductRow): Product {
   const pricedOptions = (row.product_options ?? []).map((option) => ({
     option,
@@ -101,7 +109,7 @@ function toProduct(row: ProductRow): Product {
 }
 
 export async function getProducts(): Promise<Product[]> {
-  if (!hasSupabaseEnv()) return fallbackProducts;
+  if (!hasSupabaseEnv()) return demoProductsEnabled() ? fallbackProducts : [];
 
   try {
     const supabase = await createClient();
@@ -111,26 +119,22 @@ export async function getProducts(): Promise<Product[]> {
       .eq("is_active", true)
       .order("created_at", { ascending: false });
 
-    if (error || !data?.length) return fallbackProducts;
+    if (error) return demoProductsEnabled() ? fallbackProducts : [];
 
     const remoteProducts = data
+      .filter((row) => isCustomerVisibleRow(row as ProductRow))
       .map((row) => toProduct(row as ProductRow))
       .filter((product) => isPublicProductSlug(product.slug));
-    const remoteSlugs = new Set(remoteProducts.map((product) => product.slug));
-    const remoteNames = new Set(remoteProducts.map((product) => product.name.trim().toLowerCase()));
-    const missingFallbackProducts = fallbackProducts.filter((product) =>
-      !remoteSlugs.has(product.slug) && !remoteNames.has(product.name.trim().toLowerCase())
-    );
-    return [...remoteProducts, ...missingFallbackProducts];
+    return remoteProducts;
   } catch {
-    return fallbackProducts;
+    return demoProductsEnabled() ? fallbackProducts : [];
   }
 }
 
 export async function getProductBySlug(slug: string, options: { includePrivate?: boolean } = {}): Promise<Product | undefined> {
   const includePrivate = Boolean(options.includePrivate);
   if (!includePrivate && !isPublicProductSlug(slug)) return undefined;
-  if (!hasSupabaseEnv()) return fallbackProducts.find((product) => product.slug === slug);
+  if (!hasSupabaseEnv()) return demoProductsEnabled() ? fallbackProducts.find((product) => product.slug === slug) : undefined;
 
   try {
     if (includePrivate && hasSupabaseAdminEnv()) {
@@ -168,8 +172,9 @@ export async function getProductBySlug(slug: string, options: { includePrivate?:
       const products = await getProducts();
       return products.find((product) => product.slug === slug);
     }
+    if (!includePrivate && !isCustomerVisibleRow(data as ProductRow)) return undefined;
     return toProduct(data as ProductRow);
   } catch {
-    return fallbackProducts.find((product) => product.slug === slug);
+    return demoProductsEnabled() ? fallbackProducts.find((product) => product.slug === slug) : undefined;
   }
 }
