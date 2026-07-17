@@ -55,7 +55,7 @@ function focusField(form: HTMLFormElement, key: string) {
 }
 
 export default function CheckoutPage() {
-  const { items } = useCart();
+  const { selectedItems: items } = useCart();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [freshFoodPolicyAccepted, setFreshFoodPolicyAccepted] = useState(false);

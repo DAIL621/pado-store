@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { CartItem, useCart } from "@/components/cart/CartProvider";
+import { CartItem, getCartItemKey, useCart } from "@/components/cart/CartProvider";
 import { ProductCard } from "@/components/products/ProductCard";
 import { formatPrice, products } from "@/data/products";
 import { getBestProducts } from "@/lib/products/discovery";
@@ -11,15 +11,16 @@ import { calculateShipping } from "@/lib/order/pricing";
 import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, addItem } = useCart();
+  const { items, selectedItems, selectedKeys, updateQuantity, removeItem, addItem, setItemSelected, selectAllItems, removeSelectedItems } = useCart();
   const [removedItem, setRemovedItem] = useState<CartItem | null>(null);
-  const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const regularSubtotal = items.reduce((sum, item) => sum + (item.regularPrice ?? item.unitPrice) * item.quantity, 0);
+  const subtotal = selectedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const regularSubtotal = selectedItems.reduce((sum, item) => sum + (item.regularPrice ?? item.unitPrice) * item.quantity, 0);
   const productDiscount = Math.max(0, regularSubtotal - subtotal);
   const shipping = calculateShipping(subtotal);
-  const hasFreeShippingBenefit = items.length > 0 && shipping === 0;
-  const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
-  const canCheckout = items.length > 0 && unavailableItems.length === 0;
+  const hasFreeShippingBenefit = selectedItems.length > 0 && shipping === 0;
+  const unavailableItems = selectedItems.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
+  const canCheckout = selectedItems.length > 0 && unavailableItems.length === 0;
+  const allSelected = items.length > 0 && selectedItems.length === items.length;
   const recommendedProducts = getBestProducts(products, 4);
 
   const removeWithUndo = (item: CartItem) => {
@@ -43,6 +44,7 @@ export default function CartPage() {
 
       <div className="shell cart-layout">
         <section className="cart-list">
+          {!!items.length && <div className="cart-selection-toolbar"><label><input type="checkbox" checked={allSelected} onChange={(event) => selectAllItems(event.target.checked)} /> 전체선택 <b>{selectedItems.length}/{items.length}</b></label><button type="button" disabled={!selectedItems.length} onClick={removeSelectedItems}>선택삭제</button></div>}
           {!!items.length && (
             <div className="cart-login-guide">
               <strong>로그인하면 주문조회와 배송조회가 더 쉬워집니다.</strong>
@@ -92,8 +94,10 @@ export default function CartPage() {
               const coupangPrice = item.coupangPrice && item.coupangPrice > item.unitPrice ? item.coupangPrice : null;
               const discountAmount = regularPrice ? (regularPrice - item.unitPrice) * item.quantity : 0;
               const discountRate = regularPrice ? Math.min(100, Math.max(0, Math.round((1 - item.unitPrice / regularPrice) * 100))) : 0;
+              const itemSelected = selectedKeys.includes(getCartItemKey(item));
               return (
-                <article className="cart-item" key={`${item.productSlug}-${item.optionId}`}>
+                <article className={`cart-item ${itemSelected ? "selected" : "unselected"}`} key={`${item.productSlug}-${item.optionId}`}>
+                  <label className="cart-item-selector"><input type="checkbox" checked={itemSelected} onChange={(event) => setItemSelected(item.productSlug, item.optionId, event.target.checked)} aria-label={`${item.name} 주문 선택`} /></label>
                   <div className="cart-thumb"><Image src={item.image} alt={item.name} fill sizes="120px" /></div>
                   <div className="cart-item-copy">
                     <span>{item.origin}</span>

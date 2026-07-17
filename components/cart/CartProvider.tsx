@@ -20,15 +20,22 @@ export type CartItem = {
 
 type CartContextValue = {
   items: CartItem[];
+  selectedItems: CartItem[];
+  selectedKeys: string[];
   count: number;
   ready: boolean;
   addItem: (item: CartItem) => void;
   updateQuantity: (productSlug: string, optionId: string, quantity: number) => void;
   removeItem: (productSlug: string, optionId: string) => void;
+  setItemSelected: (productSlug: string, optionId: string, selected: boolean) => void;
+  selectAllItems: (selected: boolean) => void;
+  removeSelectedItems: () => void;
   clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+export const getCartItemKey = (item: Pick<CartItem, "productSlug" | "optionId">) => `${item.productSlug}:${item.optionId}`;
 
 function normalizeCartItem(item: Partial<CartItem>): CartItem | null {
   const quantity = Number(item.quantity);
@@ -82,10 +89,19 @@ function parseCartItems(value: string | null) {
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setItems(parseCartItems(window.localStorage.getItem("pado-cart")));
+    const parsedItems = parseCartItems(window.localStorage.getItem("pado-cart"));
+    setItems(parsedItems);
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem("pado-cart-selection") || "null");
+      const validKeys = new Set(parsedItems.map(getCartItemKey));
+      setSelectedKeys(Array.isArray(saved) ? saved.filter((key): key is string => typeof key === "string" && validKeys.has(key)) : [...validKeys]);
+    } catch {
+      setSelectedKeys(parsedItems.map(getCartItemKey));
+    }
     setReady(true);
   }, []);
 
@@ -101,6 +117,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (ready) window.localStorage.setItem("pado-cart", JSON.stringify(items));
   }, [items, ready]);
+
+  useEffect(() => {
+    if (ready) window.sessionStorage.setItem("pado-cart-selection", JSON.stringify(selectedKeys));
+  }, [ready, selectedKeys]);
 
   useEffect(() => {
     if (!ready || items.length === 0) return;
@@ -131,9 +151,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => ({
     items,
+    selectedItems: items.filter((item) => selectedKeys.includes(getCartItemKey(item))),
+    selectedKeys,
     count: getCartLineItemCount(items),
     ready,
-    addItem: (next) => setItems((current) => {
+    addItem: (next) => {
+      setSelectedKeys((current) => current.includes(getCartItemKey(next)) ? current : [...current, getCartItemKey(next)]);
+      setItems((current) => {
       if (!Number.isFinite(Number(next.quantity)) || Number(next.quantity) <= 0) return current;
       const found = current.find((item) => item.productSlug === next.productSlug && item.optionId === next.optionId);
       const maxQuantity = Number.isFinite(Number(next.stock)) ? Number(next.stock) : Infinity;
@@ -152,15 +176,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             quantity: Math.min(maxQuantity, item.quantity + next.quantity)
           } : item)
         : [...current, { ...next, quantity: Math.min(maxQuantity, next.quantity) }];
-    }),
+      });
+    },
     updateQuantity: (slug, optionId, quantity) => setItems((current) => current.map((item) =>
       item.productSlug === slug && item.optionId === optionId
         ? { ...item, quantity: Math.max(1, Math.min(Number.isFinite(Number(item.stock)) ? Number(item.stock) : Infinity, quantity)) }
         : item
     )),
-    removeItem: (slug, optionId) => setItems((current) => current.filter((item) => !(item.productSlug === slug && item.optionId === optionId))),
-    clearCart: () => setItems([])
-  }), [items, ready]);
+    removeItem: (slug, optionId) => {
+      const key = `${slug}:${optionId}`;
+      setSelectedKeys((current) => current.filter((itemKey) => itemKey !== key));
+      setItems((current) => current.filter((item) => getCartItemKey(item) !== key));
+    },
+    setItemSelected: (slug, optionId, selected) => setSelectedKeys((current) => {
+      const key = `${slug}:${optionId}`;
+      return selected ? (current.includes(key) ? current : [...current, key]) : current.filter((itemKey) => itemKey !== key);
+    }),
+    selectAllItems: (selected) => setSelectedKeys(selected ? items.map(getCartItemKey) : []),
+    removeSelectedItems: () => {
+      const selected = new Set(selectedKeys);
+      setItems((current) => current.filter((item) => !selected.has(getCartItemKey(item))));
+      setSelectedKeys([]);
+    },
+    clearCart: () => { setItems([]); setSelectedKeys([]); }
+  }), [items, ready, selectedKeys]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
