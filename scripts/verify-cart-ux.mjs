@@ -17,7 +17,7 @@ assert(header.includes("{count}") && mobile.includes("{count > 99"), "header and
 for (const token of ["selectedItems", "selectedKeys", "setItemSelected", "selectAllItems", "removeSelectedItems", "pado-cart-selection"]) {
   assert(provider.includes(token), `cart selection provider is missing ${token}`);
 }
-for (const label of ["전체선택", "선택삭제", "주문 선택", "정상가", "% 할인", "할인금액", "판매가", "쿠팡가격", "PADO 최저가"]) {
+for (const label of ["전체선택", "선택삭제", "주문 선택", "정상가", "% 할인", "개 구매 시 총", "판매가", "쿠팡가격", "PADO 최저가"]) {
   assert(cart.includes(label), `cart is missing ${label}`);
 }
 assert(cart.includes("selectedItems.reduce"), "cart totals must use selected items");

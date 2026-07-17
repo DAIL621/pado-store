@@ -1,16 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CartItem, getCartItemKey, useCart } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
 import { calculateShipping } from "@/lib/order/pricing";
 import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
+import { createClient } from "@/lib/supabase/client";
 
 export default function CartPage() {
   const { items, selectedItems, selectedKeys, updateQuantity, removeItem, addItem, setItemSelected, selectAllItems, removeSelectedItems } = useCart();
   const [removedItem, setRemovedItem] = useState<CartItem | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
+
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!active) return;
+      setIsLoggedIn(Boolean(data.user));
+      setAuthChecked(true);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setIsLoggedIn(Boolean(session?.user));
+      setAuthChecked(true);
+    });
+
+    return () => {
+      active = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
   const subtotal = selectedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const regularSubtotal = selectedItems.reduce((sum, item) => sum + (item.regularPrice ?? item.unitPrice) * item.quantity, 0);
   const productDiscount = Math.max(0, regularSubtotal - subtotal);
@@ -46,7 +71,7 @@ export default function CartPage() {
       <div className="shell cart-layout">
         <section className="cart-list">
           {!!items.length && <div className="cart-selection-toolbar"><label><input type="checkbox" checked={allSelected} onChange={(event) => selectAllItems(event.target.checked)} /> 전체선택 <b>{selectedItems.length}/{items.length}</b></label><button type="button" disabled={!selectedItems.length} onClick={removeSelectedItems}>선택삭제</button></div>}
-          {!!items.length && (
+          {!!items.length && authChecked && !isLoggedIn && (
             <div className="cart-login-guide">
               <strong>로그인하면 주문조회와 배송조회가 더 쉬워집니다.</strong>
               <Link href="/login?next=/checkout">카카오로 계속하기</Link>
@@ -99,7 +124,7 @@ export default function CartPage() {
                     <div className="cart-price-benefit">
                       {regularPrice && <del>정상가 {formatPrice(regularPrice)}</del>}
                       <strong>{discountRate > 0 && <em>{discountRate}% 할인</em>}판매가 {formatPrice(item.unitPrice)}</strong>
-                      {discountAmount > 0 && <small>할인금액 {formatPrice(discountAmount)}</small>}
+                      {discountAmount > 0 && <small>{item.quantity}개 구매 시 총 {formatPrice(discountAmount)} 할인</small>}
                     </div>
                     {item.priceChanged && <small className="cart-price-updated">최신 판매가격으로 갱신되었습니다.</small>}
                     {coupangPrice && <div className="cart-coupang-compare"><span>쿠팡가격 <del>{formatPrice(coupangPrice)}</del></span><strong>PADO 최저가</strong><small>쿠팡보다 <b>{formatPrice((coupangPrice - item.unitPrice) * item.quantity)}</b> 저렴해요!</small></div>}
@@ -113,7 +138,7 @@ export default function CartPage() {
                       <button type="button" className="remove" onClick={() => removeWithUndo(item)}>삭제</button>
                     </div>
                   </div>
-                  <strong>{formatPrice(item.unitPrice * item.quantity)}</strong>
+                  <div className="cart-item-subtotal"><span>상품금액</span><strong>{formatPrice(item.unitPrice * item.quantity)}</strong></div>
                 </article>
               );
             })
