@@ -35,6 +35,10 @@ type StatusFilter = "all" | ProductStatus;
 type TestFilter = "all" | "production" | "test";
 type QualityFilter = "all" | "low" | "ready";
 type SortMode = "recent" | "quality-low" | "quality-high" | "stock-low" | "price-high";
+type BulkAction = "delete" | "hide" | "end_sale" | "recover";
+
+const isDeletedProduct = (product: AdminProduct) =>
+  (product.detail_json as Record<string, unknown> | null | undefined)?.operationState === "deleted";
 
 const getTotalStock = (product: AdminProduct) =>
   (product.product_options ?? []).reduce((total, option) => total + (Number(option.stock) || 0), 0);
@@ -116,6 +120,9 @@ export function AdminProductsManager() {
   const [bulkHiding, setBulkHiding] = useState(false);
   const [bulkRecovering, setBulkRecovering] = useState(false);
   const [highlightedProduct, setHighlightedProduct] = useState<{ id?: string; slug?: string } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkAction, setBulkAction] = useState<BulkAction | null>(null);
+  const [bulkWorking, setBulkWorking] = useState(false);
 
   const loadProducts = async () => {
     const response = await fetch("/api/admin/products", { cache: "no-store" });
@@ -125,6 +132,7 @@ export function AdminProductsManager() {
       return;
     }
     setProducts(result.products ?? []);
+    setSelectedIds((current) => current.filter((id) => (result.products ?? []).some((product: AdminProduct) => product.id === id && !isDeletedProduct(product))));
     setMessage(`총 ${result.products?.length ?? 0}개 상품을 불러왔습니다.`);
   };
 
@@ -173,8 +181,9 @@ export function AdminProductsManager() {
   }, [highlightedProduct, products]);
 
   const counts = useMemo(() => {
-    const base = { all: products.length, selling: 0, soldout: 0, hidden: 0, ended: 0, test: 0, production: 0 };
-    products.forEach((product) => {
+    const managedProducts = products.filter((product) => !isDeletedProduct(product));
+    const base = { all: managedProducts.length, selling: 0, soldout: 0, hidden: 0, ended: 0, test: 0, production: 0 };
+    managedProducts.forEach((product) => {
       base[getStatus(product)] += 1;
       if (isVerificationProduct(product)) {
         base.test += 1;
@@ -186,17 +195,18 @@ export function AdminProductsManager() {
   }, [products]);
 
   const visibleVerificationProducts = useMemo(
-    () => products.filter((product) => isVerificationProduct(product) && getStatus(product) !== "hidden"),
+    () => products.filter((product) => !isDeletedProduct(product) && isVerificationProduct(product) && getStatus(product) !== "hidden"),
     [products]
   );
   const hiddenVerificationProducts = useMemo(
-    () => products.filter((product) => isVerificationProduct(product) && getStatus(product) === "hidden"),
+    () => products.filter((product) => !isDeletedProduct(product) && isVerificationProduct(product) && getStatus(product) === "hidden"),
     [products]
   );
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     const nextProducts = products.filter((product) => {
+      if (isDeletedProduct(product)) return false;
       const status = getStatus(product);
       const detailScore = getDetailScore(product);
       const matchesStatus = statusFilter === "all" || status === statusFilter;
@@ -222,6 +232,42 @@ export function AdminProductsManager() {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
   }, [products, qualityFilter, query, sortMode, statusFilter, testFilter]);
+
+  const visibleIds = useMemo(() => filtered.map((product) => product.id), [filtered]);
+  const selectedProducts = useMemo(() => products.filter((product) => selectedIds.includes(product.id)), [products, selectedIds]);
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
+
+  const toggleAllVisible = (checked: boolean) => setSelectedIds((current) => {
+    const visible = new Set(visibleIds);
+    return checked ? Array.from(new Set([...current, ...visibleIds])) : current.filter((id) => !visible.has(id));
+  });
+
+  const toggleProduct = (id: string, checked: boolean) => setSelectedIds((current) =>
+    checked ? (current.includes(id) ? current : [...current, id]) : current.filter((selectedId) => selectedId !== id)
+  );
+
+  const runBulkAction = async () => {
+    if (!bulkAction || !selectedProducts.length || bulkWorking) return;
+    setBulkWorking(true);
+    let failed = 0;
+    for (const product of selectedProducts) {
+      const response = bulkAction === "delete"
+        ? await fetch(`/api/admin/products/${product.id}`, { method: "DELETE" })
+        : await fetch(`/api/admin/products/${product.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: bulkAction })
+          });
+      if (!response.ok) failed += 1;
+    }
+    const completed = selectedProducts.length - failed;
+    const labels: Record<BulkAction, string> = { delete: "삭제", hide: "숨김", end_sale: "판매종료", recover: "판매중" };
+    setMessage(failed ? `${labels[bulkAction]} ${completed}개 완료, ${failed}개 실패` : `선택 상품 ${completed}개를 ${labels[bulkAction]} 처리했습니다.`);
+    setSelectedIds([]);
+    setBulkAction(null);
+    setBulkWorking(false);
+    await loadProducts();
+  };
 
   const updateProductState = async (product: AdminProduct, body: Record<string, unknown>, doneMessage: string) => {
     const response = await fetch(`/api/admin/products/${product.id}`, {
@@ -254,7 +300,11 @@ export function AdminProductsManager() {
 
   const hide = async (product: AdminProduct) => {
     if (!window.confirm(`${product.name} 상품을 숨김 처리할까요? DB에서는 삭제하지 않습니다.`)) return;
-    const response = await fetch(`/api/admin/products/${product.id}`, { method: "DELETE" });
+    const response = await fetch(`/api/admin/products/${product.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "hide" })
+    });
     const result = await response.json();
     if (!response.ok) {
       setMessage(result.message ?? "숨김 처리에 실패했습니다.");
@@ -313,7 +363,11 @@ export function AdminProductsManager() {
     let failedCount = 0;
 
     for (const product of visibleVerificationProducts) {
-      const response = await fetch(`/api/admin/products/${product.id}`, { method: "DELETE" });
+      const response = await fetch(`/api/admin/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "hide" })
+      });
       if (!response.ok) failedCount += 1;
     }
 
@@ -423,6 +477,16 @@ export function AdminProductsManager() {
       </div>
       <p className="admin-note">{message}</p>
 
+      <div className="admin-bulk-toolbar" aria-label="선택 상품 일괄 작업">
+        <strong>{selectedIds.length}개 선택됨</strong>
+        <div>
+          <button type="button" className="danger-lite" disabled={!selectedIds.length || bulkWorking} onClick={() => setBulkAction("delete")}>선택삭제</button>
+          <button type="button" disabled={!selectedIds.length || bulkWorking} onClick={() => setBulkAction("hide")}>선택숨김</button>
+          <button type="button" disabled={!selectedIds.length || bulkWorking} onClick={() => setBulkAction("end_sale")}>판매종료</button>
+          <button type="button" disabled={!selectedIds.length || bulkWorking} onClick={() => setBulkAction("recover")}>판매중</button>
+        </div>
+      </div>
+
       <div className="admin-panel">
         <div>
           <h2>상품 목록</h2>
@@ -432,6 +496,7 @@ export function AdminProductsManager() {
           <table className="product-admin-table">
             <thead>
               <tr>
+                <th className="admin-select-column"><input type="checkbox" aria-label="현재 목록 전체선택" checked={allVisibleSelected} onChange={(event) => toggleAllVisible(event.target.checked)} /></th>
                 <th>상품명</th>
                 <th>산지</th>
                 <th>카테고리</th>
@@ -446,7 +511,7 @@ export function AdminProductsManager() {
             <tbody>
               {!filtered.length && (
                 <tr>
-                  <td colSpan={9} className="admin-empty-filter-cell">
+                  <td colSpan={10} className="admin-empty-filter-cell">
                     <div className="admin-empty-filter">
                       <strong>조건에 맞는 상품이 없습니다.</strong>
                       <span>검색어 또는 상태/검증상품 필터를 조정해보세요.</span>
@@ -461,6 +526,7 @@ export function AdminProductsManager() {
                 const verificationProduct = isVerificationProduct(product);
                 return (
                   <tr key={product.id} className={highlightedProduct && (highlightedProduct.id === product.id || highlightedProduct.slug === product.slug) ? "recently-created" : ""}>
+                    <td className="admin-select-column"><input type="checkbox" aria-label={`${product.name} 선택`} checked={selectedIds.includes(product.id)} onChange={(event) => toggleProduct(product.id, event.target.checked)} /></td>
                     <td>
                       <strong>{product.name}</strong>
                       {verificationProduct && <span className="test-product-badge">검증</span>}
@@ -500,6 +566,20 @@ export function AdminProductsManager() {
           </table>
         </div>
       </div>
+
+      {bulkAction && (
+        <div className="modal-backdrop" role="presentation">
+          <section className="admin-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="bulk-confirm-title">
+            <h2 id="bulk-confirm-title">일괄 작업 확인</h2>
+            <p>선택한 {selectedProducts.length}개의 상품을 {bulkAction === "delete" ? "삭제" : bulkAction === "hide" ? "숨김" : bulkAction === "end_sale" ? "판매종료" : "판매중"} 처리하시겠습니까?</p>
+            {bulkAction === "delete" && <small>상품은 복구 가능한 Soft Delete로 처리되며 관리자 기본목록에서 제외됩니다.</small>}
+            <div>
+              <button type="button" onClick={() => setBulkAction(null)} disabled={bulkWorking}>취소</button>
+              <button type="button" className={bulkAction === "delete" ? "danger" : "teal"} onClick={runBulkAction} disabled={bulkWorking}>{bulkWorking ? "처리 중..." : bulkAction === "delete" ? "삭제" : "확인"}</button>
+            </div>
+          </section>
+        </div>
+      )}
 
       {editing && (
         <ProductEditModal

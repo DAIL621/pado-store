@@ -40,6 +40,7 @@
     "cleanup:prelaunch": "node scripts/cleanup-prelaunch-data.mjs",
     "verify:prelaunch-cleanup": "node scripts/verify-prelaunch-cleanup.mjs",
     "verify:cart-ux": "node scripts/verify-cart-ux.mjs",
+    "verify:admin-product-bulk": "node scripts/verify-admin-product-bulk.mjs",
     "score:ai-image-analysis": "node scripts/score-ai-image-analysis.mjs",
     "score:review-center": "node scripts/score-review-center.mjs",
     "evaluate:dataset": "node scripts/evaluate-dataset.mjs",

@@ -8,7 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const isMissingOptionPriceColumn = (error: { code?: string; message: string } | null) =>
   Boolean(error && (error.code === "PGRST204" || (error.message.includes("schema cache") && error.message.includes("price"))));
 
-function withOperationState(detail: unknown, state: "hidden" | "ended" | null, actorId: string) {
+function withOperationState(detail: unknown, state: "hidden" | "ended" | "deleted" | null, actorId: string) {
   const base = normalizeProductDetailInput(detail);
   const operation: Record<string, unknown> = {
     ...(typeof (base as Record<string, unknown>).operation === "object" && (base as Record<string, unknown>).operation !== null
@@ -18,7 +18,7 @@ function withOperationState(detail: unknown, state: "hidden" | "ended" | null, a
     changedAt: new Date().toISOString(),
     changedBy: actorId
   };
-  if (state === "hidden") {
+  if (state === "deleted") {
     operation.deletedAt = operation.changedAt;
     operation.deletedBy = actorId;
   }
@@ -124,6 +124,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       actorEmail
     });
     return NextResponse.json({ ok: true, mode: "end_sale", product });
+  }
+
+  if (body.action === "hide") {
+    const { data: currentProduct, error: currentError } = await supabase.from("products").select("detail_json").eq("id", id).single();
+    if (currentError) return NextResponse.json({ ok: false, message: currentError.message }, { status: 500 });
+    const { data: product, error } = await supabase
+      .from("products")
+      .update({ is_active: false, detail_json: withOperationState(currentProduct?.detail_json, "hidden", actorId) })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+    await writeProductOperationLogBestEffort(supabase, {
+      eventType: "product.hidden",
+      summary: "상품을 고객 화면에서 숨겼습니다.",
+      productId: id,
+      actorId,
+      actorEmail
+    });
+    return NextResponse.json({ ok: true, mode: "hidden", product });
   }
 
   const updates: Record<string, unknown> = {};
@@ -260,13 +280,13 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   const { error } = await supabase
     .from("products")
-    .update({ is_active: false, detail_json: withOperationState(currentProduct?.detail_json, "hidden", actorId) })
+    .update({ is_active: false, detail_json: withOperationState(currentProduct?.detail_json, "deleted", actorId) })
     .eq("id", id);
 
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
   await writeProductOperationLogBestEffort(supabase, {
-    eventType: "product.hidden",
-    summary: "상품을 숨김 처리했습니다.",
+    eventType: "product.soft_deleted",
+    summary: "상품을 소프트 삭제했습니다.",
     productId: id,
     actorId,
     actorEmail
