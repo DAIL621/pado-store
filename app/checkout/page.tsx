@@ -63,6 +63,7 @@ export default function CheckoutPage() {
   const regularSubtotal = items.reduce((sum, item) => sum + (item.regularPrice ?? item.unitPrice) * item.quantity, 0);
   const productDiscount = Math.max(0, regularSubtotal - subtotal);
   const shipping = calculateShipping(subtotal);
+  const hasFreeShippingBenefit = items.length > 0 && shipping === 0;
   const total = subtotal + shipping;
   const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
   const canPay = items.length > 0 && unavailableItems.length === 0 && freshFoodPolicyAccepted;
@@ -218,8 +219,9 @@ export default function CheckoutPage() {
             </div>
           )}
           <div><span>상품 정상가 합계</span><b>{formatPrice(regularSubtotal)}</b></div>
-          {productDiscount > 0 && <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>}
+          <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>
           <div><span>배송비</span><b>{formatPrice(shipping)}</b></div>
+          <div className="summary-discount"><span>무료배송 혜택</span><b>{hasFreeShippingBenefit ? "적용" : "-"}</b></div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(total)}</strong></div>
           <div className="checkout-trust-list" aria-label="결제 전 확인 사항">
             <span>안전결제</span>

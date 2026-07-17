@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { getCartLineItemCount } from "@/lib/cart/count";
 
 export type CartItem = {
   productSlug: string;
@@ -130,7 +131,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => ({
     items,
-    count: items.reduce((sum, item) => sum + item.quantity, 0),
+    count: getCartLineItemCount(items),
     ready,
     addItem: (next) => setItems((current) => {
       if (!Number.isFinite(Number(next.quantity)) || Number(next.quantity) <= 0) return current;

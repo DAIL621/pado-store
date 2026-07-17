@@ -102,10 +102,10 @@ export default function CartPage() {
                     <div className="cart-price-benefit">
                       {regularPrice && <del>정상가 {formatPrice(regularPrice)}</del>}
                       <strong>{discountRate > 0 && <em>{discountRate}% 할인</em>}판매가 {formatPrice(item.unitPrice)}</strong>
-                      {discountAmount > 0 && <small>{formatPrice(discountAmount)} 절약</small>}
+                      {discountAmount > 0 && <small>할인금액 {formatPrice(discountAmount)}</small>}
                     </div>
                     {item.priceChanged && <small className="cart-price-updated">최신 판매가격으로 갱신되었습니다.</small>}
-                    {coupangPrice && <small className="cart-coupang-compare">쿠팡 가격보다 {formatPrice((coupangPrice - item.unitPrice) * item.quantity)} 저렴</small>}
+                    {coupangPrice && <div className="cart-coupang-compare"><span>쿠팡가격 <del>{formatPrice(coupangPrice)}</del></span><strong>PADO 최저가</strong><small>쿠팡보다 {formatPrice((coupangPrice - item.unitPrice) * item.quantity)} 저렴</small></div>}
                     {hasStockLimit && getCustomerStockMessage(stock) && <small className={atStockLimit || isUnavailable ? "cart-stock-note limit" : "cart-stock-note"}>{getCustomerStockMessage(stock)}</small>}
                     <div className="cart-controls">
                       <div>
@@ -126,9 +126,9 @@ export default function CartPage() {
         <aside className="order-summary">
           <h2>결제 예정 금액</h2>
           <div><span>상품 정상가 합계</span><b>{formatPrice(regularSubtotal)}</b></div>
-          {productDiscount > 0 && <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>}
+          <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>
           <div><span>배송비</span><b>{formatPrice(shipping)}</b></div>
-          {hasFreeShippingBenefit && <div className="summary-discount"><span>무료배송 혜택</span><b>적용</b></div>}
+          <div className="summary-discount"><span>무료배송 혜택</span><b>{hasFreeShippingBenefit ? "적용" : "-"}</b></div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(subtotal + shipping)}</strong></div>
           <div className="fresh-food-policy">
             <strong>신선식품 주문 전 확인해주세요</strong>
