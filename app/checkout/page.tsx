@@ -1,11 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useState } from "react";
 import Script from "next/script";
 import Link from "next/link";
 import { useCart, type CartItem } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
 import { calculateShipping } from "@/lib/order/pricing";
+import AddressBookModal from "@/components/checkout/AddressBookModal";
+import type { CheckoutDeliverySelection, UserAddress } from "@/lib/addresses/types";
 
 type TossPayment = {
   requestPayment: (paymentRequest: {
@@ -59,6 +61,10 @@ export default function CheckoutPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [freshFoodPolicyAccepted, setFreshFoodPolicyAccepted] = useState(false);
+  const [addressBookOpen, setAddressBookOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(null);
+  const [deliverySelection, setDeliverySelection] = useState<CheckoutDeliverySelection>({ addressId: null, isGift: false });
+  const [recipient, setRecipient] = useState({ recipientName: "", recipientPhone: "", postcode: "", address: "", addressDetail: "", memo: "" });
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const regularSubtotal = items.reduce((sum, item) => sum + (item.regularPrice ?? item.unitPrice) * item.quantity, 0);
   const productDiscount = Math.max(0, regularSubtotal - subtotal);
@@ -67,6 +73,19 @@ export default function CheckoutPage() {
   const total = subtotal + shipping;
   const unavailableItems = items.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
   const canPay = items.length > 0 && unavailableItems.length === 0 && freshFoodPolicyAccepted;
+
+  const applyAddress = useCallback((savedAddress: UserAddress) => {
+    setSelectedAddress(savedAddress);
+    setDeliverySelection((current) => ({ addressId: savedAddress.id, isGift: current.isGift || savedAddress.isGift }));
+    setRecipient({
+      recipientName: savedAddress.recipient,
+      recipientPhone: savedAddress.phone,
+      postcode: savedAddress.zipcode,
+      address: savedAddress.address,
+      addressDetail: savedAddress.detailAddress,
+      memo: savedAddress.memo
+    });
+  }, []);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -129,7 +148,8 @@ export default function CheckoutPage() {
           postcode: getRequiredText(formData, "postcode"),
           address,
           addressDetail: getRequiredText(formData, "addressDetail"),
-          memo: getRequiredText(formData, "memo")
+          memo: getRequiredText(formData, "memo"),
+          deliverySelection
         })
       });
       const result = await response.json();
@@ -174,7 +194,7 @@ export default function CheckoutPage() {
 
       <form className="shell checkout-layout" onSubmit={submit}>
         <section className="checkout-form">
-          <h2>받는 분 정보</h2>
+          <div className="checkout-recipient-head"><h2>받는 분 정보</h2><button type="button" onClick={() => setAddressBookOpen(true)}>저장된 배송지</button></div>
           <p className="checkout-helper">오후 1시 이전 결제 완료 주문은 산지에서 당일 출고를 준비합니다.</p>
           {!items.length && (
             <div className="checkout-empty-note" role="status">
@@ -191,12 +211,12 @@ export default function CheckoutPage() {
             </div>
           )}
           {message && <p className="form-message" role="status" aria-live="polite">{message}</p>}
-          <label>이름<input name="recipientName" required placeholder="홍길동" autoComplete="name" /></label>
-          <label>연락처<input name="recipientPhone" required placeholder="010-0000-0000" autoComplete="tel" inputMode="tel" pattern="[0-9\\-\\s]{10,}" /></label>
-          <label>우편번호<input name="postcode" placeholder="00000" autoComplete="postal-code" inputMode="numeric" /></label>
-          <label>주소<input name="address" required placeholder="배송지 주소" autoComplete="street-address" /></label>
-          <label>상세주소<input name="addressDetail" placeholder="동/호수 등" autoComplete="address-line2" /></label>
-          <label>배송 메모<textarea name="memo" rows={3} placeholder="부재 시 문 앞에 놓아주세요." /></label>
+          <label>이름<input name="recipientName" required placeholder="홍길동" autoComplete="name" value={recipient.recipientName} onChange={(event) => setRecipient({ ...recipient, recipientName: event.target.value })} /></label>
+          <label>연락처<input name="recipientPhone" required placeholder="010-0000-0000" autoComplete="tel" inputMode="tel" pattern="[0-9\\-\\s]{10,}" value={recipient.recipientPhone} onChange={(event) => setRecipient({ ...recipient, recipientPhone: event.target.value })} /></label>
+          <label>우편번호<input name="postcode" placeholder="00000" autoComplete="postal-code" inputMode="numeric" value={recipient.postcode} onChange={(event) => setRecipient({ ...recipient, postcode: event.target.value })} /></label>
+          <label>주소<input name="address" required placeholder="배송지 주소" autoComplete="street-address" value={recipient.address} onChange={(event) => setRecipient({ ...recipient, address: event.target.value })} /></label>
+          <label>상세주소<input name="addressDetail" placeholder="동/호수 등" autoComplete="address-line2" value={recipient.addressDetail} onChange={(event) => setRecipient({ ...recipient, addressDetail: event.target.value })} /></label>
+          <label>배송 메모<textarea name="memo" rows={3} placeholder="부재 시 문 앞에 놓아주세요." value={recipient.memo} onChange={(event) => setRecipient({ ...recipient, memo: event.target.value })} /></label>
           <div className="checkout-delivery-note">
             <strong>배송 전 확인</strong>
             <span>냉장 상품은 수령 가능한 주소와 연락처를 꼭 확인해주세요.</span>
@@ -218,6 +238,10 @@ export default function CheckoutPage() {
               <Link href="/products">상품 선택하기</Link>
             </div>
           )}
+          <div className="checkout-selected-address">
+            <span>받는 분</span>
+            {selectedAddress ? <><strong>{deliverySelection.isGift ? "🎁" : "🏠"} {selectedAddress.label}</strong><b>{recipient.recipientName}</b><p>{recipient.address}</p>{deliverySelection.isGift && <em>선물 배송</em>}</> : <><strong>배송지를 입력해주세요</strong><p>저장된 배송지를 선택하면 자동으로 입력됩니다.</p></>}
+          </div>
           <div><span>상품 정상가 합계</span><b>{formatPrice(regularSubtotal)}</b></div>
           <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>
           <div><span>배송비</span><b>{formatPrice(shipping)}</b></div>
@@ -237,6 +261,15 @@ export default function CheckoutPage() {
           <p>결제는 Toss Payments 안전 결제창에서 진행됩니다.</p>
         </aside>
       </form>
+      <AddressBookModal
+        open={addressBookOpen}
+        selectedId={deliverySelection.addressId}
+        gift={deliverySelection.isGift}
+        onGiftChange={(isGift) => setDeliverySelection((current) => ({ ...current, isGift }))}
+        onClose={() => setAddressBookOpen(false)}
+        onSelect={applyAddress}
+        onDefaultLoaded={applyAddress}
+      />
     </div>
   );
 }
