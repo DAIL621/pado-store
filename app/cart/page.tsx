@@ -14,6 +14,10 @@ export default function CartPage() {
   const subtotal = selectedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const regularSubtotal = selectedItems.reduce((sum, item) => sum + (item.regularPrice ?? item.unitPrice) * item.quantity, 0);
   const productDiscount = Math.max(0, regularSubtotal - subtotal);
+  const coupangSavingsTotal = selectedItems.reduce((sum, item) => {
+    const coupangPrice = Number(item.coupangPrice ?? 0);
+    return sum + (coupangPrice > item.unitPrice ? (coupangPrice - item.unitPrice) * item.quantity : 0);
+  }, 0);
   const shipping = calculateShipping(subtotal);
   const hasFreeShippingBenefit = selectedItems.length > 0 && shipping === 0;
   const unavailableItems = selectedItems.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
@@ -98,7 +102,7 @@ export default function CartPage() {
                       {discountAmount > 0 && <small>할인금액 {formatPrice(discountAmount)}</small>}
                     </div>
                     {item.priceChanged && <small className="cart-price-updated">최신 판매가격으로 갱신되었습니다.</small>}
-                    {coupangPrice && <div className="cart-coupang-compare"><span>쿠팡가격 <del>{formatPrice(coupangPrice)}</del></span><strong>PADO 최저가</strong><small>쿠팡보다 {formatPrice((coupangPrice - item.unitPrice) * item.quantity)} 저렴</small></div>}
+                    {coupangPrice && <div className="cart-coupang-compare"><span>쿠팡가격 <del>{formatPrice(coupangPrice)}</del></span><strong>PADO 최저가</strong><small>쿠팡보다 <b>{formatPrice((coupangPrice - item.unitPrice) * item.quantity)}</b> 저렴해요!</small></div>}
                     {hasStockLimit && getCustomerStockMessage(stock) && <small className={atStockLimit || isUnavailable ? "cart-stock-note limit" : "cart-stock-note"}>{getCustomerStockMessage(stock)}</small>}
                     <div className="cart-controls">
                       <div>
@@ -123,6 +127,7 @@ export default function CartPage() {
           <div><span>배송비</span><b>{formatPrice(shipping)}</b></div>
           <div className="summary-discount"><span>무료배송 혜택</span><b>{hasFreeShippingBenefit ? "적용" : "-"}</b></div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(subtotal + shipping)}</strong></div>
+          {coupangSavingsTotal > 0 && <div className="summary-coupang-saving" role="status"><span>쿠팡보다 총</span><strong>{formatPrice(coupangSavingsTotal)}</strong><b>저렴해요!</b></div>}
           <div className="fresh-food-policy">
             <strong>신선식품 주문 전 확인해주세요</strong>
             <p>본 상품은 신선식품 특성상 상품 준비 또는 배송이 시작된 이후에는 단순 변심에 의한 취소·교환·반품이 제한될 수 있습니다.</p>
