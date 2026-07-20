@@ -24,9 +24,12 @@ assert(cart.includes("authChecked && !isLoggedIn") && cart.includes("onAuthState
 assert(cart.includes("cart-item-subtotal") && cart.includes("상품금액"), "item subtotal label missing");
 assert(cart.includes("개 구매 시 총") && cart.includes("formatPrice(discountAmount)"), "quantity-aware discount copy missing");
 assert(cart.includes("쿠팡보다 <b>") && cart.includes("저렴해요!"), "per-item Coupang savings emphasis missing");
-assert(cart.includes("상품 하자 또는 오배송") && cart.includes("단순 변심"), "fresh food policy wording missing");
+assert(cart.includes("상품 하자, 오배송 또는 표시·광고") && cart.includes("단순 변심"), "fresh food policy wording missing");
 assert(cart.includes("requiredNoticeAccepted") && cart.includes("checkoutEnabled = canCheckout && requiredNoticeAccepted"), "required cart consent gate missing");
-assert(cart.includes("aria-expanded={noticeExpanded}") && cart.includes("필수 안내사항에 동의해주세요."), "collapsible consent details or guidance missing");
+assert(!cart.includes("noticeExpanded") && !cart.includes("자세히 보기"), "cart consent details must always be visible");
+assert(cart.includes("신선식품 주문 전 확인해주세요") && cart.includes("수령 즉시 상품과 포장 상태를 확인해주세요."), "always-visible fresh-food notice missing");
+assert(cart.indexOf("cart-required-notice-copy") < cart.indexOf('htmlFor="cart-required-notice"'), "consent checkbox must follow the notice copy");
+assert(cart.includes("필수 안내사항에 동의해주세요."), "required consent guidance missing");
 assert(cart.includes('id="cart-required-notice"') && cart.includes('htmlFor="cart-required-notice"'), "consent label association missing");
 assert(checkout.includes("freshFoodPolicyAccepted") && checkout.includes("!freshFoodPolicyAccepted"), "checkout agreement gate missing");
 assert(provider.includes("regularPrice") && provider.includes("unitPrice"), "cart price persistence missing");

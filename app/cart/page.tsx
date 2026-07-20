@@ -17,7 +17,6 @@ export default function CartPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [requiredNoticeAccepted, setRequiredNoticeAccepted] = useState(false);
-  const [noticeExpanded, setNoticeExpanded] = useState(false);
   const [checkoutNotice, setCheckoutNotice] = useState("");
 
   useEffect(() => {
@@ -160,27 +159,25 @@ export default function CartPage() {
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(subtotal + shipping)}</strong></div>
           {coupangSavingsTotal > 0 && <div className="summary-coupang-saving" role="status"><span>쿠팡보다 총</span><strong>{formatPrice(coupangSavingsTotal)}</strong><b>저렴해요!</b></div>}
           <div className="cart-required-consent">
+            <div className="cart-required-notice-copy">
+              <strong>신선식품 주문 전 확인해주세요</strong>
+              <ul>
+                <li>신선식품 특성상 상품 준비 또는 배송이 시작된 이후에는 단순 변심에 의한 취소·교환·반품이 제한될 수 있습니다.</li>
+                <li>상품 하자, 오배송 또는 표시·광고 내용과 다른 상품이 배송된 경우에는 고객센터 확인 후 교환 또는 환불을 도와드립니다.</li>
+                <li>수령 즉시 상품과 포장 상태를 확인해주세요.</li>
+                <li>이상이 있는 경우 수령 직후 상품과 포장 상태를 사진으로 촬영하여 고객센터로 문의해주세요.</li>
+              </ul>
+            </div>
             <label htmlFor="cart-required-notice" tabIndex={0} onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
                 setRequiredNoticeAccepted((current) => !current);
                 setCheckoutNotice("");
               }
-            }}>
+              }}>
               <input id="cart-required-notice" type="checkbox" checked={requiredNoticeAccepted} onChange={(event) => { setRequiredNoticeAccepted(event.target.checked); setCheckoutNotice(""); }} />
-              <span>아래 내용을 확인하였으며 이에 동의합니다.</span>
+              <span>신선식품 특성과 취소·교환·반품 안내를 확인했으며 이에 동의합니다.</span>
             </label>
-            <button type="button" className="cart-consent-detail-toggle" aria-expanded={noticeExpanded} aria-controls="cart-consent-details" onClick={() => setNoticeExpanded((current) => !current)}>
-              자세히 보기 <span aria-hidden="true">{noticeExpanded ? "▴" : "▾"}</span>
-            </button>
-            {noticeExpanded && (
-              <ul id="cart-consent-details">
-                <li>신선식품 특성상 단순 변심에 의한 취소·교환·반품이 제한됩니다.</li>
-                <li>상품 하자 또는 오배송은 고객센터에서 신속히 처리해드립니다.</li>
-                <li>수령 즉시 상품 상태를 확인해주세요.</li>
-                <li>이상이 있을 경우 사진 촬영 후 고객센터로 문의해주세요.</li>
-              </ul>
-            )}
           </div>
           {checkoutNotice && <p id="cart-consent-message" className="cart-consent-message" role="alert">{checkoutNotice}</p>}
           <button
