@@ -12,7 +12,7 @@ const DEV_ADMIN_COOKIE_OPTIONS = {
 };
 
 export function isDevAdminLoginEnabled() {
-  return process.env.DEV_ADMIN_LOGIN_ENABLED === "true";
+  return process.env.NODE_ENV !== "production" && process.env.DEV_ADMIN_LOGIN_ENABLED === "true";
 }
 
 export async function hasDevAdminSession() {
