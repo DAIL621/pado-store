@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { formatPrice } from "@/data/products";
 import { isValidTrackingNumber, TRACKING_NUMBER_MESSAGE } from "@/lib/shipping/tracking";
 import { buildTrackingUrl } from "@/lib/shipping/tracking-url";
+import { canChangeOrderStatus, isOperationOrderStatus, resolveTrackingSaveStatus, type OperationOrderStatus } from "@/lib/operations/status";
 
 type OrderItem = {
   id: string;
@@ -283,6 +284,7 @@ function OrderDetailModal({
 }) {
   const shipment = getShipment(order);
   const [status, setStatus] = useState(order.status);
+  const [persistedStatus, setPersistedStatus] = useState(order.status);
   const [carrier, setCarrier] = useState(shipment?.carrier || "CJ대한통운");
   const [trackingNumber, setTrackingNumber] = useState(shipment?.tracking_number || "");
   const [savedCarrier, setSavedCarrier] = useState(shipment?.carrier || "CJ대한통운");
@@ -296,7 +298,14 @@ function OrderDetailModal({
   const save = async () => {
     const cleanedCarrier = carrier.trim();
     const cleanedTrackingNumber = trackingNumber.trim();
-    const nextStatus = cleanedTrackingNumber && autoShipOnTracking && ["pending", "paid", "preparing"].includes(status) ? "shipped" : status;
+    if (!isOperationOrderStatus(persistedStatus) || !isOperationOrderStatus(status)) {
+      setMessage("주문 상태를 다시 확인해주세요.");
+      return;
+    }
+    const nextStatus = resolveTrackingSaveStatus(persistedStatus, status, {
+      hasTrackingNumber: Boolean(cleanedTrackingNumber),
+      autoAdvance: autoShipOnTracking
+    });
     if ((nextStatus === "shipped" || nextStatus === "delivered") && !cleanedTrackingNumber) {
       setMessage("배송중 또는 배송완료 상태에는 송장번호가 필요합니다.");
       return;
@@ -324,6 +333,7 @@ function OrderDetailModal({
       return;
     }
     setStatus(nextStatus);
+    setPersistedStatus(nextStatus);
     setSavedCarrier(cleanedCarrier);
     setSavedTrackingNumber(cleanedTrackingNumber);
     setMessage("저장되었습니다.");
@@ -359,12 +369,9 @@ function OrderDetailModal({
             <div className="admin-shipping-form">
               <label>주문상태
               <select value={status} onChange={(event) => setStatus(event.target.value)}>
-                <option value="pending">주문대기</option>
-                <option value="paid">결제완료</option>
-                <option value="preparing">상품준비중</option>
-                <option value="shipped">배송중</option>
-                <option value="delivered">배송완료</option>
-                <option value="cancelled">취소</option>
+                {statusFilterOptions.filter((option) => option.value !== "all").map((option) => (
+                  <option key={option.value} value={option.value} disabled={isOperationOrderStatus(persistedStatus) && !canChangeOrderStatus(persistedStatus, option.value as OperationOrderStatus)}>{option.label}</option>
+                ))}
               </select>
             </label>
             <label>택배사<select value={carrier} onChange={(event) => setCarrier(event.target.value)}>{carrierOptions.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
@@ -374,7 +381,7 @@ function OrderDetailModal({
                 <button type="button" disabled={!trackingNumber.trim()} onClick={() => onCopyTrackingNumber(trackingNumber.trim())}>송장 복사</button>
               </div>
             </label>
-            <label className="admin-auto-ship"><input type="checkbox" checked={autoShipOnTracking} onChange={(event) => setAutoShipOnTracking(event.target.checked)} /> 송장 저장 시 배송중으로 자동 변경</label>
+            <label className="admin-auto-ship"><input type="checkbox" checked={autoShipOnTracking} onChange={(event) => setAutoShipOnTracking(event.target.checked)} /> 송장 저장 시 다음 배송 단계로 자동 변경<small>결제완료 → 상품준비중, 상품준비중 → 배송중</small></label>
             {trackingUrl && <a href={trackingUrl} target="_blank" rel="noreferrer" className="admin-tracking-link">배송조회</a>}
             </div>
           </section>

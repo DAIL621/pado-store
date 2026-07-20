@@ -47,6 +47,20 @@ export function canChangeOrderStatus(from: OperationOrderStatus, to: OperationOr
   return orderStatusFlow[from]?.includes(to) ?? false;
 }
 
+export function resolveTrackingSaveStatus(
+  persistedStatus: OperationOrderStatus,
+  selectedStatus: OperationOrderStatus,
+  options: { hasTrackingNumber: boolean; autoAdvance: boolean }
+) {
+  if (!options.hasTrackingNumber || !options.autoAdvance || selectedStatus !== persistedStatus) return selectedStatus;
+  const automaticTarget = persistedStatus === "paid"
+    ? "preparing"
+    : persistedStatus === "preparing" || persistedStatus === "delivery_ready"
+      ? "shipped"
+      : persistedStatus;
+  return canChangeOrderStatus(persistedStatus, automaticTarget) ? automaticTarget : selectedStatus;
+}
+
 export function needsTrackingNumber(status: OperationOrderStatus) {
   return status === "shipped" || status === "delivered";
 }
