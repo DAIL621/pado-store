@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CartItem, getCartItemKey, useCart } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
 import { calculateShipping } from "@/lib/order/pricing";
@@ -10,10 +11,14 @@ import { getCustomerStockMessage } from "@/lib/products/stock-visibility";
 import { createClient } from "@/lib/supabase/client";
 
 export default function CartPage() {
+  const router = useRouter();
   const { items, selectedItems, selectedKeys, updateQuantity, removeItem, addItem, setItemSelected, selectAllItems, removeSelectedItems } = useCart();
   const [removedItem, setRemovedItem] = useState<CartItem | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [requiredNoticeAccepted, setRequiredNoticeAccepted] = useState(false);
+  const [noticeExpanded, setNoticeExpanded] = useState(false);
+  const [checkoutNotice, setCheckoutNotice] = useState("");
 
   useEffect(() => {
     const supabase = createClient();
@@ -47,6 +52,7 @@ export default function CartPage() {
   const hasFreeShippingBenefit = selectedItems.length > 0 && shipping === 0;
   const unavailableItems = selectedItems.filter((item) => Number.isFinite(Number(item.stock)) && Number(item.stock) <= 0);
   const canCheckout = selectedItems.length > 0 && unavailableItems.length === 0;
+  const checkoutEnabled = canCheckout && requiredNoticeAccepted;
   const allSelected = items.length > 0 && selectedItems.length === items.length;
 
   const removeWithUndo = (item: CartItem) => {
@@ -153,20 +159,45 @@ export default function CartPage() {
           <div className="summary-discount"><span>무료배송 혜택</span><b>{hasFreeShippingBenefit ? "적용" : "-"}</b></div>
           <div className="summary-total"><span>총 결제 금액</span><strong>{formatPrice(subtotal + shipping)}</strong></div>
           {coupangSavingsTotal > 0 && <div className="summary-coupang-saving" role="status"><span>쿠팡보다 총</span><strong>{formatPrice(coupangSavingsTotal)}</strong><b>저렴해요!</b></div>}
-          <div className="fresh-food-policy">
-            <strong>신선식품 주문 전 확인해주세요</strong>
-            <p>본 상품은 신선식품 특성상 상품 준비 또는 배송이 시작된 이후에는 단순 변심에 의한 취소·교환·반품이 제한될 수 있습니다.</p>
-            <p>상품 하자, 오배송 또는 표시·광고 내용과 다른 상품이 배송된 경우에는 고객센터 확인 후 교환 또는 환불을 도와드립니다.</p>
-            <small>이상이 있는 경우 수령 직후 상품과 포장 상태를 사진으로 촬영하여 고객센터로 문의해주세요.</small>
+          <div className="cart-required-consent">
+            <label htmlFor="cart-required-notice" tabIndex={0} onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                setRequiredNoticeAccepted((current) => !current);
+                setCheckoutNotice("");
+              }
+            }}>
+              <input id="cart-required-notice" type="checkbox" checked={requiredNoticeAccepted} onChange={(event) => { setRequiredNoticeAccepted(event.target.checked); setCheckoutNotice(""); }} />
+              <span>아래 내용을 확인하였으며 이에 동의합니다.</span>
+            </label>
+            <button type="button" className="cart-consent-detail-toggle" aria-expanded={noticeExpanded} aria-controls="cart-consent-details" onClick={() => setNoticeExpanded((current) => !current)}>
+              자세히 보기 <span aria-hidden="true">{noticeExpanded ? "▴" : "▾"}</span>
+            </button>
+            {noticeExpanded && (
+              <ul id="cart-consent-details">
+                <li>신선식품 특성상 단순 변심에 의한 취소·교환·반품이 제한됩니다.</li>
+                <li>상품 하자 또는 오배송은 고객센터에서 신속히 처리해드립니다.</li>
+                <li>수령 즉시 상품 상태를 확인해주세요.</li>
+                <li>이상이 있을 경우 사진 촬영 후 고객센터로 문의해주세요.</li>
+              </ul>
+            )}
           </div>
-          <Link
-            className={`button teal full ${!canCheckout ? "disabled" : ""}`}
-            href={canCheckout ? "/checkout" : "/cart"}
-            aria-disabled={!canCheckout}
-            tabIndex={canCheckout ? undefined : -1}
+          {checkoutNotice && <p id="cart-consent-message" className="cart-consent-message" role="alert">{checkoutNotice}</p>}
+          <button
+            type="button"
+            className={`button teal full ${!checkoutEnabled ? "disabled" : ""}`}
+            aria-label={!requiredNoticeAccepted ? "필수 안내사항 동의 후 주문서 작성하기" : undefined}
+            aria-describedby={checkoutNotice ? "cart-consent-message" : undefined}
+            onClick={() => {
+              if (checkoutEnabled) {
+                router.push("/checkout");
+                return;
+              }
+              if (!requiredNoticeAccepted) setCheckoutNotice("필수 안내사항에 동의해주세요.");
+            }}
           >
             {!items.length ? "상품을 먼저 담아주세요" : unavailableItems.length ? "품절 상품을 삭제해주세요" : "주문서 작성하기"}
-          </Link>
+          </button>
           <p>평일 오후 1시 이전 주문은 당일 출고됩니다.</p>
         </aside>
       </div>
