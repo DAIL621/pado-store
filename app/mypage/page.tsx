@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { formatPrice } from "@/data/products";
 import { createClient } from "@/lib/supabase/server";
 import { TrackingCopyButton } from "@/components/mypage/TrackingCopyButton";
+import { buildTrackingUrl } from "@/lib/shipping/tracking-url";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,6 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusSteps = ["pending", "paid", "preparing", "shipped", "delivered"];
-const CJ_TRACKING_URL = "https://www.cjlogistics.com/ko/tool/parcel/tracking";
 
 type MyOrderItem = {
   id: string;
@@ -92,8 +92,8 @@ export default async function MyPage() {
             const carrier = shipment?.carrier?.trim() || "미입력";
             const trackingNumber = shipment?.tracking_number?.trim() || "미입력";
             const currentStep = statusSteps.indexOf(order.status);
-            const canTrack = trackingNumber !== "미입력" && (carrier.includes("CJ") || carrier.includes("대한통운"));
-            const trackingHref = `${CJ_TRACKING_URL}?gnbInvcNo=${encodeURIComponent(trackingNumber)}`;
+            const trackingHref = buildTrackingUrl(carrier, trackingNumber === "미입력" ? null : trackingNumber);
+            const canTrack = Boolean(trackingHref);
             const orderItems = order.order_items ?? [];
             const totalQuantity = orderItems.reduce((sum, item) => sum + Number(item.quantity), 0);
             const firstItemName = orderItems[0]?.product_name ?? "주문 상품";
@@ -161,7 +161,7 @@ export default async function MyPage() {
                       {trackingNumber}
                       {trackingNumber !== "미입력" && <TrackingCopyButton trackingNumber={trackingNumber} />}
                       {canTrack && (
-                        <Link href={trackingHref} target="_blank" rel="noreferrer" className="tracking-link">
+                        <Link href={trackingHref!} target="_blank" rel="noreferrer" className="tracking-link">
                           배송조회
                         </Link>
                       )}

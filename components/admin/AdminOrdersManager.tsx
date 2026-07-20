@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { formatPrice } from "@/data/products";
 import { isValidTrackingNumber, TRACKING_NUMBER_MESSAGE } from "@/lib/shipping/tracking";
+import { buildTrackingUrl } from "@/lib/shipping/tracking-url";
 
 type OrderItem = {
   id: string;
@@ -53,6 +54,8 @@ const statusFilterOptions: { value: StatusFilter; label: string }[] = [
   { value: "delivered", label: "배송완료" },
   { value: "cancelled", label: "취소" }
 ];
+const orderProgressSteps = ["pending", "paid", "preparing", "shipped", "delivered"];
+const carrierOptions = ["CJ대한통운", "롯데택배", "한진택배", "우체국택배", "로젠택배", "경동택배", "대신택배", "직접배송"];
 
 function getShipment(order: AdminOrder) {
   return order.shipments?.[0];
@@ -259,7 +262,6 @@ export function AdminOrdersManager() {
           onClose={() => setSelected(null)}
           onCopyTrackingNumber={copyTrackingNumber}
           onSaved={async () => {
-            setSelected(null);
             await loadOrders();
           }}
         />
@@ -283,12 +285,19 @@ function OrderDetailModal({
   const [status, setStatus] = useState(order.status);
   const [carrier, setCarrier] = useState(shipment?.carrier || "CJ대한통운");
   const [trackingNumber, setTrackingNumber] = useState(shipment?.tracking_number || "");
+  const [savedCarrier, setSavedCarrier] = useState(shipment?.carrier || "CJ대한통운");
+  const [savedTrackingNumber, setSavedTrackingNumber] = useState(shipment?.tracking_number || "");
+  const [autoShipOnTracking, setAutoShipOnTracking] = useState(true);
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+  const currentStep = orderProgressSteps.indexOf(status);
+  const trackingUrl = buildTrackingUrl(savedCarrier, savedTrackingNumber);
 
   const save = async () => {
     const cleanedCarrier = carrier.trim();
     const cleanedTrackingNumber = trackingNumber.trim();
-    if ((status === "shipped" || status === "delivered") && !cleanedTrackingNumber) {
+    const nextStatus = cleanedTrackingNumber && autoShipOnTracking && ["pending", "paid", "preparing"].includes(status) ? "shipped" : status;
+    if ((nextStatus === "shipped" || nextStatus === "delivered") && !cleanedTrackingNumber) {
       setMessage("배송중 또는 배송완료 상태에는 송장번호가 필요합니다.");
       return;
     }
@@ -301,36 +310,54 @@ function OrderDetailModal({
       return;
     }
 
+    setSaving(true);
     setMessage("저장 중입니다...");
     const response = await fetch(`/api/admin/orders/${order.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, carrier: cleanedCarrier, trackingNumber: cleanedTrackingNumber })
+      body: JSON.stringify({ status: nextStatus, carrier: cleanedCarrier, trackingNumber: cleanedTrackingNumber })
     });
     const result = await response.json();
     if (!response.ok) {
       setMessage(result.message ?? "저장에 실패했습니다.");
+      setSaving(false);
       return;
     }
-    onSaved();
+    setStatus(nextStatus);
+    setSavedCarrier(cleanedCarrier);
+    setSavedTrackingNumber(cleanedTrackingNumber);
+    setMessage("저장되었습니다.");
+    setSaving(false);
+    await onSaved();
   };
 
   return (
     <div className="modal-backdrop">
-      <div className="admin-modal">
+      <div className="admin-modal admin-order-modal">
         <div className="modal-head">
           <h2>주문 상세</h2>
           <button type="button" onClick={onClose}>닫기</button>
         </div>
-        <div className="order-detail-grid">
-          <section>
-            <h3>{order.order_no}</h3>
-            <p>주문자: {order.recipient_name} / {order.recipient_phone}</p>
-            <p>주소: ({order.postcode}) {order.address} {order.address_detail}</p>
-            <p>메모: {order.memo || "없음"}</p>
+        <div className="admin-order-modal-body">
+          <div className="admin-order-progress" aria-label="주문 처리 단계">
+            {orderProgressSteps.map((step, index) => <span key={step} className={currentStep >= index ? "complete" : ""} aria-current={status === step ? "step" : undefined}>{statusLabels[step]}</span>)}
+          </div>
+
+          <section className="admin-order-card admin-order-info-card">
+            <header><span>ORDER</span><h3>주문정보</h3></header>
+            <dl>
+              <div><dt>주문번호</dt><dd>{order.order_no}</dd></div>
+              <div><dt>주문자</dt><dd>{order.recipient_name}</dd></div>
+              <div><dt>연락처</dt><dd>{order.recipient_phone}</dd></div>
+              <div className="wide"><dt>배송지</dt><dd>({order.postcode || "우편번호 없음"}) {order.address} {order.address_detail}</dd></div>
+              <div className="wide"><dt>배송메모</dt><dd>{order.memo || "없음"}</dd></div>
+            </dl>
           </section>
-          <section>
-            <label>주문 상태
+
+          <section className="admin-order-card admin-shipping-card">
+            <header><span>DELIVERY</span><h3>배송 관리</h3></header>
+            <div className="admin-shipping-form">
+              <label>주문상태
               <select value={status} onChange={(event) => setStatus(event.target.value)}>
                 <option value="pending">주문대기</option>
                 <option value="paid">결제완료</option>
@@ -340,17 +367,21 @@ function OrderDetailModal({
                 <option value="cancelled">취소</option>
               </select>
             </label>
-            <label>택배사<input value={carrier} onChange={(event) => setCarrier(event.target.value)} /></label>
+            <label>택배사<select value={carrier} onChange={(event) => setCarrier(event.target.value)}>{carrierOptions.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
             <label>송장번호
               <div className="tracking-input-row">
-                <input value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} placeholder="송장번호 입력" />
-                <button type="button" disabled={!trackingNumber.trim()} onClick={() => onCopyTrackingNumber(trackingNumber.trim())}>복사</button>
+                <input value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} placeholder="123456789012" inputMode="numeric" />
+                <button type="button" disabled={!trackingNumber.trim()} onClick={() => onCopyTrackingNumber(trackingNumber.trim())}>송장 복사</button>
               </div>
             </label>
+            <label className="admin-auto-ship"><input type="checkbox" checked={autoShipOnTracking} onChange={(event) => setAutoShipOnTracking(event.target.checked)} /> 송장 저장 시 배송중으로 자동 변경</label>
+            {trackingUrl && <a href={trackingUrl} target="_blank" rel="noreferrer" className="admin-tracking-link">배송조회</a>}
+            </div>
           </section>
-        </div>
-        <div className="table-wrap">
-          <table>
+
+          <section className="admin-order-card admin-order-items-card">
+            <header><span>ITEMS</span><h3>주문상품</h3></header>
+            <div className="table-wrap"><table>
             <thead><tr><th>상품</th><th>옵션</th><th>수량</th><th>금액</th></tr></thead>
             <tbody>
               {(order.order_items ?? []).map((item) => (
@@ -362,10 +393,11 @@ function OrderDetailModal({
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table></div>
+          </section>
         </div>
-        {message && <p className="form-message">{message}</p>}
-        <button type="button" className="button teal" onClick={save}>주문 정보 저장</button>
+        {message && <p className={`admin-order-toast ${message === "저장되었습니다." ? "success" : ""}`} role="status">{message}</p>}
+        <footer className="admin-order-modal-actions"><button type="button" onClick={onClose}>취소</button><button type="button" className="button teal" onClick={save} disabled={saving}>{saving ? "저장 중..." : "저장"}</button></footer>
       </div>
     </div>
   );

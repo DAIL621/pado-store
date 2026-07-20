@@ -46,6 +46,7 @@
     "verify:option-price-persistence": "node scripts/verify-option-price-persistence.mjs",
     "verify:option-price-migration-plan": "node scripts/verify-option-price-migration-plan.mjs",
     "verify:address-book": "node scripts/verify-address-book.mjs",
+    "verify:admin-order-ux": "node scripts/verify-admin-order-ux.mjs",
     "score:ai-image-analysis": "node scripts/score-ai-image-analysis.mjs",
     "score:review-center": "node scripts/score-review-center.mjs",
     "evaluate:dataset": "node scripts/evaluate-dataset.mjs",
