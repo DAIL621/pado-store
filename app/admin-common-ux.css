@@ -6,5 +6,103 @@
 .admin-logout-form button:hover{background:rgba(255,255,255,.14);color:#fff}
 .admin-logout-form button:focus-visible{outline:3px solid rgba(126,216,208,.45);outline-offset:2px}
 .admin-logout-form button:disabled{cursor:wait;opacity:.55}
-.admin-status-label{display:block;margin-bottom:5px;color:var(--muted);font-size:9px;font-weight:850}
+.admin-status-label{display:block;margin-bottom:5px;color:var(--admin-text-muted);font-size:var(--admin-text-xs);font-weight:700}
 @media(max-width:1280px){.admin-main .table-wrap{overflow-x:auto}.admin-main table{min-width:980px}}
+
+/* Admin-only readability system. Keep these tokens scoped so storefront typography is untouched. */
+.admin-page{
+  --admin-text-xs:13px;
+  --admin-text-sm:14px;
+  --admin-text-md:15px;
+  --admin-text-lg:20px;
+  --admin-title:30px;
+  --admin-section-title:21px;
+  --admin-table-head:14px;
+  --admin-table-body:14px;
+  --admin-text-main:#193c40;
+  --admin-text-muted:#526b6e;
+  --admin-line-strong:#cfdfdd;
+  --admin-control-height:42px;
+  --admin-row-height:60px;
+  color:var(--admin-text-main);
+  font-size:var(--admin-text-sm);
+  line-height:1.55;
+}
+.admin-page .admin-main{min-width:0;padding-top:40px}
+.admin-page .admin-head{gap:18px;align-items:flex-start}
+.admin-page .admin-head h1{margin:7px 0;font-size:clamp(28px,2.3vw,var(--admin-title));font-weight:750;line-height:1.25;letter-spacing:-.035em}
+.admin-page .admin-head span,.admin-page .breadcrumb,.admin-page .admin-note{color:var(--admin-text-muted);font-size:var(--admin-text-sm);font-weight:500}
+.admin-page .admin-panel{padding:clamp(18px,2vw,24px)}
+.admin-page .admin-panel h2,.admin-page .admin-order-card>header h3{font-size:var(--admin-section-title);font-weight:750;line-height:1.3}
+.admin-page :is(input,select,textarea,button){font-size:var(--admin-text-sm)}
+.admin-page :is(input,select){min-height:var(--admin-control-height)}
+.admin-page :is(.button,button:not(.admin-order-number):not(.admin-sidebar-toggle)){min-height:40px}
+.admin-page :is(button,a,input,select,textarea):focus-visible{outline:3px solid rgba(0,127,131,.3)!important;outline-offset:2px}
+.admin-page :is(button,input,select):disabled{cursor:not-allowed;opacity:.52}
+
+.admin-page .admin-sidebar{width:100%;padding:32px 24px}
+.admin-page .admin-sidebar>strong{font-size:21px;line-height:1.25}
+.admin-page .admin-sidebar>span{margin-top:7px;color:#a9d4d0;font-size:13px;font-weight:650;letter-spacing:.08em}
+.admin-page .admin-sidebar nav{gap:6px;margin-top:34px}
+.admin-page .admin-sidebar nav a{display:flex;align-items:center;min-height:46px;border-radius:8px;padding:11px 12px;color:rgba(255,255,255,.78);font-size:14px;font-weight:600;line-height:1.35}
+.admin-page .admin-sidebar nav a:hover,.admin-page .admin-sidebar nav a:focus-visible{background:rgba(255,255,255,.08);color:#fff}
+.admin-page .admin-sidebar nav a.active{color:#fff;font-weight:800}
+.admin-page .admin-sidebar nav a[aria-expanded]::after{font-size:16px}
+.admin-page .admin-logout-form button{min-height:46px;font-size:14px}
+
+.admin-page :is(.admin-stats,.admin-order-summary-cards,.delivery-summary,.admin-customer-summary,.admin-cs-summary) :is(article,div,button){padding:16px}
+.admin-page :is(.admin-stats,.admin-order-summary-cards,.delivery-summary,.admin-customer-summary,.admin-cs-summary) span{color:var(--admin-text-muted);font-size:14px;font-weight:650;line-height:1.4}
+.admin-page :is(.admin-stats,.admin-order-summary-cards,.delivery-summary,.admin-customer-summary,.admin-cs-summary) strong{font-size:clamp(22px,2vw,28px);font-weight:750;line-height:1.2}
+
+.admin-page :is(.admin-product-filter-panel,.admin-order-filters,.admin-customer-search,.admin-cs-search) label{gap:6px;color:var(--admin-text-muted);font-size:13px;font-weight:700}
+.admin-page :is(.admin-product-filter-panel,.admin-order-filters,.admin-customer-search,.admin-cs-search) :is(input,select){min-height:42px;color:var(--admin-text-main);font-size:14px}
+.admin-page :is(.admin-bulk-toolbar,.admin-order-bulk) strong,.admin-page .admin-pagination,.admin-page .admin-pagination span{font-size:13px}
+.admin-page .admin-pagination button{min-height:40px;font-size:14px}
+
+.admin-page .table-wrap{max-width:100%;overflow-x:auto}
+.admin-page table{font-size:var(--admin-table-body)}
+.admin-page thead tr{min-height:46px}
+.admin-page th{height:46px;border-top-color:var(--admin-line-strong);border-bottom:1px solid var(--admin-line-strong);color:#36575b;font-size:var(--admin-table-head);font-weight:750;line-height:1.35}
+.admin-page td{min-height:var(--admin-row-height);padding:16px 12px;border-top-color:#e2eceb;color:var(--admin-text-main);font-size:var(--admin-table-body);line-height:1.5}
+.admin-page tbody tr{min-height:var(--admin-row-height)}
+.admin-page :is(td,section,article) small{color:var(--admin-text-muted);font-size:13px;line-height:1.5}
+.admin-page :is(.status,.admin-order-status,.cs-status,.cs-priority,.customer-grade,.customer-tags em,.admin-order-flags em){font-size:13px;line-height:1.25}
+.admin-page :is(.admin-order-empty,.admin-customer-empty){color:var(--admin-text-muted);font-size:15px;line-height:1.6}
+
+.admin-page .admin-product-identity{gap:14px}
+.admin-page .admin-product-identity strong{font-size:15px;font-weight:700}
+.admin-page .admin-product-identity small,.admin-page .product-admin-table time{font-size:13px}
+.admin-page .product-admin-table :is(td:nth-child(3),td:nth-child(4)){font-size:14px}
+.admin-page .product-admin-table td:nth-child(2),.admin-page .product-admin-table td:nth-child(5){font-size:15px;font-weight:650}
+.admin-page .admin-actions :is(button,a){font-size:13px}
+
+.admin-page .admin-order-number{font-size:14px;font-weight:750}
+.admin-page .admin-orders-table td small,.admin-page .admin-orders-table td a{font-size:13px}
+.admin-page .admin-order-items-summary{font-size:14px}
+.admin-page .admin-orders-table td:nth-child(6) :is(select,input){height:42px;font-size:14px}
+.admin-page .admin-orders-table td:nth-child(6) :is(button,a),.admin-page .admin-order-quick button{min-height:40px;font-size:13px}
+.admin-page .admin-order-payment-summary strong{font-size:22px}
+
+.admin-page .admin-customers-table td:first-child button{font-size:15px}
+.admin-page .admin-customers-table small,.admin-page .customer-address :is(span,p),.admin-page .customer-order-list article>p{font-size:13px}
+.admin-page .admin-cs-panel small,.admin-page .cs-history :is(time,strong),.admin-page .admin-cs-body a{font-size:13px}
+.admin-page .admin-cs-summary{gap:12px;margin:14px 0}
+.admin-page .admin-cs-summary button{min-height:72px;padding:16px}
+.admin-page .admin-cs-panel tbody tr{min-height:64px}
+
+@media(max-width:1280px){
+  .admin-page{--admin-title:28px}
+  .admin-page .admin-main{padding-inline:3%}
+  .admin-page :is(.admin-order-summary-cards,.admin-customer-summary,.admin-cs-summary){overflow-x:auto;grid-template-columns:repeat(5,minmax(150px,1fr))}
+}
+@media(max-width:900px){
+  .admin-page .admin-main{padding:28px 18px}
+  .admin-page .admin-head{align-items:stretch;flex-direction:column}
+  .admin-page :is(.admin-stats,.delivery-summary){grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  .admin-page{--admin-title:28px;--admin-row-height:56px}
+  .admin-page .admin-panel{padding:16px}
+  .admin-page :is(.admin-stats,.delivery-summary){grid-template-columns:1fr 1fr}
+  .admin-page .admin-pagination{justify-content:flex-start;overflow-x:auto;padding-bottom:4px}
+}
