@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "verify:admin-static": "node scripts/verify-admin-static.mjs",
-    "verify:operations": "node scripts/verify-operation-automation.mjs",
+    "verify:operations": "node scripts/verify-operation-automation.mjs && node scripts/verify-migrations.mjs",
     "verify:production-launch": "node scripts/verify-production-launch.mjs",
     "verify:ai-operation-center": "node scripts/verify-ai-operation-center.mjs",
     "verify:ai-draft-flow": "node scripts/verify-ai-draft-flow.mjs",
@@ -47,7 +47,11 @@
     "verify:option-price-migration-plan": "node scripts/verify-option-price-migration-plan.mjs",
     "verify:address-book": "node scripts/verify-address-book.mjs",
     "verify:admin-order-ux": "node scripts/verify-admin-order-ux.mjs",
-    "verify:security": "node scripts/verify-security.mjs",
+    "verify:security": "node scripts/verify-security.mjs && node scripts/verify-migrations.mjs",
+    "migration:new": "supabase migration new",
+    "migration:status": "node scripts/verify-migrations.mjs",
+    "migration:dry-run": "supabase db push --linked --dry-run",
+    "migration:deploy": "supabase db push --linked",
     "score:ai-image-analysis": "node scripts/score-ai-image-analysis.mjs",
     "score:review-center": "node scripts/score-review-center.mjs",
     "evaluate:dataset": "node scripts/evaluate-dataset.mjs",
@@ -61,16 +65,17 @@
     "lint": "node scripts/lint-basic.mjs"
   },
   "dependencies": {
-    "@supabase/ssr": "latest",
-    "@supabase/supabase-js": "latest",
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "@supabase/ssr": "0.12.0",
+    "@supabase/supabase-js": "2.108.2",
+    "next": "16.2.9",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "typescript": "latest"
+    "@types/node": "26.0.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "supabase": "2.109.1",
+    "typescript": "6.0.3"
   }
 }

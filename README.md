@@ -39,3 +39,32 @@ Supabase 실제 연결 순서는 [SETUP.md](./SETUP.md)를 참고하세요.
 - 배포 가능한 Next.js 기본 설정
 
 > 상품 가격과 옵션은 개발용 예시입니다. 실제 판매 전 확정 정보로 교체해야 합니다.
+# Supabase Migration 운영
+
+Supabase CLI `2.109.1`을 프로젝트 개발 의존성으로 고정합니다. 운영 자격증명은 파일에 저장하지 않고 현재 셸 또는 GitHub `production` Environment secret으로만 주입합니다.
+
+## 최초 연결과 상태 확인
+
+```powershell
+$env:SUPABASE_ACCESS_TOKEN="<personal-access-token>"
+$env:SUPABASE_DB_PASSWORD="<production-db-password>"
+pnpm exec supabase link --project-ref wvbdtiewkmwbdelajohy
+pnpm run migration:status
+```
+
+## 신규 Migration 생성 및 적용
+
+```powershell
+pnpm run migration:new add_feature_name
+pnpm run migration:dry-run
+pnpm run migration:deploy
+pnpm run migration:status
+```
+
+생성된 `supabase/migrations/<timestamp>_add_feature_name.sql`을 검토하고, 이미 적용된 Migration 파일은 수정하지 않습니다. 최초 자동화 전에는 [Migration baseline](./docs/MIGRATION_BASELINE.md)에 따라 사람이 실행했던 SQL과 원격 이력을 먼저 맞춥니다. 이후에는 `master` Push 후 GitHub Actions의 **Supabase production migrations** 워크플로를 실행하고 `production` 승인을 거칩니다.
+
+## Rollback
+
+운영 롤백은 기존 Migration을 삭제하거나 수정하지 않고 새 보상 Migration으로 처리합니다. 데이터 손실 가능성이 있으면 백업/PITR 복구 승인을 먼저 받습니다. `supabase db reset --linked`는 운영에서 금지하며, `migration repair`는 스키마가 아니라 이력만 바꾼다는 점에 유의합니다.
+
+전체 운영 순서는 [Production migration checklist](./docs/PRODUCTION_MIGRATION_CHECKLIST.md)를 따릅니다.

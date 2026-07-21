@@ -4,6 +4,7 @@ node_modules
 .vercel
 .pnpm-store
 .runtime-home
+supabase/.temp/
 .edge-profile*
 pado-store-home*.png
 *.log
