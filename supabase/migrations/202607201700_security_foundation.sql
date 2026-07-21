@@ -62,6 +62,10 @@ end $$;
 do $$ begin
   if to_regclass('public.user_addresses') is not null then
     alter table public.user_addresses enable row level security;
+    drop policy if exists "Users can read own addresses" on public.user_addresses;
+    drop policy if exists "Users can insert own addresses" on public.user_addresses;
+    drop policy if exists "Users can update own addresses" on public.user_addresses;
+    drop policy if exists "Users can delete own addresses" on public.user_addresses;
     drop policy if exists "addresses_owner_select" on public.user_addresses;
     create policy "addresses_owner_select" on public.user_addresses for select using (auth.uid() = user_id);
     drop policy if exists "addresses_owner_insert" on public.user_addresses;
