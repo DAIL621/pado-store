@@ -97,8 +97,23 @@ export async function GET(request: Request) {
     : { data: [] };
   const noteMap = new Map<string, string>();
   for (const note of notes ?? []) if (!noteMap.has(note.order_id)) noteMap.set(note.order_id, String((note.payload as { note?: string })?.note ?? ""));
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+  const { data: trackingRows } = await supabase.from("shipments").select("order_id").not("tracking_number", "is", null);
+  const trackingIds = (trackingRows ?? []).map((row) => row.order_id);
+  const excludeTests = `(${testIds.join(",")})`;
+  let todayQuery = supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", todayStart.toISOString());
+  let waitingQuery = supabase.from("orders").select("id", { count: "exact", head: true }).in("status", ["paid", "preparing"]);
+  let missingQuery = supabase.from("orders").select("id", { count: "exact", head: true }).in("status", ["paid", "preparing"]).not("id", "in", `(${trackingIds.length ? trackingIds.join(",") : "00000000-0000-0000-0000-000000000000"})`);
+  let shippingQuery = supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "shipped");
+  let cancelQuery = supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "return_requested");
+  if (!includeTest && testIds.length) {
+    todayQuery = todayQuery.not("id", "in", excludeTests); waitingQuery = waitingQuery.not("id", "in", excludeTests); missingQuery = missingQuery.not("id", "in", excludeTests); shippingQuery = shippingQuery.not("id", "in", excludeTests); cancelQuery = cancelQuery.not("id", "in", excludeTests);
+  }
+  const [todayCount, waitingCount, missingTrackingCount, shippingCount, cancelCount] = await Promise.all([
+    todayQuery, waitingQuery, missingQuery, shippingQuery, cancelQuery
+  ]);
   const total = count ?? 0;
-  return NextResponse.json({ ok: true, orders: (data ?? []).map((order) => ({ ...order, internal_note: noteMap.get(order.id) ?? "", is_test: testIds.includes(order.id) })), hiddenTestCount: testIds.length, pagination: { page, pageSize, total, pageCount: Math.max(1, Math.ceil(total / pageSize)) } });
+  return NextResponse.json({ ok: true, orders: (data ?? []).map((order) => ({ ...order, internal_note: noteMap.get(order.id) ?? "", is_test: testIds.includes(order.id) })), hiddenTestCount: testIds.length, pagination: { page, pageSize, total, pageCount: Math.max(1, Math.ceil(total / pageSize)) }, summary: { today: todayCount.count ?? 0, waiting: waitingCount.count ?? 0, missingTracking: missingTrackingCount.count ?? 0, shipping: shippingCount.count ?? 0, cancelRequested: cancelCount.count ?? 0 } });
 }
 
 export async function POST(request: Request) {

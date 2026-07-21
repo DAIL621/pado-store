@@ -18,12 +18,16 @@ for (const field of ["order_no", "recipient_name", "recipient_phone", "product_n
 assert(listApi.includes('{ count: "exact" }') && listApi.includes(".range(from, from + pageSize - 1)"), "server pagination is missing");
 assert(manager.includes("router.replace") && manager.includes("URLSearchParams"), "URL state is missing");
 assert(manager.includes("saveShipment") && manager.includes("resolveTrackingSaveStatus"), "inline shipment save is missing");
+assert(manager.includes("admin-inline-shipment") && manager.includes("onSubmit") && manager.includes("trackingRefs") && manager.includes(".focus()"), "fast enter-save and next-row focus are missing");
+assert(manager.includes("compactProductName") && manager.includes("외 ${items.length - 1}건"), "compact order item summary is missing");
+assert(manager.includes("admin-order-summary-cards") && listApi.includes("missingTracking") && listApi.includes("cancelRequested"), "clickable operations summary is missing");
 assert(manager.includes("bulkStatus") && listApi.includes("order.bulk_status_changed") && listApi.includes("needsTrackingNumber"), "safe bulk status processing is missing");
 assert(itemApi.includes("order.internal_note") && manager.includes("internalNote") && manager.includes("고객 화면에는 노출되지 않습니다"), "private order note is missing");
 assert(manager.includes("오늘 출고") && manager.includes("배송 지연") && manager.includes("송장 미입력") && manager.includes("취소 요청") && manager.includes("환불 진행"), "urgency badges are missing");
 assert(manager.includes("admin-order-cs-head") && manager.includes("배송·고객 정보") && manager.includes("주문상품·결제"), "CS summary or detail layout is missing");
 assert(tracking.includes("trace.cjlogistics.com") && manager.includes("buildTrackingUrl") && mypage.includes("buildTrackingUrl"), "shared tracking link is missing");
 assert(css.includes("admin-order-status.paid") && css.includes("admin-order-status.refunded") && css.includes("@media(max-width:700px)"), "status tokens or responsive layout are missing");
+assert(css.includes(".admin-inline-shipment{display:grid") && css.includes(".admin-orders-table thead{display:none}") && css.includes("transition:background-color .18s"), "compact shipment row, mobile cards, or hover motion is missing");
 assert(manager.includes('event.key === "Escape"') && css.includes(":focus-visible"), "keyboard accessibility is missing");
 
-console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "integrated-search", "combined-filters", "server-pagination", "url-state", "inline-tracking", "safe-bulk-status", "private-note-audit", "urgency-badges", "cs-summary", "detail-layout", "tracking-link", "status-colors", "responsive", "keyboard"] }, null, 2));
+console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "integrated-search", "combined-filters", "server-pagination", "url-state", "compact-item-summary", "operations-summary", "enter-save-next-focus", "inline-tracking", "safe-bulk-status", "private-note-audit", "urgency-badges", "cs-summary", "detail-layout", "tracking-link", "status-colors", "compact-hover", "responsive-cards", "keyboard"] }, null, 2));
