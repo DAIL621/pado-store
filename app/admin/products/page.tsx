@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminProductsManager } from "@/components/admin/AdminProductsManager";
+import { AdminScreen } from "@/components/admin/ui";
 import { getAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export default async function AdminProductsPage() {
       title="상품 관리"
       subtitle="상품 목록·수정·품절 관리"
     >
-      <AdminProductsManager />
+      <AdminScreen name="products"><AdminProductsManager /></AdminScreen>
     </AdminLayout>
   );
 }

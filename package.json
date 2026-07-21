@@ -55,6 +55,7 @@
     "verify:admin-auth-layout": "node scripts/verify-admin-auth-layout.mjs",
     "verify:admin-ui-data": "node scripts/verify-admin-ui-data.mjs",
     "verify:admin-readability": "node scripts/verify-admin-readability.mjs",
+    "verify:admin-design-system": "node scripts/verify-admin-design-system.mjs",
     "migration:new": "supabase migration new",
     "verify:migrations": "node scripts/verify-migrations.mjs",
     "migration:status": "node scripts/verify-migrations.mjs",

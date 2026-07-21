@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton";
+import { AdminPageHeader } from "@/components/admin/ui";
 
 export type AdminUser = {
   name: string | null;
@@ -78,27 +79,21 @@ export function AdminLayout({
             ),
           )}
         </nav>
+        <div className="admin-account-compact" aria-label="현재 관리자 계정">
+          <span>현재 관리자</span>
+          <strong>{admin.name || admin.email || "관리자"}</strong>
+          <small>{admin.email ?? "이메일 정보 없음"}</small>
+          <em>권한: {admin.role}</em>
+        </div>
         <AdminLogoutButton />
       </aside>
 
       <section className="admin-main">
-        <div className="admin-head">
-          <div>
-            <span>{subtitle}</span>
-            <h1>{title}</h1>
-          </div>
-          <a className="button outline" href="/products" target="_blank">
-            라이브몰 보기
-          </a>
-        </div>
-
-        <div className="admin-current-user">
-          <span>현재 로그인한 관리자</span>
-          <strong>{admin.name || admin.email || "관리자"}</strong>
-          <em>
-            {admin.email ?? "이메일 정보 없음"} · 권한: {admin.role}
-          </em>
-        </div>
+        <AdminPageHeader
+          eyebrow={subtitle}
+          title={title}
+          action={<a className="admin-ui-button outline md" href="/products" target="_blank" rel="noreferrer">라이브몰 보기</a>}
+        />
 
         <nav className="admin-mobile-nav" aria-label="모바일 관리자 메뉴">
           {navItems.map((item) => (

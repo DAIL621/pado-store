@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AdminDeliveriesManager } from "@/components/admin/AdminDeliveriesManager";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminScreen } from "@/components/admin/ui";
 import { getAdminSession } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export default async function AdminDeliveriesPage() {
       title="배송 관리"
       subtitle="상품준비중·배송중·배송완료 주문 처리"
     >
-      <AdminDeliveriesManager />
+      <AdminScreen name="deliveries"><AdminDeliveriesManager /></AdminScreen>
     </AdminLayout>
   );
 }

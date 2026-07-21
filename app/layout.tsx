@@ -5,6 +5,7 @@ import "./admin-orders-ux.css";
 import "./admin-customers-ux.css";
 import "./admin-cs-ux.css";
 import "./admin-common-ux.css";
+import "./admin-design-system.css";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { AppChrome } from "@/components/layout/AppChrome";
 
