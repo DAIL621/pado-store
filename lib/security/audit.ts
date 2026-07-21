@@ -1,5 +1,16 @@
 export type AuditActor = { id: string | null; email?: string; role: "admin" | "customer" | "system" };
-export type AuditAction = "order.status.update" | "shipment.update" | "product.create" | "product.update" | "product.delete" | "payment.refund";
+export type AuditAction =
+  | "order.status.update"
+  | "shipment.update"
+  | "product.create"
+  | "product.update"
+  | "product.delete"
+  | "product.duplicate"
+  | "product.status.update"
+  | "product.stock.soldout"
+  | "product.images.reorder"
+  | "product.bulk.update"
+  | "payment.refund";
 
 export type AuditEntry = {
   action: AuditAction;

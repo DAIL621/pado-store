@@ -68,9 +68,10 @@ try {
 
   productId = await createVerificationProduct(adminPage, privateSlug, stamp);
 
-  await adminPage.goto(`${baseUrl}/admin/products`, { waitUntil: "networkidle" });
-  await adminPage.locator(".admin-filter-tabs-secondary button").nth(2).click();
-  const detailLink = adminPage.locator(`a[href="/products/${privateSlug}"]`).first();
+  await adminPage.goto(`${baseUrl}/admin/products?q=${encodeURIComponent(privateSlug)}&kind=test&sort=created_desc`, { waitUntil: "networkidle" });
+  const detailLinks = adminPage.locator(`a[href="/products/${privateSlug}"]`);
+  if (await detailLinks.count() !== 1) throw new Error("verification product detail link should be unique");
+  const detailLink = detailLinks;
   await detailLink.waitFor({ timeout: 10000 });
 
   const adminActiveDetail = await adminPage.request.get(`${baseUrl}/products/${privateSlug}`);
@@ -97,15 +98,10 @@ try {
   const remove = await adminPage.request.delete(`${baseUrl}/api/admin/products/${productId}`);
   if (!remove.ok()) throw new Error(`soft delete failed: ${remove.status()}`);
 
-  const adminProductsAfterHide = await adminPage.request.get(`${baseUrl}/api/admin/products`);
+  const adminProductsAfterHide = await adminPage.request.get(`${baseUrl}/api/admin/products?q=${encodeURIComponent(privateSlug)}&kind=all`);
   const adminProductsPayload = await adminProductsAfterHide.json();
   const hiddenRow = adminProductsPayload.products?.find((product) => product.slug === privateSlug);
-  if (!hiddenRow) {
-    throw new Error(`hidden product was not found in admin products API after soft delete: ${privateSlug}`);
-  }
-  if (hiddenRow.is_active !== false) {
-    throw new Error(`hidden product is_active should be false after soft delete: ${JSON.stringify(hiddenRow)}`);
-  }
+  if (hiddenRow) throw new Error(`soft-deleted product should be excluded from the default admin list: ${privateSlug}`);
 
   const adminHiddenDetail = await adminPage.request.get(`${baseUrl}/products/${privateSlug}`);
   if (adminHiddenDetail.status() !== 200) {

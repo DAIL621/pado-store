@@ -71,7 +71,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const actorEmail = admin.session.user.email;
 
   if (body.action === "soldout") {
-    const { error: productError } = await supabase.from("products").update({ is_active: true }).eq("id", id);
+    const { data: currentProduct, error: currentError } = await supabase.from("products").select("detail_json").eq("id", id).single();
+    if (currentError) return NextResponse.json({ ok: false, message: currentError.message }, { status: 404 });
+    const { error: productError } = await supabase.from("products").update({ is_active: true, detail_json: withOperationState(currentProduct.detail_json, null, actorId) }).eq("id", id);
     if (productError) return NextResponse.json({ ok: false, message: productError.message }, { status: 500 });
 
     const { error: optionError } = await supabase.from("product_options").update({ stock: 0 }).eq("product_id", id);
@@ -152,6 +154,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     });
     revalidateCustomerProducts();
     return NextResponse.json({ ok: true, mode: "hidden", product });
+  }
+
+  if (body.action !== undefined) {
+    return NextResponse.json({ ok: false, message: "허용되지 않은 상품 상태 변경 요청입니다." }, { status: 400 });
   }
 
   const updates: Record<string, unknown> = {};

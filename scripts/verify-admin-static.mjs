@@ -30,19 +30,19 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-assert(productsManager.includes("QualityFilter"), "admin product quality filter is missing");
-assert(productsManager.includes("SortMode"), "admin product sort mode is missing");
-assert(productsManager.includes("quality-low"), "admin product low-quality sort is missing");
-assert(productsManager.includes("stock-low"), "admin product stock sort is missing");
-assert(productsManager.includes("copyDetailUrl"), "admin product detail URL copy action is missing");
+assert(productsManager.includes('value("kind", "production")'), "admin product kind filter is missing");
+assert(productsManager.includes('value("sort", "updated_desc")'), "admin product sort mode is missing");
+assert(productsManager.includes("price_asc"), "admin product price sort is missing");
+assert(productsManager.includes("stock_asc"), "admin product stock sort is missing");
+assert(productsManager.includes("copyUrl"), "admin product detail URL copy action is missing");
 assert(productsManager.includes("duplicateProduct"), "admin product duplicate action is missing");
-assert(productsManager.includes("createCopySlug"), "admin product copy slug generator is missing");
-assert(productsManager.includes("recoverVerificationProducts"), "admin hidden verification product recovery action is missing");
-assert(productsManager.includes('useState<TestFilter>("production")'), "admin products should hide verification products by default");
+assert(productsManager.includes("copySlug"), "admin product copy slug generator is missing");
+assert(productsManager.includes('value="test_hidden"'), "admin hidden verification product filter is missing");
+assert(productsManager.includes('value("kind", "production")'), "admin products should hide verification products by default");
 assert(productsManager.includes("legacy-detail"), "admin products should classify legacy detail verification products as test data");
 assert(productsManager.includes('"ended"'), "admin product list should support sale-ended status");
-assert(productsManager.includes("endSale"), "admin product list should expose sale end action");
-assert(productsManager.includes("resetStock: true"), "admin product duplicate should reset stock");
+assert(productsManager.includes('"end_sale"'), "admin product list should expose sale end action");
+assert(productsManager.includes("toOptionForms(product, true)"), "admin product duplicate should reset stock");
 assert(productEditor.includes("admin-video-settings"), "admin legacy detail video playback settings are missing");
 assert(productEditor.includes('"autoplay"'), "admin video autoplay setting is missing");
 assert(productEditor.includes('"loop"'), "admin video loop setting is missing");

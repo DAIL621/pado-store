@@ -1,658 +1,212 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatPrice } from "@/data/products";
-import {
-  AdminProductBuilder,
-  type AdminProductBuilderPayload,
-  type AdminProductFormState,
-  type AdminProductOptionForm
-} from "@/components/admin/AdminProductBuilder";
+import { AdminProductBuilder, type AdminProductBuilderPayload, type AdminProductFormState, type AdminProductOptionForm } from "@/components/admin/AdminProductBuilder";
 import type { ProductDetail } from "@/lib/products/detail";
-import { calculateDetailPageQuality, calculateProductCompleteness } from "@/lib/products/quality";
+import { calculateProductCompleteness } from "@/lib/products/quality";
 import { mapStoredOptionToPrices } from "@/lib/products/option-pricing";
 
 type ProductOption = { id: string; name: string; price?: number | null; regular_price?: number | null; coupang_price?: number | null; price_delta: number; stock: number };
-
 type AdminProduct = {
-  id: string;
-  slug: string;
-  name: string;
-  origin: string;
-  category: string;
-  subtitle: string | null;
-  description: string | null;
-  base_price: number;
-  image_url: string | null;
-  badge: string | null;
-  highlights: string[] | null;
-  detail_json?: ProductDetail | null;
-  is_active: boolean;
-  created_at: string;
-  product_options?: ProductOption[];
+  id: string; slug: string; name: string; origin: string; category: string; subtitle: string | null; description: string | null;
+  base_price: number; image_url: string | null; badge: string | null; highlights: string[] | null; detail_json?: ProductDetail | null;
+  is_active: boolean; created_at: string; updated_at?: string | null; product_options?: ProductOption[];
 };
+type ProductAction = "hide" | "recover" | "end_sale" | "soldout";
+type Pagination = { page: number; pageSize: number; total: number; pageCount: number };
 
-type ProductStatus = "selling" | "soldout" | "hidden" | "ended";
-type StatusFilter = "all" | ProductStatus;
-type TestFilter = "all" | "production" | "test";
-type QualityFilter = "all" | "low" | "ready";
-type SortMode = "recent" | "quality-low" | "quality-high" | "stock-low" | "price-high";
-type BulkAction = "delete" | "hide" | "end_sale" | "recover";
-
-const isDeletedProduct = (product: AdminProduct) =>
-  (product.detail_json as Record<string, unknown> | null | undefined)?.operationState === "deleted";
-
-const getTotalStock = (product: AdminProduct) =>
-  (product.product_options ?? []).reduce((total, option) => total + (Number(option.stock) || 0), 0);
-
-const getStatus = (product: AdminProduct): ProductStatus => {
-  if ((product.detail_json as Record<string, unknown> | null | undefined)?.operationState === "ended") return "ended";
-  if (!product.is_active) return "hidden";
-  return getTotalStock(product) > 0 ? "selling" : "soldout";
-};
-
-const getDetailScore = (product: AdminProduct) => {
-  try { return calculateDetailPageQuality(product.detail_json).score; } catch { return 0; }
-};
-
-const getCompleteness = (product: AdminProduct) => {
-  try {
-    return calculateProductCompleteness({
-      name: product.name, origin: product.origin, category: product.category, subtitle: product.subtitle,
-      description: product.description, slug: product.slug, basePrice: product.base_price, imageUrl: product.image_url,
-      isActive: product.is_active, detail: product.detail_json,
-      options: (Array.isArray(product.product_options) ? product.product_options : []).map((option, index) => {
-        const pricing = mapStoredOptionToPrices(option, product.base_price, product.detail_json, index);
-        return { name: option.name, price: pricing.price, regularPrice: pricing.regularPrice, stock: option.stock };
-      })
-    });
-  } catch {
-    return null;
-  }
-};
-
-const statusLabel: Record<ProductStatus, string> = {
-  selling: "판매중",
-  soldout: "품절",
-  hidden: "숨김",
-  ended: "판매종료"
-};
-
-const verificationProductPattern = /(verification|admin-edit|detail-auto|ops-db-test|stock-check|test|e2e|duplicate|private-detail|private detail|legacy-detail|legacy detail|테스트|검증)/i;
-
-const isVerificationProduct = (product: AdminProduct) =>
-  [product.slug, product.name, product.origin, product.category]
-    .filter(Boolean)
-    .some((value) => verificationProductPattern.test(String(value)) || /(diagnose|debug)/i.test(String(value)));
-
-const toOptionForms = (product: AdminProduct, options?: { resetStock?: boolean }): AdminProductOptionForm[] =>
+const actionLabels: Record<ProductAction, string> = { hide: "숨김", recover: "판매중", end_sale: "판매종료", soldout: "품절" };
+const verificationPattern = /(verification|admin-edit|detail-auto|ops-db-test|stock-check|test|e2e|duplicate|private-detail|legacy-detail|diagnose|debug|테스트|검증)/i;
+const isVerificationProduct = (product: AdminProduct) => [product.id, product.slug, product.name, product.origin, product.category].some((value) => verificationPattern.test(String(value ?? "")));
+const operationState = (product: AdminProduct) => (product.detail_json as Record<string, unknown> | null | undefined)?.operationState;
+const totalStock = (product: AdminProduct) => (product.product_options ?? []).reduce((sum, option) => sum + Math.max(0, Number(option.stock) || 0), 0);
+const statusOf = (product: AdminProduct) => operationState(product) === "ended" ? "ended" : !product.is_active ? "hidden" : totalStock(product) === 0 ? "soldout" : "selling";
+const statusLabel = { selling: "판매중", soldout: "품절", hidden: "숨김", ended: "판매종료" } as const;
+const toOptionForms = (product: AdminProduct, resetStock = false): AdminProductOptionForm[] =>
   (product.product_options?.length ? product.product_options : [{ id: "", name: "기본 옵션", price: product.base_price, price_delta: 0, stock: 0 }]).map((option, index) => {
     const pricing = mapStoredOptionToPrices(option, product.base_price, product.detail_json, index);
-    return {
-      name: option.name,
-      regularPrice: pricing.regularPrice === null ? "" : String(pricing.regularPrice),
-      coupangPrice: pricing.coupangPrice === null ? "" : String(pricing.coupangPrice),
-      price: String(pricing.price),
-      stock: options?.resetStock ? "0" : String(option.stock)
-    };
+    return { name: option.name, regularPrice: pricing.regularPrice === null ? "" : String(pricing.regularPrice), coupangPrice: pricing.coupangPrice === null ? "" : String(pricing.coupangPrice), price: String(pricing.price), stock: resetStock ? "0" : String(option.stock) };
   });
-
-const createCopySlug = (slug: string) => {
-  const now = new Date();
-  const stamp = [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-    String(now.getHours()).padStart(2, "0"),
-    String(now.getMinutes()).padStart(2, "0")
-  ].join("");
-  return `${slug}-copy-${stamp}`;
+const copySlug = (slug: string) => `${slug}-copy-${Date.now().toString(36)}`;
+const completenessOf = (product: AdminProduct) => {
+  try {
+    return calculateProductCompleteness({
+      name: product.name, origin: product.origin, category: product.category, subtitle: product.subtitle, description: product.description,
+      slug: product.slug, basePrice: product.base_price, imageUrl: product.image_url, isActive: product.is_active, detail: product.detail_json,
+      options: toOptionForms(product).map((option) => ({ name: option.name, price: Number(String(option.price).replaceAll(",", "")), regularPrice: option.regularPrice ? Number(String(option.regularPrice).replaceAll(",", "")) : null, stock: Number(option.stock) }))
+    });
+  } catch { return null; }
 };
 
 export function AdminProductsManager() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const paramsKey = searchParams.toString();
   const [products, setProducts] = useState<AdminProduct[]>([]);
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [testFilter, setTestFilter] = useState<TestFilter>("production");
-  const [qualityFilter, setQualityFilter] = useState<QualityFilter>("all");
-  const [sortMode, setSortMode] = useState<SortMode>("recent");
-  const [editing, setEditing] = useState<AdminProduct | null>(null);
-  const [message, setMessage] = useState("상품 목록을 불러오는 중입니다...");
-  const [bulkHiding, setBulkHiding] = useState(false);
-  const [bulkRecovering, setBulkRecovering] = useState(false);
-  const [highlightedProduct, setHighlightedProduct] = useState<{ id?: string; slug?: string } | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [pagination, setPagination] = useState<Pagination>({ page: 1, pageSize: 20, total: 0, pageCount: 1 });
+  const [lowStockThreshold, setLowStockThreshold] = useState(10);
+  const [queryInput, setQueryInput] = useState(searchParams.get("q") ?? "");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [bulkAction, setBulkAction] = useState<BulkAction | null>(null);
-  const [bulkWorking, setBulkWorking] = useState(false);
+  const [editing, setEditing] = useState<AdminProduct | null>(null);
+  const [message, setMessage] = useState("상품 목록을 불러오는 중입니다.");
+  const [loading, setLoading] = useState(true);
+  const [workingIds, setWorkingIds] = useState<string[]>([]);
+  const [confirmAction, setConfirmAction] = useState<{ action: ProductAction; ids: string[]; productName?: string } | null>(null);
 
-  const loadProducts = async () => {
-    const response = await fetch("/api/admin/products", { cache: "no-store" });
-    const result = await response.json();
-    if (!response.ok) {
-      setMessage(result.message ?? "상품 목록을 불러오지 못했습니다.");
-      return;
-    }
-    setProducts(result.products ?? []);
-    setSelectedIds((current) => current.filter((id) => (result.products ?? []).some((product: AdminProduct) => product.id === id && !isDeletedProduct(product))));
-    setMessage(`총 ${result.products?.length ?? 0}개 상품을 불러왔습니다.`);
-  };
+  const value = (key: string, fallback: string) => searchParams.get(key) ?? fallback;
+  const updateParams = useCallback((updates: Record<string, string | null>) => {
+    const next = new URLSearchParams(paramsKey);
+    Object.entries(updates).forEach(([key, nextValue]) => nextValue && nextValue !== "all" ? next.set(key, nextValue) : next.delete(key));
+    if (!("page" in updates)) next.delete("page");
+    router.replace(`/admin/products${next.size ? `?${next}` : ""}`, { scroll: false });
+  }, [paramsKey, router]);
 
-  const copyDetailUrl = async (product: AdminProduct) => {
-    const path = `/products/${product.slug}`;
-    const url = typeof window === "undefined" ? path : `${window.location.origin}${path}`;
-
+  const loadProducts = useCallback(async () => {
+    setLoading(true);
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-      } else {
-        const input = document.createElement("input");
-        input.value = url;
-        input.setAttribute("readonly", "true");
-        input.style.position = "fixed";
-        input.style.left = "-9999px";
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand("copy");
-        document.body.removeChild(input);
-      }
-      setMessage(`상세페이지 URL을 복사했습니다: ${product.slug}`);
+      const response = await fetch(`/api/admin/products${paramsKey ? `?${paramsKey}` : ""}`, { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message);
+      setProducts(result.products ?? []);
+      setCategories(result.categories ?? []);
+      setPagination(result.pagination ?? { page: 1, pageSize: 20, total: 0, pageCount: 1 });
+      setLowStockThreshold(result.lowStockThreshold ?? 10);
+      setSelectedIds((current) => current.filter((id) => (result.products ?? []).some((product: AdminProduct) => product.id === id)));
+      setMessage(`검색 조건에 맞는 상품 ${result.pagination?.total ?? 0}개를 찾았습니다.`);
     } catch {
-      setMessage(`URL 복사에 실패했습니다. 직접 열기 주소: ${url}`);
-    }
-  };
+      setMessage("상품 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+    } finally { setLoading(false); }
+  }, [paramsKey]);
 
+  useEffect(() => { setQueryInput(searchParams.get("q") ?? ""); }, [paramsKey, searchParams]);
   useEffect(() => {
+    if (!searchParams.has("kind") || !searchParams.has("sort")) updateParams({ kind: searchParams.get("kind") ?? "production", sort: searchParams.get("sort") ?? "updated_desc", page: "1" });
+  }, [searchParams, updateParams]);
+  useEffect(() => { void loadProducts(); }, [loadProducts]);
+
+  const pageIds = products.map((product) => product.id);
+  const selectedProducts = products.filter((product) => selectedIds.includes(product.id));
+  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+  const togglePage = (checked: boolean) => setSelectedIds(checked ? pageIds : []);
+  const toggleOne = (id: string) => setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+
+  const submitSearch = (event: React.FormEvent) => { event.preventDefault(); updateParams({ q: queryInput.trim() || null }); };
+  const resetFilters = () => { setQueryInput(""); router.replace("/admin/products", { scroll: false }); };
+
+  const executeAction = async () => {
+    if (!confirmAction) return;
+    const { action, ids } = confirmAction;
+    setWorkingIds(ids);
+    setConfirmAction(null);
     try {
-      const raw = window.sessionStorage.getItem("pado-admin-last-created-product");
-      if (raw) setHighlightedProduct(JSON.parse(raw));
-    } catch {}
-    loadProducts();
-  }, []);
-
-  useEffect(() => {
-    if (!highlightedProduct || !products.length) return;
-    const matched = products.find((product) => product.id === highlightedProduct.id || product.slug === highlightedProduct.slug);
-    if (matched) {
-      setMessage(`방금 등록한 상품이 목록에 표시되었습니다: ${matched.name} (${matched.slug})`);
-      setSortMode("recent");
-      setStatusFilter("all");
-      setTestFilter(isVerificationProduct(matched) ? "test" : "production");
-      setQualityFilter("all");
-    }
-  }, [highlightedProduct, products]);
-
-  const counts = useMemo(() => {
-    const managedProducts = products.filter((product) => !isDeletedProduct(product));
-    const base = { all: managedProducts.length, selling: 0, soldout: 0, hidden: 0, ended: 0, test: 0, production: 0 };
-    managedProducts.forEach((product) => {
-      base[getStatus(product)] += 1;
-      if (isVerificationProduct(product)) {
-        base.test += 1;
-      } else {
-        base.production += 1;
-      }
-    });
-    return base;
-  }, [products]);
-
-  const visibleVerificationProducts = useMemo(
-    () => products.filter((product) => !isDeletedProduct(product) && isVerificationProduct(product) && getStatus(product) !== "hidden"),
-    [products]
-  );
-  const hiddenVerificationProducts = useMemo(
-    () => products.filter((product) => !isDeletedProduct(product) && isVerificationProduct(product) && getStatus(product) === "hidden"),
-    [products]
-  );
-
-  const filtered = useMemo(() => {
-    const keyword = query.trim().toLowerCase();
-    const nextProducts = products.filter((product) => {
-      if (isDeletedProduct(product)) return false;
-      const status = getStatus(product);
-      const detailScore = getDetailScore(product);
-      const matchesStatus = statusFilter === "all" || status === statusFilter;
-      const verificationProduct = isVerificationProduct(product);
-      const matchesTestFilter =
-        testFilter === "all" || (testFilter === "test" ? verificationProduct : !verificationProduct);
-      const matchesQuality =
-        qualityFilter === "all" ||
-        (qualityFilter === "low" ? detailScore < 80 : detailScore >= 80);
-      const matchesKeyword =
-        !keyword ||
-        [product.name, product.slug, product.origin, product.category]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(keyword));
-      return matchesStatus && matchesTestFilter && matchesQuality && matchesKeyword;
-    });
-
-    return [...nextProducts].sort((a, b) => {
-      if (sortMode === "quality-low") return getDetailScore(a) - getDetailScore(b);
-      if (sortMode === "quality-high") return getDetailScore(b) - getDetailScore(a);
-      if (sortMode === "stock-low") return getTotalStock(a) - getTotalStock(b);
-      if (sortMode === "price-high") return b.base_price - a.base_price;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-  }, [products, qualityFilter, query, sortMode, statusFilter, testFilter]);
-
-  const visibleIds = useMemo(() => filtered.map((product) => product.id), [filtered]);
-  const selectedProducts = useMemo(() => products.filter((product) => selectedIds.includes(product.id)), [products, selectedIds]);
-  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
-
-  const toggleAllVisible = (checked: boolean) => setSelectedIds((current) => {
-    const visible = new Set(visibleIds);
-    return checked ? Array.from(new Set([...current, ...visibleIds])) : current.filter((id) => !visible.has(id));
-  });
-
-  const toggleProduct = (id: string, checked: boolean) => setSelectedIds((current) =>
-    checked ? (current.includes(id) ? current : [...current, id]) : current.filter((selectedId) => selectedId !== id)
-  );
-
-  const runBulkAction = async () => {
-    if (!bulkAction || !selectedProducts.length || bulkWorking) return;
-    setBulkWorking(true);
-    let failed = 0;
-    for (const product of selectedProducts) {
-      const response = bulkAction === "delete"
-        ? await fetch(`/api/admin/products/${product.id}`, { method: "DELETE" })
-        : await fetch(`/api/admin/products/${product.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: bulkAction })
-          });
-      if (!response.ok) failed += 1;
-    }
-    const completed = selectedProducts.length - failed;
-    const labels: Record<BulkAction, string> = { delete: "삭제", hide: "숨김", end_sale: "판매종료", recover: "판매중" };
-    setMessage(failed ? `${labels[bulkAction]} ${completed}개 완료, ${failed}개 실패` : `선택 상품 ${completed}개를 ${labels[bulkAction]} 처리했습니다.`);
-    setSelectedIds([]);
-    setBulkAction(null);
-    setBulkWorking(false);
-    await loadProducts();
-  };
-
-  const updateProductState = async (product: AdminProduct, body: Record<string, unknown>, doneMessage: string) => {
-    const response = await fetch(`/api/admin/products/${product.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      setMessage(result.message ?? "상태 변경에 실패했습니다.");
-      return;
-    }
-    setMessage(doneMessage);
-    await loadProducts();
-  };
-
-  const makeSoldout = (product: AdminProduct) => {
-    if (!window.confirm(`${product.name} 상품을 품절 처리할까요? 고객 화면에는 보이지만 구매는 막힙니다.`)) return;
-    updateProductState(product, { action: "soldout" }, `${product.name} 상품을 품절 처리했습니다.`);
-  };
-
-  const endSale = (product: AdminProduct) => {
-    if (!window.confirm(`${product.name} 상품의 판매를 종료할까요? 고객 상품 목록에서는 숨겨지고 관리자에서 복원할 수 있습니다.`)) return;
-    updateProductState(product, { action: "end_sale" }, `${product.name} 상품을 판매종료 처리했습니다.`);
-  };
-
-  const recover = (product: AdminProduct) => {
-    updateProductState(product, { action: "recover" }, `${product.name} 상품을 다시 고객 화면에 노출했습니다.`);
-  };
-
-  const hide = async (product: AdminProduct) => {
-    if (!window.confirm(`${product.name} 상품을 숨김 처리할까요? DB에서는 삭제하지 않습니다.`)) return;
-    const response = await fetch(`/api/admin/products/${product.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "hide" })
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      setMessage(result.message ?? "숨김 처리에 실패했습니다.");
-      return;
-    }
-    setMessage(`${product.name} 상품을 숨김 처리했습니다.`);
-    await loadProducts();
+      const response = ids.length === 1
+        ? await fetch(`/api/admin/products/${ids[0]}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }) })
+        : await fetch("/api/admin/products/bulk", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, ids }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message);
+      const succeeded = result.succeeded ?? 1;
+      const failed = result.failed ?? 0;
+      setMessage(failed ? `${actionLabels[action]} 처리: 성공 ${succeeded}개, 실패 ${failed}개` : `${succeeded}개 상품을 ${actionLabels[action]} 처리했습니다.`);
+      setSelectedIds([]);
+      await loadProducts();
+    } catch (error) {
+      console.error(error);
+      setMessage("상품 상태 변경에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally { setWorkingIds([]); }
   };
 
   const duplicateProduct = async (product: AdminProduct) => {
-    const nextSlug = createCopySlug(product.slug);
-    if (!window.confirm(`${product.name} 상품을 복사해 새 상품 초안을 만들까요?\n\n새 URL: ${nextSlug}`)) return;
-
-    setMessage(`${product.name} 상품을 복사하는 중입니다...`);
-    const response = await fetch("/api/admin/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: `${product.name} 복사본`,
-        slug: nextSlug,
-        origin: product.origin,
-        category: product.category,
-        subtitle: product.subtitle ?? `${product.name} 복사본`,
-        description: product.description ?? "",
-        basePrice: product.base_price,
-        imageUrl: product.image_url,
-        badge: product.badge,
-        highlights: (product.highlights ?? []).join(", "),
-        detailJson: product.detail_json ?? {},
-        options: toOptionForms(product, { resetStock: true })
-      })
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      setMessage(result.message ?? "상품 복사에 실패했습니다.");
-      return;
-    }
-
+    if (!window.confirm(`‘${product.name}’ 상품을 숨김·재고 0 상태의 복사본으로 만들까요?`)) return;
+    setWorkingIds([product.id]);
     try {
-      window.sessionStorage.setItem(
-        "pado-admin-last-created-product",
-        JSON.stringify({ id: result.productId, slug: result.productSlug })
-      );
-    } catch {}
-    setHighlightedProduct({ id: result.productId, slug: result.productSlug });
-    setSortMode("recent");
-    setMessage(`상품 복사 완료: ${result.productSlug}`);
-    await loadProducts();
+      const slug = copySlug(product.slug);
+      const response = await fetch("/api/admin/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+        sourceProductId: product.id, name: `${product.name} 복사본`, slug, origin: product.origin, category: product.category,
+        subtitle: product.subtitle ?? `${product.name} 복사본`, description: product.description ?? "", basePrice: product.base_price,
+        imageUrl: product.image_url, badge: product.badge, highlights: (product.highlights ?? []).join(", "), detailJson: product.detail_json ?? {},
+        options: toOptionForms(product, true), isActive: false
+      }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message);
+      setMessage(`상품 복사본을 만들었습니다: ${result.productSlug}`);
+      updateParams({ q: result.productSlug, status: "hidden", kind: "all", page: "1" });
+    } catch (error) { console.error(error); setMessage("상품 복사에 실패했습니다. 잠시 후 다시 시도해주세요."); }
+    finally { setWorkingIds([]); }
   };
 
-  const hideVerificationProducts = async () => {
-    if (!visibleVerificationProducts.length || bulkHiding) return;
-    if (!window.confirm(`검증용 상품 ${visibleVerificationProducts.length}개를 숨김 처리할까요? 운영 상품은 제외됩니다.`)) return;
-
-    setBulkHiding(true);
-    let failedCount = 0;
-
-    for (const product of visibleVerificationProducts) {
-      const response = await fetch(`/api/admin/products/${product.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "hide" })
-      });
-      if (!response.ok) failedCount += 1;
-    }
-
-    setBulkHiding(false);
-    setMessage(
-      failedCount
-        ? `검증 상품 숨김 처리 중 ${failedCount}개가 실패했습니다. 실패 상품은 다시 확인해주세요.`
-        : `검증 상품 ${visibleVerificationProducts.length}개를 숨김 처리했습니다.`
-    );
-    await loadProducts();
+  const copyUrl = async (product: AdminProduct) => {
+    try { await navigator.clipboard.writeText(`${window.location.origin}/products/${product.slug}`); setMessage("상품 URL을 복사했습니다."); }
+    catch { setMessage("URL을 복사하지 못했습니다."); }
   };
 
-  const recoverVerificationProducts = async () => {
-    if (!hiddenVerificationProducts.length || bulkRecovering) return;
-    if (!window.confirm(`숨김 처리된 검증 상품 ${hiddenVerificationProducts.length}개를 다시 표시할까요?`)) return;
+  const stockBadge = (product: AdminProduct) => totalStock(product) === 0 ? "out" : totalStock(product) <= lowStockThreshold ? "low" : "normal";
+  const stockLabel = { out: "품절", low: "재고 부족", normal: "정상" } as const;
 
-    setBulkRecovering(true);
-    let failed = 0;
-    for (const product of hiddenVerificationProducts) {
-      const response = await fetch(`/api/admin/products/${product.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "recover" })
-      });
-      if (!response.ok) failed += 1;
-    }
-    setBulkRecovering(false);
-    setMessage(
-      failed
-        ? `검증 상품 ${hiddenVerificationProducts.length - failed}개를 복구했고 ${failed}개는 실패했습니다.`
-        : `숨김 검증 상품 ${hiddenVerificationProducts.length}개를 다시 표시했습니다.`
-    );
-    await loadProducts();
-  };
-
-  const resetFilters = () => {
-    setQuery("");
-    setStatusFilter("all");
-    setTestFilter("production");
-    setQualityFilter("all");
-    setSortMode("recent");
-  };
-
-  return (
-    <>
-      <div className="admin-toolbar">
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="상품명, 산지, 카테고리 검색" />
-        <label>
-          완성도
-          <select value={qualityFilter} onChange={(event) => setQualityFilter(event.target.value as QualityFilter)}>
-            <option value="all">전체</option>
-            <option value="low">보강 필요</option>
-            <option value="ready">운영 준비</option>
-          </select>
-        </label>
-        <label>
-          정렬
-          <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
-            <option value="recent">최근 등록순</option>
-            <option value="quality-low">완성도 낮은순</option>
-            <option value="quality-high">완성도 높은순</option>
-            <option value="stock-low">재고 적은순</option>
-            <option value="price-high">가격 높은순</option>
-          </select>
-        </label>
+  return <>
+    <form className="admin-product-search" onSubmit={submitSearch}>
+      <div className="admin-product-search-row">
+        <input value={queryInput} onChange={(event) => setQueryInput(event.target.value)} placeholder="상품명, slug, 카테고리, 산지, 옵션명, 상품 ID 검색" aria-label="상품 통합 검색" />
+        <button type="submit" className="button teal">검색</button>
+        <button type="button" onClick={resetFilters}>초기화</button>
         <a className="button teal" href="/admin/new">+ 상품 등록</a>
       </div>
-      <div className="admin-filter-tabs">
-        {[
-          ["all", `전체 ${counts.all}`],
-          ["selling", `판매중 ${counts.selling}`],
-          ["soldout", `품절 ${counts.soldout}`],
-          ["ended", `판매종료 ${counts.ended}`],
-          ["hidden", `숨김 ${counts.hidden}`]
-        ].map(([value, label]) => (
-          <button type="button" key={value} className={statusFilter === value ? "active" : ""} onClick={() => setStatusFilter(value as StatusFilter)}>
-            {label}
-          </button>
-        ))}
-      </div>
-      <div className="admin-filter-tabs admin-filter-tabs-secondary">
-        {[
-          ["all", `전체 보기 ${counts.all}`],
-          ["production", `운영상품 ${counts.production}`],
-          ["test", `검증상품 ${counts.test}`]
-        ].map(([value, label]) => (
-          <button type="button" key={value} className={testFilter === value ? "active" : ""} onClick={() => setTestFilter(value as TestFilter)}>
-            {label}
-          </button>
-        ))}
-        <button
-          type="button"
-          className="danger-lite"
-          onClick={hideVerificationProducts}
-          disabled={!visibleVerificationProducts.length || bulkHiding}
-        >
-          {bulkHiding ? "검증 상품 숨김 중..." : `검증 상품 숨김 ${visibleVerificationProducts.length}`}
-        </button>
-        <button
-          type="button"
-          className="outline-lite"
-          onClick={recoverVerificationProducts}
-          disabled={!hiddenVerificationProducts.length || bulkRecovering}
-        >
-          {bulkRecovering ? "검증 상품 복구 중..." : `숨김 검증 복구 ${hiddenVerificationProducts.length}`}
-        </button>
-      </div>
-      <p className="admin-note">{message}</p>
-
-      <div className="admin-bulk-toolbar" aria-label="선택 상품 일괄 작업">
-        <strong>{selectedIds.length}개 선택됨</strong>
+      <details className="admin-product-filter-panel" open>
+        <summary>검색 필터</summary>
         <div>
-          <button type="button" className="danger-lite" disabled={!selectedIds.length || bulkWorking} onClick={() => setBulkAction("delete")}>선택삭제</button>
-          <button type="button" disabled={!selectedIds.length || bulkWorking} onClick={() => setBulkAction("hide")}>선택숨김</button>
-          <button type="button" disabled={!selectedIds.length || bulkWorking} onClick={() => setBulkAction("end_sale")}>판매종료</button>
-          <button type="button" disabled={!selectedIds.length || bulkWorking} onClick={() => setBulkAction("recover")}>판매중</button>
+          <label>판매 상태<select value={value("status", "all")} onChange={(event) => updateParams({ status: event.target.value })}><option value="all">전체</option><option value="selling">판매중</option><option value="ended">판매종료</option><option value="soldout">품절</option><option value="hidden">숨김</option></select></label>
+          <label>상품 구분<select value={value("kind", "production")} onChange={(event) => updateParams({ kind: event.target.value })}><option value="all">전체</option><option value="production">운영상품</option><option value="test">검증상품</option><option value="test_hidden">검증상품 숨김</option></select></label>
+          <label>재고<select value={value("stock", "all")} onChange={(event) => updateParams({ stock: event.target.value })}><option value="all">전체</option><option value="in">재고 있음</option><option value="low">재고 부족</option><option value="out">품절</option></select></label>
+          <label>카테고리<select value={value("category", "all")} onChange={(event) => updateParams({ category: event.target.value })}><option value="all">전체</option>{categories.map((category) => <option key={category}>{category}</option>)}</select></label>
+          <label>정렬<select value={value("sort", "updated_desc")} onChange={(event) => updateParams({ sort: event.target.value })}><option value="updated_desc">최근 수정순</option><option value="created_desc">최근 등록순</option><option value="name_asc">상품명 오름차순</option><option value="name_desc">상품명 내림차순</option><option value="price_asc">가격 낮은순</option><option value="price_desc">가격 높은순</option><option value="stock_asc">재고 적은순</option><option value="stock_desc">재고 많은순</option></select></label>
+          <label>페이지당<select value={String(pagination.pageSize)} onChange={(event) => updateParams({ pageSize: event.target.value })}><option value="20">20개</option><option value="50">50개</option></select></label>
         </div>
-      </div>
+      </details>
+    </form>
 
-      <div className="admin-panel">
-        <div>
-          <h2>상품 목록</h2>
-          <span className="admin-message">검색 결과 {filtered.length}개 · {sortMode === "quality-low" ? "상세 보강 우선" : "운영 관리 기준"}</span>
-        </div>
-        <div className="table-wrap">
-          <table className="product-admin-table">
-            <thead>
-              <tr>
-                <th className="admin-select-column"><input type="checkbox" aria-label="현재 목록 전체선택" checked={allVisibleSelected} onChange={(event) => toggleAllVisible(event.target.checked)} /></th>
-                <th>상품명</th>
-                <th>산지</th>
-                <th>카테고리</th>
-                <th>가격</th>
-                <th>재고</th>
-                <th>상세</th>
-                <th>상태</th>
-                <th>등록일</th>
-                <th>관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {!filtered.length && (
-                <tr>
-                  <td colSpan={10} className="admin-empty-filter-cell">
-                    <div className="admin-empty-filter">
-                      <strong>조건에 맞는 상품이 없습니다.</strong>
-                      <span>검색어 또는 상태/검증상품 필터를 조정해보세요.</span>
-                      <button type="button" onClick={resetFilters}>필터 초기화</button>
-                    </div>
-                  </td>
-                </tr>
-              )}
-              {filtered.map((product) => {
-                const status = getStatus(product);
-                const detailScore = getDetailScore(product);
-                const completeness = getCompleteness(product);
-                const verificationProduct = isVerificationProduct(product);
-                return (
-                  <tr key={product.id} className={highlightedProduct && (highlightedProduct.id === product.id || highlightedProduct.slug === product.slug) ? "recently-created" : ""}>
-                    <td className="admin-select-column"><input type="checkbox" aria-label={`${product.name} 선택`} checked={selectedIds.includes(product.id)} onChange={(event) => toggleProduct(product.id, event.target.checked)} /></td>
-                    <td>
-                      <strong>{product.name}</strong>
-                      {verificationProduct && <span className="test-product-badge">검증</span>}
-                      <br />
-                      <small>{product.slug}</small>
-                    </td>
-                    <td>{product.origin}</td>
-                    <td>{product.category}</td>
-                    <td>{formatPrice(product.base_price)}</td>
-                    <td>{getTotalStock(product).toLocaleString("ko-KR")}개</td>
-                    <td>
-                      {completeness ? <>
-                        <span className={`detail-score ${completeness.score === 100 ? "complete" : completeness.score > 0 ? "draft" : "empty"}`} title={`상세페이지 품질 ${detailScore}% · 미입력: ${completeness.missing.join(", ") || "없음"}`}>
-                          {completeness.score === 100 ? "상품 등록 완료" : `상품 등록 완성도 ${completeness.score}%`}
-                        </span>
-                        <small className="admin-completeness-count">{completeness.completed} / {completeness.total} 완료</small>
-                        {!!completeness.missing.length && <small className="admin-missing-items">미입력: {completeness.missing.join(", ")}</small>}
-                      </> : <span className="detail-score empty">정보 확인 필요</span>}
-                    </td>
-                    <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
-                    <td>{new Date(product.created_at).toLocaleDateString("ko-KR")}</td>
-                    <td className="admin-actions">
-                      <a href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세보기</a>
-                      <button type="button" onClick={() => copyDetailUrl(product)}>URL 복사</button>
-                      <button type="button" onClick={() => duplicateProduct(product)}>복사</button>
-                      <button type="button" onClick={() => setEditing(product)}>수정</button>
-                      {status === "hidden" || status === "ended" ? (
-                        <button type="button" onClick={() => recover(product)}>다시 판매하기</button>
-                      ) : (
-                        <>
-                          <button type="button" onClick={() => makeSoldout(product)} disabled={status === "soldout"}>품절</button>
-                          <button type="button" onClick={() => endSale(product)}>판매종료</button>
-                          <button type="button" onClick={() => hide(product)}>숨김</button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <p className="admin-note" role="status">{loading ? "상품 목록을 불러오는 중입니다." : message}</p>
+    <div className="admin-bulk-toolbar">
+      <strong>{selectedIds.length}개 선택됨</strong>
+      <div>{(["hide", "recover", "end_sale", "soldout"] as ProductAction[]).map((action) => <button key={action} type="button" disabled={!selectedIds.length || !!workingIds.length} onClick={() => setConfirmAction({ action, ids: selectedIds })}>선택 {actionLabels[action]}</button>)}</div>
+    </div>
 
-      {bulkAction && (
-        <div className="modal-backdrop" role="presentation">
-          <section className="admin-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="bulk-confirm-title">
-            <h2 id="bulk-confirm-title">일괄 작업 확인</h2>
-            <p>선택한 {selectedProducts.length}개의 상품을 {bulkAction === "delete" ? "삭제" : bulkAction === "hide" ? "숨김" : bulkAction === "end_sale" ? "판매종료" : "판매중"} 처리하시겠습니까?</p>
-            {bulkAction === "delete" && <small>상품은 복구 가능한 Soft Delete로 처리되며 관리자 기본목록에서 제외됩니다.</small>}
-            <div>
-              <button type="button" onClick={() => setBulkAction(null)} disabled={bulkWorking}>취소</button>
-              <button type="button" className={bulkAction === "delete" ? "danger" : "teal"} onClick={runBulkAction} disabled={bulkWorking}>{bulkWorking ? "처리 중..." : bulkAction === "delete" ? "삭제" : "확인"}</button>
-            </div>
-          </section>
-        </div>
-      )}
+    <section className="admin-panel admin-products-panel">
+      <div><h2>상품 목록</h2><span className="admin-message">전체 결과 {pagination.total}개 · {pagination.page}/{pagination.pageCount} 페이지</span></div>
+      <div className="table-wrap"><table className="product-admin-table"><thead><tr>
+        <th><input type="checkbox" checked={allPageSelected} onChange={(event) => togglePage(event.target.checked)} aria-label="현재 페이지 전체 선택" /></th><th>상품</th><th>분류</th><th>가격</th><th>옵션·재고</th><th>완성도</th><th>상태</th><th>등록·수정</th><th>관리</th>
+      </tr></thead><tbody>
+        {!loading && products.length === 0 && <tr><td colSpan={9}><div className="admin-empty-filter"><strong>조건에 맞는 상품이 없습니다.</strong><span>검색어 또는 필터를 조정해주세요.</span><button type="button" onClick={resetFilters}>필터 초기화</button></div></td></tr>}
+        {products.map((product) => {
+          const status = statusOf(product); const stockState = stockBadge(product); const options = product.product_options ?? []; const completeness = completenessOf(product);
+          const soldoutOptions = options.filter((option) => Number(option.stock) <= 0).length; const lowOptions = options.filter((option) => Number(option.stock) > 0 && Number(option.stock) <= lowStockThreshold).length;
+          return <tr key={product.id}>
+            <td><input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleOne(product.id)} aria-label={`${product.name} 선택`} /></td>
+            <td><div className="admin-product-identity"><img src={product.image_url || "/images/product-placeholder.svg"} alt="" /><div><strong>{product.name}</strong>{isVerificationProduct(product) && <span className="test-product-badge">검증</span>}<small>{product.slug}</small><small>ID {product.id.slice(0, 8)}</small></div></div></td>
+            <td><b>{product.category}</b><small>{product.origin}</small></td><td><strong>{formatPrice(product.base_price)}</strong></td>
+            <td><b>총 {totalStock(product).toLocaleString("ko-KR")}개</b><small>옵션 {options.length} · 품절 {soldoutOptions} · 부족 {lowOptions}</small><span className={`stock-badge ${stockState}`}>{stockLabel[stockState]}</span></td>
+            <td>{completeness ? <><span className={`detail-score ${completeness.score === 100 ? "complete" : "draft"}`}>{completeness.score}%</span><small>{completeness.completed}/{completeness.total} 완료</small></> : <span className="detail-score empty">정보 확인 필요</span>}</td>
+            <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
+            <td><small>등록 {new Date(product.created_at).toLocaleDateString("ko-KR")}</small><small>수정 {new Date(product.updated_at ?? product.created_at).toLocaleDateString("ko-KR")}</small></td>
+            <td className="admin-actions"><button type="button" onClick={() => setEditing(product)}>수정</button><a href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세</a><details><summary>더보기</summary><div><button type="button" onClick={() => copyUrl(product)}>URL 복사</button><button type="button" disabled={workingIds.includes(product.id)} onClick={() => duplicateProduct(product)}>상품 복사</button>{(["soldout", "end_sale", status === "hidden" || status === "ended" ? "recover" : "hide"] as ProductAction[]).map((action) => <button key={action} type="button" disabled={workingIds.includes(product.id)} onClick={() => setConfirmAction({ action, ids: [product.id], productName: product.name })}>{actionLabels[action]}</button>)}</div></details></td>
+          </tr>;
+        })}
+      </tbody></table></div>
+      <nav className="admin-pagination" aria-label="상품 페이지"><button type="button" disabled={pagination.page <= 1} onClick={() => updateParams({ page: String(pagination.page - 1) })}>이전</button><span>{pagination.page} / {pagination.pageCount}</span><button type="button" disabled={pagination.page >= pagination.pageCount} onClick={() => updateParams({ page: String(pagination.page + 1) })}>다음</button></nav>
+    </section>
 
-      {editing && (
-        <ProductEditModal
-          product={editing}
-          onClose={() => setEditing(null)}
-          onSaved={async () => {
-            setEditing(null);
-            setMessage("상품 정보를 수정했습니다.");
-            await loadProducts();
-          }}
-        />
-      )}
-    </>
-  );
+    {confirmAction && <div className="modal-backdrop"><section className="admin-confirm-modal" role="dialog" aria-modal="true"><h2>상품 상태 변경</h2><p>{confirmAction.productName ? `‘${confirmAction.productName}’을(를)` : `선택한 ${confirmAction.ids.length}개 상품을`} {actionLabels[confirmAction.action]} 처리하시겠습니까?</p><div><button type="button" onClick={() => setConfirmAction(null)}>취소</button><button type="button" className="teal" onClick={executeAction}>확인</button></div></section></div>}
+    {editing && <ProductEditModal product={editing} onClose={() => setEditing(null)} onSaved={async () => { setEditing(null); setMessage("상품 정보를 수정했습니다."); await loadProducts(); }} />}
+  </>;
 }
 
 function ProductEditModal({ product, onClose, onSaved }: { product: AdminProduct; onClose: () => void; onSaved: () => void }) {
-  const initialForm: AdminProductFormState = {
-    name: product.name,
-    slug: product.slug,
-    origin: product.origin,
-    category: product.category,
-    subtitle: product.subtitle ?? "",
-    description: product.description ?? "",
-    basePrice: String(product.base_price),
-    imageUrl: product.image_url ?? "",
-    badge: product.badge ?? "",
-    highlights: (product.highlights ?? []).join(", ")
-  };
-
+  const initialForm: AdminProductFormState = { name: product.name, slug: product.slug, origin: product.origin, category: product.category, subtitle: product.subtitle ?? "", description: product.description ?? "", basePrice: String(product.base_price), imageUrl: product.image_url ?? "", badge: product.badge ?? "", highlights: (product.highlights ?? []).join(", ") };
   const updateProduct = async ({ form, options, detailJson }: AdminProductBuilderPayload) => {
-    const response = await fetch(`/api/admin/products/${product.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, options, detailJson })
-    });
+    const response = await fetch(`/api/admin/products/${product.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, options, detailJson }) });
     const result = await response.json();
-
-    return {
-      ok: response.ok,
-      message: response.ok ? "상품 정보가 저장되었습니다." : result.message
-    };
+    return { ok: response.ok, message: response.ok ? "상품 정보를 저장했습니다." : result.message };
   };
-
-  return (
-    <div className="modal-backdrop">
-      <div className="admin-modal">
-        <div className="modal-head">
-          <h2>상품 수정</h2>
-          <button type="button" onClick={onClose}>닫기</button>
-        </div>
-        <AdminProductBuilder
-          mode="edit"
-          productId={product.id}
-          title={`${product.name} 수정`}
-          initialMessage="상품 정보와 상세페이지 자동 생성 데이터를 수정할 수 있습니다."
-          submitLabel="수정 저장"
-          savingLabel="저장 중..."
-          successMessage="상품 정보가 저장되었습니다."
-          initialForm={initialForm}
-          initialOptions={toOptionForms(product)}
-          initialDetail={product.detail_json}
-          draftStorageKey={`pado-admin-product-edit-draft-${product.id}`}
-          onSubmit={updateProduct}
-          onSuccess={onSaved}
-        />
-      </div>
-    </div>
-  );
+  return <div className="modal-backdrop"><div className="admin-modal"><div className="modal-head"><h2>상품 수정</h2><button type="button" onClick={onClose}>닫기</button></div><AdminProductBuilder mode="edit" productId={product.id} title={`${product.name} 수정`} initialMessage="상품 정보와 상세페이지를 수정할 수 있습니다." submitLabel="수정 저장" savingLabel="저장 중..." successMessage="상품 정보를 저장했습니다." initialForm={initialForm} initialOptions={toOptionForms(product)} initialDetail={product.detail_json} draftStorageKey={`pado-admin-product-edit-draft-${product.id}`} onSubmit={updateProduct} onSuccess={onSaved} /></div></div>;
 }

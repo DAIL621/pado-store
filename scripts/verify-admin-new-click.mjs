@@ -118,6 +118,7 @@ try {
   if (!created?.id) throw new Error("Created product was not found after button click save.");
   if (created.base_price !== 12300) throw new Error(`Created product price mismatch: ${created.base_price}`);
 
+  await page.goto(`${baseUrl}/admin/products?q=${encodeURIComponent(slug)}&kind=test&sort=created_desc`, { waitUntil: "networkidle" });
   await page.locator(".product-admin-table").getByText(slug).waitFor({ timeout: 7000 });
   await page.screenshot({ path: "screenshots/admin-products-after-create-real-edge.png", fullPage: true });
   const firstSlug = await page.locator(".product-admin-table tbody tr").first().locator("small").first().textContent();

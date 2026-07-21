@@ -463,6 +463,16 @@ export function AdminProductBuilder({
     setOptions((current) => (current.length === 1 ? current : current.filter((_, optionIndex) => optionIndex !== index)));
   };
 
+  const duplicateOption = (index: number) => {
+    enableDraftAutosave();
+    setOptions((current) => {
+      const source = current[index];
+      if (!source) return current;
+      const copy = { ...source, name: `${source.name || "옵션"} 복사본`, stock: "0" };
+      return [...current.slice(0, index + 1), copy, ...current.slice(index + 1)];
+    });
+  };
+
   const progress = useMemo(() => {
     return calculateProductCompleteness({
       ...form,
@@ -1042,7 +1052,10 @@ export function AdminProductBuilder({
                     <label>쿠팡 가격<input name={`options.${index}.coupangPrice`} className={fieldClass(option.coupangPrice ?? "")} type="text" inputMode="numeric" value={option.coupangPrice ?? ""} onChange={(event) => { const digits = event.target.value.replace(/\D/g, ""); updateOption(index, "coupangPrice", digits ? Number(digits).toLocaleString("ko-KR") : ""); }} placeholder="비교할 때만 입력" /></label>
                     <label>판매가<input name={`options.${index}.price`} className={fieldClass(option.price)} type="text" inputMode="numeric" value={option.price} onChange={(event) => { const digits = event.target.value.replace(/\D/g, ""); updateOption(index, "price", digits ? Number(digits).toLocaleString("ko-KR") : ""); }} required /></label>
                     <label>재고<input name={`options.${index}.stock`} className={fieldClass(option.stock)} type="number" value={option.stock} onChange={(event) => updateOption(index, "stock", event.target.value)} required min="0" /></label>
-                    <button type="button" className="remove-option" onClick={() => removeOption(index)} disabled={options.length === 1}>삭제</button>
+                    <div className="option-row-actions">
+                      <button type="button" onClick={() => duplicateOption(index)}>복사</button>
+                      <button type="button" className="remove-option" onClick={() => removeOption(index)} disabled={options.length === 1}>삭제</button>
+                    </div>
                   </div>
                 ))}
               </div>

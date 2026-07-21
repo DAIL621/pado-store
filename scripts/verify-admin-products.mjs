@@ -1,0 +1,31 @@
+import fs from "node:fs";
+import assert from "node:assert/strict";
+import { adminFailureStatus } from "../lib/auth/authorization.ts";
+
+const read = (file) => fs.readFileSync(file, "utf8");
+const manager = read("components/admin/AdminProductsManager.tsx");
+const listApi = read("app/api/admin/products/route.ts");
+const itemApi = read("app/api/admin/products/[id]/route.ts");
+const bulkApi = read("app/api/admin/products/bulk/route.ts");
+const builder = read("components/admin/AdminProductBuilder.tsx");
+const editor = read("components/admin/ProductDetailEditor.tsx");
+const audit = read("lib/security/audit.ts");
+
+assert.equal(adminFailureStatus("not-logged-in"), 401, "anonymous admin API access must be 401");
+assert.equal(adminFailureStatus("not-admin"), 403, "ordinary user admin API access must be 403");
+for (const source of [listApi, itemApi, bulkApi]) assert(source.includes("requireAdminApi"), "admin product API authorization is missing");
+for (const key of ["q", "status", "kind", "stock", "category", "sort", "page", "pageSize"]) assert(listApi.includes(`get(\"${key}\")`) || manager.includes(`\"${key}\"`), `query state missing: ${key}`);
+for (const searchField of ["product.id", "product.name", "product.slug", "product.category", "product.origin", "option.name"]) assert(listApi.includes(searchField), `integrated search missing ${searchField}`);
+for (const sort of ["updated_desc", "created_desc", "name_asc", "name_desc", "price_asc", "price_desc", "stock_asc", "stock_desc"]) assert(manager.includes(sort), `sort missing: ${sort}`);
+for (const action of ["hide", "recover", "end_sale", "soldout"]) assert(bulkApi.includes(`\"${action}\"`) && manager.includes(`\"${action}\"`), `bulk action missing: ${action}`);
+assert(listApi.includes("LOW_STOCK_THRESHOLD") && manager.includes("lowStockThreshold"), "shared low-stock threshold response is missing");
+assert(manager.includes("sourceProductId") && manager.includes("isActive: false") && manager.includes("toOptionForms(product, true)"), "safe product duplication defaults are missing");
+assert(listApi.includes("product.duplicated") && bulkApi.includes("operation_logs"), "product operation audit events are missing");
+assert(builder.includes("duplicateOption") && builder.includes('stock: "0"'), "option duplication does not reset stock");
+assert(editor.includes("draggable") && editor.includes("moveHero") && editor.includes("moveLegacy"), "image drag/mobile ordering controls are missing");
+assert(manager.includes("router.replace") && manager.includes("URLSearchParams"), "URL state persistence is missing");
+assert(manager.includes("pagination.pageCount") && listApi.includes("filtered.slice"), "server response pagination is missing");
+assert(!manager.includes('setBulkAction("delete")'), "dangerous bulk delete must not be exposed");
+assert(audit.includes("createAuditEntry"), "shared audit event structure is missing");
+
+console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "admin-api-auth", "integrated-search", "combined-filters", "sorting", "server-pagination", "stock-summary", "safe-product-copy", "option-copy", "quick-status", "bulk-status", "url-state", "image-ordering", "audit-ready", "no-bulk-delete"] }, null, 2));
