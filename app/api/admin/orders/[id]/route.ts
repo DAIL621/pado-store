@@ -59,6 +59,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
   }
 
+  if (body.internalNote !== undefined) {
+    const internalNote = cleanText(body.internalNote).slice(0, 1000);
+    const { error } = await supabase.from("operation_logs").insert({
+      order_id: id,
+      event_type: "order.internal_note",
+      summary: internalNote ? "관리자 내부 메모 수정" : "관리자 내부 메모 삭제",
+      payload: { note: internalNote },
+      actor: { id: admin.session.user.id, email: admin.session.user.email, role: "admin" }
+    });
+    if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  }
+
   if (needsTrackingNumber(nextStatus) && !nextTrackingNumber) {
     return NextResponse.json({ ok: false, message: "배송중 또는 배송완료 상태에는 송장번호가 필요합니다." }, { status: 400 });
   }
@@ -108,5 +120,5 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const notifications = await writeNotificationEventsBestEffort(supabase, automation.events);
   const reviewRequests = await writeReviewRequestsBestEffort(supabase, automation.events, currentOrder.user_id);
 
-  return NextResponse.json({ ok: true, automation, operationLog: log, statusHistory, notifications, reviewRequests });
+  return NextResponse.json({ ok: true, automation, operationLog: log, statusHistory, notifications, reviewRequests, internalNote: body.internalNote === undefined ? undefined : cleanText(body.internalNote).slice(0, 1000) });
 }
