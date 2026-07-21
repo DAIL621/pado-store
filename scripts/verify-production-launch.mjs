@@ -153,7 +153,7 @@ checks.push(check("toss:inventory logging", confirmRoute.includes("writeInventor
 checks.push(check("toss:refund route", refundRoute.includes("cancel") && refundRoute.includes("refund_completed"), "Toss refund and stock restore path present", 3, true));
 checks.push(check("toss:refund stock restore", refundRoute.includes("restoreRefundedStock") && refundRoute.includes("writeInventoryLogsBestEffort"), "refund restores inventory and writes logs", 2, true));
 checks.push(check("toss:webhook route", webhookRoute.includes("toss-webhook") && webhookRoute.includes("writeOperationLogBestEffort"), "Toss webhook logging present", 2, true));
-checks.push(check("kakao:auth callback profile", authCallbackRoute.includes("profiles") && authCallbackRoute.includes("role: \"customer\""), "Kakao/Supabase callback creates customer profile", 2, true));
+checks.push(check("kakao:auth callback profile", authCallbackRoute.includes("profiles") && authCallbackRoute.includes("role: \"user\""), "Kakao/Supabase callback creates user profile", 2, true));
 checks.push(check("kakao:admin role sql", setAdminSql.includes("set role = 'admin'") && setAdminSql.includes("profiles"), "admin role promotion SQL documented", 1, true));
 checks.push(check("storage:env example", envExample.includes("PADO_PRODUCT_IMAGE_STORAGE=supabase") && envExample.includes("SUPABASE_PRODUCT_IMAGE_BUCKET=product-images"), "Storage production env documented", 1, true));
 checks.push(check("storage:upload helper", storageHelper.includes("client.storage.from(bucket).upload") && storageHelper.includes("getPublicUrl"), "Supabase Storage upload and public URL path present", 2, true));

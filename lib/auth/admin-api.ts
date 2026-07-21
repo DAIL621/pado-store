@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth/admin";
 import { hasSupabaseAdminEnv } from "@/lib/supabase/admin";
+import { adminFailureStatus } from "@/lib/auth/authorization";
 
 export async function requireAdminApi() {
   if (!hasSupabaseAdminEnv()) {
@@ -16,7 +17,7 @@ export async function requireAdminApi() {
       ok: false as const,
       response: NextResponse.json(
         { ok: false, message: session.reason === "not-logged-in" ? "로그인이 필요합니다." : "관리자 권한이 필요합니다." },
-        { status: session.reason === "not-logged-in" ? 401 : 403 }
+        { status: adminFailureStatus(session.reason) }
       )
     };
   }

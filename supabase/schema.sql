@@ -4,7 +4,7 @@ create table if not exists profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   name text,
   phone text,
-  role text not null default 'customer' check (role in ('customer', 'admin')),
+  role text not null default 'user' check (role in ('user', 'admin')),
   created_at timestamptz not null default now()
 );
 
@@ -15,7 +15,7 @@ begin
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'name', new.raw_user_meta_data->>'nickname', new.email),
-    'customer'
+    'user'
   )
   on conflict (id) do nothing;
   return new;

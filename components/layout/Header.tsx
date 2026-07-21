@@ -66,6 +66,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState<"user" | "admin" | null>(null);
   const memberPath = user ? "/mypage" : "/login?next=/mypage";
   const hasCartItems = ready && count > 0;
 
@@ -81,10 +82,12 @@ export function Header() {
     const setSessionUser = async (nextUser: User | null) => {
       setUser(nextUser);
       setIsAdmin(false);
+      setRole(null);
 
       if (nextUser) {
         const { data: profile } = await supabase.from("profiles").select("role").eq("id", nextUser.id).maybeSingle();
         setIsAdmin(profile?.role === "admin");
+        setRole(profile?.role === "admin" ? "admin" : "user");
       }
     };
 
@@ -150,6 +153,7 @@ export function Header() {
             {isAdmin && <Link href="/admin" className="desktop-nav-link">관리자</Link>}
           </nav>
           <div className="header-actions">
+            {process.env.NODE_ENV !== "production" && role && <span className="dev-role-badge" title="개발 모드 권한 확인">role: {role}</span>}
             <AuthHeaderMenu />
             <Link href="/cart" className="cart-link cart-link-clean" aria-label={hasCartItems ? `장바구니 ${count}개` : "장바구니"}>
               <ShoppingCartIcon />

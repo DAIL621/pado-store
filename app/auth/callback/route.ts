@@ -29,7 +29,7 @@ export async function GET(request: Request) {
         await adminSupabase.from("profiles").insert({
           id: user.id,
           name: displayName,
-          role: "customer"
+          role: "user"
         });
       } else {
         await adminSupabase
