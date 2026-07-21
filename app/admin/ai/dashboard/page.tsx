@@ -37,7 +37,7 @@ export default async function AdminAiDashboardPage() {
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin/ai/dashboard");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   const evaluation = scoreAiDataset();

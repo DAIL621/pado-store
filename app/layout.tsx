@@ -4,10 +4,8 @@ import "./admin-products-ux.css";
 import "./admin-orders-ux.css";
 import "./admin-customers-ux.css";
 import "./admin-cs-ux.css";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { CartProvider } from "@/components/cart/CartProvider";
+import { AppChrome } from "@/components/layout/AppChrome";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pado-story.vercel.app";
 
@@ -41,10 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="ko" data-scroll-behavior="smooth">
       <body>
         <CartProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-          <MobileBottomNav />
+          <AppChrome>{children}</AppChrome>
         </CartProvider>
       </body>
     </html>

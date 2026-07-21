@@ -57,7 +57,7 @@ export default async function AdminAiReviewPage({ searchParams }: { searchParams
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin/ai/review");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   const state = getAiReviewCenterState();

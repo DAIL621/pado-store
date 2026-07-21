@@ -46,7 +46,7 @@ export default async function AdminAiDatasetPage() {
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin/ai/dataset");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   const datasets = readAiDatasets();

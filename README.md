@@ -68,3 +68,6 @@ pnpm run migration:status
 운영 롤백은 기존 Migration을 삭제하거나 수정하지 않고 새 보상 Migration으로 처리합니다. 데이터 손실 가능성이 있으면 백업/PITR 복구 승인을 먼저 받습니다. `supabase db reset --linked`는 운영에서 금지하며, `migration repair`는 스키마가 아니라 이력만 바꾼다는 점에 유의합니다.
 
 전체 운영 순서는 [Production migration checklist](./docs/PRODUCTION_MIGRATION_CHECKLIST.md)를 따릅니다.
+# Development administrator safety
+
+`DEV_ADMIN_LOGIN_ENABLED` is only for local, non-production testing and must remain `false` in production. Production code ignores the development administrator cookie regardless of the environment variable. An authenticated Supabase account is always authoritative: if its `profiles.role` is not `admin`, a `pado_dev_admin` cookie cannot grant administrator access. Sign-out deletes the development cookie immediately, and the cookie is HTTP-only, same-site, and short-lived.

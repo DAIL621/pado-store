@@ -9,7 +9,7 @@ export default async function AdminContentPage() {
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin/content");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   return (

@@ -9,7 +9,7 @@ export default async function AdminAiImagesPage() {
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin/ai/images");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   return (

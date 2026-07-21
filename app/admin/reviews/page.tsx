@@ -39,7 +39,7 @@ export default async function AdminReviewsPage() {
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin/reviews");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   const supabase = createAdminClient();

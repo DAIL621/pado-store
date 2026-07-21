@@ -148,7 +148,7 @@ export default async function AdminDashboardPage() {
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   const supabase = createAdminClient();

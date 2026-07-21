@@ -91,7 +91,7 @@ export default async function AdminStatsPage() {
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin/stats");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   const supabase = createAdminClient();

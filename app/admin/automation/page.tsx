@@ -84,7 +84,7 @@ export default async function AdminAutomationPage() {
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin/automation");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   const supabase = createAdminClient();

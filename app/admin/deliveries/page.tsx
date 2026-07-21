@@ -9,7 +9,7 @@ export default async function AdminDeliveriesPage() {
   const adminSession = await getAdminSession();
   if (!adminSession.ok) {
     if (adminSession.reason === "not-logged-in") redirect("/login?next=/admin/deliveries");
-    redirect("/");
+    redirect("/forbidden");
   }
 
   return (
