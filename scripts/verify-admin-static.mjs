@@ -16,6 +16,8 @@ const adminLayout = read("components/admin/AdminLayout.tsx");
 const opsPlaceholder = read("components/admin/AdminOperationsPlaceholder.tsx");
 const statsPage = read("app/admin/stats/page.tsx");
 const membersPage = read("app/admin/members/page.tsx");
+const customersManager = read("components/admin/AdminCustomersManager.tsx");
+const customersApi = read("app/api/admin/customers/route.ts");
 const reviewsPage = read("app/admin/reviews/page.tsx");
 const opsPages = [
   "app/admin/members/page.tsx",
@@ -97,14 +99,15 @@ assert(adminDashboard.includes("notification_events"), "admin dashboard should r
 assert(adminLayout.includes("AI 운영센터"), "admin sidebar AI operation center label is missing");
 assert(adminLayout.includes("admin-mobile-nav"), "admin mobile navigation is missing");
 assert(opsPlaceholder.includes("admin-ops-grid"), "admin operation placeholder grid is missing");
-assert(opsPages.includes("회원 관리"), "admin members page is missing");
+assert(opsPages.includes("고객 운영센터") || opsPages.includes("회원 관리"), "admin members page is missing");
 assert(opsPages.includes("리뷰 관리"), "admin reviews page is missing");
 assert(opsPages.includes("쿠폰") || opsPages.includes("배너"), "admin marketing page is missing");
 assert(opsPages.includes("FAQ"), "admin content page is missing");
 assert(opsPages.includes("통계") || statsPage.includes("rankProducts"), "admin stats page is missing");
 assert(statsPage.includes("rankProducts"), "admin stats product ranking is missing");
 assert(statsPage.includes("rankCategories"), "admin stats category ranking is missing");
-assert(membersPage.includes("profiles"), "admin members page should read profiles");
+assert((membersPage.includes("AdminCustomersManager") && customersApi.includes('from("profiles")')) || membersPage.includes("profiles"), "admin members page should read profiles through the customer API");
+assert(customersManager.includes("Customer Timeline"), "admin customer operations center is missing");
 assert(reviewsPage.includes("getReviewReadiness"), "admin reviews readiness check is missing");
 
 console.log(

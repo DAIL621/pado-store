@@ -1,0 +1,22 @@
+import fs from "node:fs";
+import assert from "node:assert/strict";
+import { adminFailureStatus } from "../lib/auth/authorization.ts";
+
+const read = (path) => fs.readFileSync(path, "utf8");
+const manager = read("components/admin/AdminCustomersManager.tsx");
+const listApi = read("app/api/admin/customers/route.ts");
+const detailApi = read("app/api/admin/customers/[id]/route.ts");
+const operations = read("lib/customers/operations.ts");
+const css = read("app/admin-customers-ux.css");
+assert.equal(adminFailureStatus("not-logged-in"), 401); assert.equal(adminFailureStatus("not-admin"), 403);
+assert(listApi.includes("requireAdminApi") && detailApi.includes("requireAdminApi"), "customer admin authorization is missing");
+for (const value of ["name", "recipient_phone", "email", "order_no", "tracking_number", "address", "tags"]) assert(listApi.includes(value) || manager.includes(value), `customer search missing ${value}`);
+for (const key of ["q", "grade", "orders", "tag", "sort", "page", "pageSize"]) assert(listApi.includes(`get("${key}")`) || manager.includes(`"${key}"`), `filter missing ${key}`);
+assert(manager.includes("URLSearchParams") && manager.includes("router.replace"), "URL state is missing");
+assert(operations.includes("calculateCustomerGrade") && operations.includes("calculateCustomerStats"), "live grade or purchase statistics are missing");
+assert(detailApi.includes("user_addresses") && manager.includes("배송지") && manager.includes("last30DaysSpent"), "address or customer metrics are missing");
+assert(detailApi.includes("customer.note") && detailApi.includes("customer.cs_record") && detailApi.includes("customer.tags_changed"), "customer operations audit events are missing");
+assert(detailApi.includes("timeline") && manager.includes("Customer Timeline") && operations.includes("customerEventLabel"), "customer timeline is missing");
+assert(manager.includes("주문 이력") && manager.includes("buildTrackingUrl") && manager.includes("/admin/orders?q="), "order and shipping quick links are missing");
+assert(manager.includes('event.key === "Escape"') && css.includes(":focus-visible") && css.includes("@media(max-width:700px)"), "accessibility or responsive UI is missing");
+console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "integrated-search", "filters-sort-url", "server-pagination", "live-grade", "purchase-stats", "orders-addresses", "private-note", "cs-record", "tags", "audit", "customer-timeline", "quick-links", "responsive-accessible"] }, null, 2));

@@ -49,6 +49,7 @@
     "verify:address-book": "node scripts/verify-address-book.mjs",
     "verify:admin-order-ux": "node scripts/verify-admin-order-ux.mjs",
     "verify:admin-orders": "node scripts/verify-admin-order-ux.mjs",
+    "verify:admin-customers": "node scripts/verify-admin-customers.mjs",
     "verify:security": "node scripts/verify-security.mjs && node scripts/verify-migrations.mjs",
     "migration:new": "supabase migration new",
     "verify:migrations": "node scripts/verify-migrations.mjs",
