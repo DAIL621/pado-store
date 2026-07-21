@@ -29,6 +29,7 @@ const health = read("app/api/health/route.ts");
 const confirm = read("app/api/payments/toss/confirm/route.ts");
 const webhook = read("app/api/payments/toss/webhook/route.ts");
 const roleMigration = read("supabase/migrations/202607211000_profile_user_admin_roles.sql");
+const addressMigration = read("supabase/migrations/202607201300_address_book_production.sql");
 const callback = read("app/auth/callback/route.ts");
 const header = read("components/layout/Header.tsx");
 assert(admin.includes("getAdminSession") && admin.includes("adminFailureStatus(session.reason)"), "admin auth enforcement missing");
@@ -36,6 +37,7 @@ assert.equal(adminFailureStatus("not-admin"), 403, "ordinary user must receive 4
 assert.equal(adminFailureStatus("not-logged-in"), 401, "anonymous user must receive 401 from admin API");
 assert.equal(adminFailureStatus("missing-env"), 503, "missing server configuration must fail closed");
 assert(roleMigration.includes("set role = 'user' where role = 'customer'") && roleMigration.includes("default 'user'") && roleMigration.includes("revoke update (role)"), "user/admin role migration is incomplete");
+assert(addressMigration.includes("create table if not exists public.user_addresses") && addressMigration.includes("enable row level security") && addressMigration.includes("auth.uid() = user_id"), "user_addresses table or RLS migration is missing");
 assert(callback.includes('role: "user"') && !callback.includes('role: "customer"'), "OAuth callback does not create user role");
 assert(header.includes('process.env.NODE_ENV !== "production"') && header.includes("role: {role}"), "development role indicator is missing");
 assert(devAdmin.includes('process.env.NODE_ENV !== "production"'), "dev admin is not production-disabled");

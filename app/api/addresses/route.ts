@@ -33,11 +33,6 @@ export async function POST(request: Request) {
   const validationMessage = validateAddressInput(input);
   if (validationMessage) return NextResponse.json({ ok: false, message: validationMessage }, { status: 400 });
 
-  if (input.is_default) {
-    const { error } = await supabase.from("user_addresses").update({ is_default: false }).eq("user_id", user.id);
-    if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
-  }
-
   const { data, error } = await supabase
     .from("user_addresses")
     .insert({ ...input, user_id: user.id })
