@@ -19,6 +19,6 @@ export function calculateCustomerStats(orders: Array<{ total_amount?: number | n
 }
 
 export function customerEventLabel(eventType: string) {
-  const labels: Record<string, string> = { "customer.note": "관리자 메모", "customer.cs_record": "CS 응대", "customer.tags_changed": "태그 변경", order_created: "주문", payment_confirmed: "결제 완료", shipment_updated: "송장 등록", order_status_changed: "주문 상태 변경", payment_refunded: "환불" };
+  const labels: Record<string, string> = { "customer.note": "관리자 메모", "customer.cs_record": "CS 응대", "customer.tags_changed": "태그 변경", "cs.case_created": "CS 접수", "cs.status_changed": "CS 상태 변경", "cs.note": "CS 처리 메모", "cs.workflow": "CS Workflow", order_created: "주문", payment_confirmed: "결제 완료", shipment_updated: "송장 등록", order_status_changed: "주문 상태 변경", payment_refunded: "환불" };
   return labels[eventType] ?? eventType.replaceAll("_", " ");
 }

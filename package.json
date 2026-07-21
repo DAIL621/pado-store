@@ -50,6 +50,7 @@
     "verify:admin-order-ux": "node scripts/verify-admin-order-ux.mjs",
     "verify:admin-orders": "node scripts/verify-admin-order-ux.mjs",
     "verify:admin-customers": "node scripts/verify-admin-customers.mjs",
+    "verify:admin-cs": "node scripts/verify-admin-cs.mjs",
     "verify:security": "node scripts/verify-security.mjs && node scripts/verify-migrations.mjs",
     "migration:new": "supabase migration new",
     "verify:migrations": "node scripts/verify-migrations.mjs",

@@ -12,6 +12,7 @@ type AdminNavKey =
   | "orders"
   | "shipments"
   | "members"
+  | "cs"
   | "reviews"
   | "marketing"
   | "content"
@@ -38,6 +39,7 @@ export function AdminLayout({
     { key: "orders", label: "주문 관리", href: "/admin/orders" },
     { key: "shipments", label: "배송 관리", href: "/admin/deliveries" },
     { key: "members", label: "회원 관리", href: "/admin/members" },
+    { key: "cs", label: "CS 처리센터", href: "/admin/cs" },
     { key: "reviews", label: "리뷰 관리", href: "/admin/reviews" },
     { key: "marketing", label: "쿠폰·배너", href: "/admin/marketing" },
     { key: "content", label: "공지·FAQ", href: "/admin/content" },

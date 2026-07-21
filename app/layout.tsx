@@ -3,6 +3,7 @@ import "./globals.css";
 import "./admin-products-ux.css";
 import "./admin-orders-ux.css";
 import "./admin-customers-ux.css";
+import "./admin-cs-ux.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
