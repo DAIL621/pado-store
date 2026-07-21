@@ -1,0 +1,10 @@
+.admin-product-identity img{width:52px!important;height:52px!important;aspect-ratio:1;border-radius:8px;background:#edf2f1;object-fit:cover}
+.admin-note.error{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #f0c9c2;border-radius:8px;background:#fff3f0;color:#9b3d2d;padding:10px 12px}
+.admin-note.error button{border:1px solid currentColor;border-radius:6px;background:#fff;color:inherit;padding:6px 10px;font-weight:800}
+.admin-logout-form{margin-top:auto}
+.admin-logout-form button{width:100%;min-height:42px;border:1px solid rgba(255,255,255,.24);border-radius:8px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.86);padding:9px 12px;font-weight:800;transition:.18s}
+.admin-logout-form button:hover{background:rgba(255,255,255,.14);color:#fff}
+.admin-logout-form button:focus-visible{outline:3px solid rgba(126,216,208,.45);outline-offset:2px}
+.admin-logout-form button:disabled{cursor:wait;opacity:.55}
+.admin-status-label{display:block;margin-bottom:5px;color:var(--muted);font-size:9px;font-weight:850}
+@media(max-width:1280px){.admin-main .table-wrap{overflow-x:auto}.admin-main table{min-width:980px}}

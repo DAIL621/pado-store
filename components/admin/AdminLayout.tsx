@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton";
 
 export type AdminUser = {
   name: string | null;
@@ -77,9 +78,7 @@ export function AdminLayout({
             ),
           )}
         </nav>
-        <form action="/auth/logout" method="post">
-          <button type="submit">관리자 로그아웃</button>
-        </form>
+        <AdminLogoutButton />
       </aside>
 
       <section className="admin-main">

@@ -240,7 +240,7 @@ export function AdminDeliveriesManager() {
                   </tr>
                 );
               })}
-              {!orders.length && <tr><td colSpan={9}>배송 처리할 주문이 없습니다.</td></tr>}
+              {!orders.length && <tr><td colSpan={9}>배송 대상 주문이 없습니다.</td></tr>}
             </tbody>
           </table>
         </div>

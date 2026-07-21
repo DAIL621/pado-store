@@ -8,6 +8,8 @@ import { AdminProductBuilder, type AdminProductBuilderPayload, type AdminProduct
 import type { ProductDetail } from "@/lib/products/detail";
 import { calculateProductCompleteness } from "@/lib/products/quality";
 import { mapStoredOptionToPrices } from "@/lib/products/option-pricing";
+import { resolveProductImage } from "@/lib/products/image";
+import { AdminProductThumbnail } from "@/components/admin/AdminProductThumbnail";
 
 type ProductOption = { id: string; name: string; price?: number | null; regular_price?: number | null; coupang_price?: number | null; price_delta: number; stock: number };
 type AdminProduct = {
@@ -236,7 +238,7 @@ export function AdminProductsManager() {
           const soldoutOptions = options.filter((option) => Number(option.stock) <= 0).length; const lowOptions = options.filter((option) => Number(option.stock) > 0 && Number(option.stock) <= lowStockThreshold).length;
           return <tr key={product.id}>
             <td><input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleOne(product.id)} aria-label={`${product.name} 선택`} /></td>
-            <td><div className="admin-product-identity"><img src={product.image_url || "/images/product-placeholder.svg"} alt="" /><div><strong>{product.name}</strong>{isVerificationProduct(product) && <span className="test-product-badge">검증</span>}<small>{product.slug}</small><small>ID {product.id.slice(0, 8)}</small></div></div></td>
+            <td><div className="admin-product-identity"><AdminProductThumbnail src={resolveProductImage({ imageUrl: product.image_url, detail: product.detail_json })} name={product.name} /><div><strong>{product.name}</strong>{isVerificationProduct(product) && <span className="test-product-badge">검증</span>}<small>{product.slug}</small><small>ID {product.id.slice(0, 8)}</small></div></div></td>
             <td><strong>{formatPrice(product.base_price)}</strong></td>
             <td><b>총 {totalStock(product).toLocaleString("ko-KR")}개</b><small>옵션 {options.length} · 품절 {soldoutOptions} · 부족 {lowOptions}</small><span className={`stock-badge ${stockState}`}>{stockLabel[stockState]}</span></td>
             <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>

@@ -5,6 +5,7 @@ import { isNeutralProductPlaceholder } from "@/lib/products/stock-visibility";
 import { mapStoredOptionToPrices } from "@/lib/products/option-pricing";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { resolveProductImage } from "@/lib/products/image";
 
 type ProductRow = {
   id: string;
@@ -59,11 +60,7 @@ function toProduct(row: ProductRow): Product {
   const normalPrice = representativeRegularPrice > price ? representativeRegularPrice : Number(row.regular_price ?? price);
   const discountRate = normalPrice > price ? Math.round((1 - price / normalPrice) * 100) : 0;
   const detail = normalizeProductDetailInput(row.detail_json);
-  const primaryDetailImage = detail.heroImages.find((item) => item.label === "대표사진" && item.url)?.url
-    || detail.heroImages.find((item) => item.url)?.url;
-  const image = isNeutralProductPlaceholder(row.image_url)
-    ? primaryDetailImage || "/images/product-placeholder.svg"
-    : row.image_url!;
+  const image = resolveProductImage({ imageUrl: isNeutralProductPlaceholder(row.image_url) ? null : row.image_url, detail });
   const detailImages = detail.heroImages.length ? detail.heroImages.map((item) => item.url) : [image];
 
   return {

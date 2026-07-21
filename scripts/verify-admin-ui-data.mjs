@@ -1,0 +1,27 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+
+const read = (path) => fs.readFileSync(path, "utf8");
+const imageResolver = read("lib/products/image.ts");
+assert(imageResolver.includes("normalizeProductImageUrl") && imageResolver.includes("https?:") && imageResolver.includes("storage/v1/object/public"), "image URL normalization missing");
+assert(imageResolver.includes("PRODUCT_IMAGE_PLACEHOLDER") && imageResolver.includes("detail.heroImages"), "image null/detail fallback missing");
+const products = read("components/admin/AdminProductsManager.tsx");
+const thumb = read("components/admin/AdminProductThumbnail.tsx");
+assert(products.includes("resolveProductImage") && products.includes("AdminProductThumbnail"), "admin product image resolver missing");
+assert(thumb.includes("onError") && thumb.includes("PRODUCT_IMAGE_PLACEHOLDER"), "broken image fallback missing");
+const cs = read("components/admin/AdminCsManager.tsx");
+assert(!cs.includes("+ CS 접수") && !cs.includes("CreateCase"), "context-free CS button remains");
+const customers = read("app/api/admin/customers/route.ts");
+const customerDetail = read("app/api/admin/customers/[id]/route.ts");
+assert(!customers.includes('created_at, updated_at') && !customerDetail.includes('created_at, updated_at'), "nonexistent profiles.updated_at remains");
+assert(customers.includes("ADMIN_MEMBERS_FETCH_FAILED") && !customers.includes("error?.message ??"), "member error response is not sanitized");
+const customerUi = read("components/admin/AdminCustomersManager.tsx");
+assert(customerUi.includes('"loading" | "ready" | "error"') && customerUi.includes('loadState === "error" ? "-"'), "member loading/empty/error states missing");
+const orders = read("components/admin/AdminOrdersManager.tsx");
+assert(orders.includes("주문 상태") && orders.includes("배송완료로 변경"), "order status/action distinction missing");
+const ordersApi = read("app/api/admin/orders/route.ts");
+const deliveries = read("components/admin/AdminDeliveriesManager.tsx");
+assert(ordersApi.includes('.eq("status", "shipped")') && deliveries.includes('isDeliveryStatus(order.status)'), "shipping status criteria missing");
+assert(read("components/admin/AdminLayout.tsx").includes("AdminLogoutButton"), "admin logout control missing");
+assert(read("scripts/verify-admin-auth-layout.mjs").includes("admin-chrome-isolated"), "admin auth/layout regression coverage missing");
+console.log(JSON.stringify({ ok: true, checks: ["product-image-resolution", "image-null-fallback", "image-error-fallback", "admin-product-image", "cs-context-only", "customer-schema", "safe-customer-error", "customer-state-separation", "order-status-label", "shipping-count-criteria", "logout", "auth-layout"] }, null, 2));

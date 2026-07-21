@@ -13,12 +13,15 @@ export async function GET(request: Request) {
   const q = clean(params.get("q")); const grade = params.get("grade") ?? "all"; const orderFilter = params.get("orders") ?? "all"; const tag = clean(params.get("tag")); const sort = params.get("sort") ?? "created_desc";
   const supabase = createAdminClient();
   const [profilesResult, ordersResult, authResult, logsResult] = await Promise.all([
-    supabase.from("profiles").select("id, name, role, created_at, updated_at"),
+    supabase.from("profiles").select("id, name, role, created_at"),
     supabase.from("orders").select("id, user_id, order_no, recipient_name, recipient_phone, address, total_amount, status, created_at, shipments(tracking_number)"),
     supabase.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     supabase.from("operation_logs").select("event_type, payload, created_at").in("event_type", ["customer.tags_changed", "customer.cs_record"]).order("created_at", { ascending: false })
   ]);
-  if (profilesResult.error || ordersResult.error) return NextResponse.json({ ok: false, message: profilesResult.error?.message ?? ordersResult.error?.message }, { status: 500 });
+  if (profilesResult.error || ordersResult.error || authResult.error || logsResult.error) {
+    if (process.env.NODE_ENV !== "production") console.error("ADMIN_MEMBERS_FETCH_FAILED", profilesResult.error ?? ordersResult.error ?? authResult.error ?? logsResult.error);
+    return NextResponse.json({ error: { code: "ADMIN_MEMBERS_FETCH_FAILED", message: "고객 정보를 불러오지 못했습니다." } }, { status: 500 });
+  }
   const authMap = new Map(authResult.data.users.map((user) => [user.id, user]));
   const ordersByUser = new Map<string, typeof ordersResult.data>();
   for (const order of ordersResult.data ?? []) if (order.user_id) ordersByUser.set(order.user_id, [...(ordersByUser.get(order.user_id) ?? []), order]);
