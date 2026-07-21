@@ -30,6 +30,10 @@ assert(manager.includes("pado-admin-products-filters-open") && manager.includes(
 assert(manager.includes("pagination.pageCount") && listApi.includes("filtered.slice"), "server response pagination is missing");
 assert(manager.includes("pageStart") && manager.includes("pageEnd") && manager.includes("개씩 보기"), "pagination range summary is missing");
 assert(manager.includes("admin-action-primary") && manager.includes("danger-lite") && manager.includes("⋯"), "action hierarchy is missing");
+assert(manager.includes("createPortal") && manager.includes("document.body") && manager.includes("getBoundingClientRect"), "overflow-safe product menu portal is missing");
+assert(manager.includes("window.innerHeight") && manager.includes("window.innerWidth"), "product menu viewport correction is missing");
+assert(manager.includes('window.addEventListener("scroll"') && manager.includes('window.addEventListener("resize"') && manager.includes('event.key === "Escape"'), "product menu close behavior is missing");
+assert(adminUx.includes("--admin-layer-dropdown") && adminUx.includes(".admin-product-popover{position:fixed"), "product menu layer token or fixed positioning is missing");
 assert(adminLayout.includes("admin-ai-nav") && adminLayout.includes('open={active === "ai"}'), "AI navigation collapse is missing");
 for (const token of ["--admin-success", "--admin-danger", "--admin-warning", "--admin-hidden", "--admin-score"]) assert(adminUx.includes(token), `admin status token missing: ${token}`);
 assert(adminUx.includes("prefers-reduced-motion") && adminUx.includes(":focus-visible"), "motion or keyboard accessibility styles are missing");
@@ -37,4 +41,4 @@ assert(adminUx.includes('content:"등록·수정"') && adminUx.includes(".produc
 assert(!manager.includes('setBulkAction("delete")'), "dangerous bulk delete must not be exposed");
 assert(audit.includes("createAuditEntry"), "shared audit event structure is missing");
 
-console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "admin-api-auth", "integrated-search", "combined-filters", "filter-collapse", "sorting", "server-pagination", "pagination-range", "stock-summary", "safe-product-copy", "option-copy", "quick-status", "bulk-status", "url-state", "action-hierarchy", "ai-nav-collapse", "responsive-cards", "accessible-motion", "image-ordering", "audit-ready", "no-bulk-delete"] }, null, 2));
+console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "admin-api-auth", "integrated-search", "combined-filters", "filter-collapse", "sorting", "server-pagination", "pagination-range", "stock-summary", "safe-product-copy", "option-copy", "quick-status", "bulk-status", "url-state", "action-hierarchy", "portal-product-menu", "viewport-correction", "menu-close-behavior", "ai-nav-collapse", "responsive-cards", "accessible-motion", "image-ordering", "audit-ready", "no-bulk-delete"] }, null, 2));

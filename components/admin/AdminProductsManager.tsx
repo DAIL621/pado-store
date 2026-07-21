@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatPrice } from "@/data/products";
 import { AdminProductBuilder, type AdminProductBuilderPayload, type AdminProductFormState, type AdminProductOptionForm } from "@/components/admin/AdminProductBuilder";
@@ -16,6 +17,7 @@ type AdminProduct = {
 };
 type ProductAction = "hide" | "recover" | "end_sale" | "soldout";
 type Pagination = { page: number; pageSize: number; total: number; pageCount: number };
+type MenuPosition = { top: number; left: number; visibility: "hidden" | "visible" };
 
 const actionLabels: Record<ProductAction, string> = { hide: "숨김", recover: "판매중", end_sale: "판매종료", soldout: "품절" };
 const verificationPattern = /(verification|admin-edit|detail-auto|ops-db-test|stock-check|test|e2e|duplicate|private-detail|legacy-detail|diagnose|debug|테스트|검증)/i;
@@ -56,6 +58,9 @@ export function AdminProductsManager() {
   const [workingIds, setWorkingIds] = useState<string[]>([]);
   const [confirmAction, setConfirmAction] = useState<{ action: ProductAction; ids: string[]; productName?: string } | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(true);
+  const [activeMenu, setActiveMenu] = useState<{ product: AdminProduct; anchor: HTMLButtonElement } | null>(null);
+  const [menuPosition, setMenuPosition] = useState<MenuPosition>({ top: 0, left: 0, visibility: "hidden" });
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const value = (key: string, fallback: string) => searchParams.get(key) ?? fallback;
   const updateParams = useCallback((updates: Record<string, string | null>) => {
@@ -92,6 +97,38 @@ export function AdminProductsManager() {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [confirmAction]);
+  useLayoutEffect(() => {
+    if (!activeMenu || !menuRef.current) return;
+    const margin = 8;
+    const gap = 6;
+    const anchorRect = activeMenu.anchor.getBoundingClientRect();
+    const menuRect = menuRef.current.getBoundingClientRect();
+    const left = Math.min(Math.max(margin, anchorRect.right - menuRect.width), window.innerWidth - menuRect.width - margin);
+    const below = anchorRect.bottom + gap;
+    const top = below + menuRect.height <= window.innerHeight - margin
+      ? below
+      : Math.max(margin, anchorRect.top - menuRect.height - gap);
+    setMenuPosition({ top, left, visibility: "visible" });
+  }, [activeMenu]);
+  useEffect(() => {
+    if (!activeMenu) return;
+    const closeOnPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!menuRef.current?.contains(target) && !activeMenu.anchor.contains(target)) setActiveMenu(null);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") { setActiveMenu(null); activeMenu.anchor.focus(); } };
+    const closeOnViewportChange = () => setActiveMenu(null);
+    document.addEventListener("pointerdown", closeOnPointerDown);
+    window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("resize", closeOnViewportChange);
+    window.addEventListener("scroll", closeOnViewportChange, true);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnPointerDown);
+      window.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("resize", closeOnViewportChange);
+      window.removeEventListener("scroll", closeOnViewportChange, true);
+    };
+  }, [activeMenu]);
   useEffect(() => {
     if (!searchParams.has("kind") || !searchParams.has("sort")) updateParams({ kind: searchParams.get("kind") ?? "production", sort: searchParams.get("sort") ?? "updated_desc", page: "1" });
   }, [searchParams, updateParams]);
@@ -206,13 +243,19 @@ export function AdminProductsManager() {
             <td><b>{product.category}</b><small>{product.origin}</small></td>
             <td>{completeness ? <><span className={`detail-score ${completeness.score === 100 ? "complete" : "draft"}`}>{completeness.score}%</span><small>{completeness.completed}/{completeness.total} 완료</small></> : <span className="detail-score empty">정보 확인 필요</span>}</td>
             <td><small>등록 {new Date(product.created_at).toLocaleDateString("ko-KR")}</small><small>수정 {new Date(product.updated_at ?? product.created_at).toLocaleDateString("ko-KR")}</small></td>
-            <td className="admin-actions"><button className="admin-action-primary" type="button" onClick={() => setEditing(product)}>수정</button><a className="admin-action-secondary" href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세</a><details><summary aria-label={`${product.name} 추가 관리 메뉴`}>⋯</summary><div><button type="button" onClick={() => copyUrl(product)}>URL 복사</button><button type="button" disabled={workingIds.includes(product.id)} onClick={() => duplicateProduct(product)}>상품 복사</button>{(["soldout", "end_sale", status === "hidden" || status === "ended" ? "recover" : "hide"] as ProductAction[]).map((action) => <button className={action === "recover" ? "" : "danger-lite"} key={action} type="button" disabled={workingIds.includes(product.id)} onClick={() => setConfirmAction({ action, ids: [product.id], productName: product.name })}>{actionLabels[action]}</button>)}</div></details></td>
+            <td className="admin-actions"><button className="admin-action-primary" type="button" onClick={() => setEditing(product)}>수정</button><a className="admin-action-secondary" href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세</a><button className="admin-more-trigger" type="button" aria-haspopup="menu" aria-expanded={activeMenu?.product.id === product.id} aria-label={`${product.name} 추가 관리 메뉴`} onClick={(event) => { const anchor = event.currentTarget; setMenuPosition({ top: 0, left: 0, visibility: "hidden" }); setActiveMenu((current) => current?.product.id === product.id ? null : { product, anchor }); }}>⋯</button></td>
           </tr>;
         })}
       </tbody></table></div>
       <nav className="admin-pagination" aria-label="상품 페이지"><small>총 {pagination.total}개 · {pageStart}~{pageEnd} 표시</small><button type="button" disabled={pagination.page <= 1} onClick={() => updateParams({ page: String(pagination.page - 1) })}>이전</button><span>{pagination.page} / {pagination.pageCount}</span><button type="button" disabled={pagination.page >= pagination.pageCount} onClick={() => updateParams({ page: String(pagination.page + 1) })}>다음</button></nav>
     </section>
 
+    {activeMenu && createPortal(<div ref={menuRef} className="admin-product-popover" role="menu" aria-label={`${activeMenu.product.name} 관리 메뉴`} style={menuPosition}>
+      <button role="menuitem" type="button" onClick={() => { const product = activeMenu.product; setActiveMenu(null); void copyUrl(product); }}>URL 복사</button>
+      <button role="menuitem" type="button" disabled={workingIds.includes(activeMenu.product.id)} onClick={() => { const product = activeMenu.product; setActiveMenu(null); void duplicateProduct(product); }}>상품 복사</button>
+      <div className="admin-product-popover-divider" role="separator" />
+      {(["soldout", "end_sale", statusOf(activeMenu.product) === "hidden" || statusOf(activeMenu.product) === "ended" ? "recover" : "hide"] as ProductAction[]).map((action) => <button role="menuitem" className={action === "recover" ? "" : "danger-lite"} key={action} type="button" disabled={workingIds.includes(activeMenu.product.id)} onClick={() => { const product = activeMenu.product; setActiveMenu(null); setConfirmAction({ action, ids: [product.id], productName: product.name }); }}>{actionLabels[action]}</button>)}
+    </div>, document.body)}
     {confirmAction && <div className="modal-backdrop"><section className="admin-confirm-modal" role="dialog" aria-modal="true"><h2>상품 상태 변경</h2><p>{confirmAction.productName ? `‘${confirmAction.productName}’을(를)` : `선택한 ${confirmAction.ids.length}개 상품을`} {actionLabels[confirmAction.action]} 처리하시겠습니까?</p><div><button type="button" onClick={() => setConfirmAction(null)}>취소</button><button type="button" className="teal" onClick={executeAction}>확인</button></div></section></div>}
     {editing && <ProductEditModal product={editing} onClose={() => setEditing(null)} onSaved={async () => { setEditing(null); setMessage("상품 정보를 수정했습니다."); await loadProducts(); }} />}
   </>;
