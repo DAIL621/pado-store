@@ -55,6 +55,7 @@ export function AdminProductsManager() {
   const [loading, setLoading] = useState(true);
   const [workingIds, setWorkingIds] = useState<string[]>([]);
   const [confirmAction, setConfirmAction] = useState<{ action: ProductAction; ids: string[]; productName?: string } | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(true);
 
   const value = (key: string, fallback: string) => searchParams.get(key) ?? fallback;
   const updateParams = useCallback((updates: Record<string, string | null>) => {
@@ -82,6 +83,15 @@ export function AdminProductsManager() {
   }, [paramsKey]);
 
   useEffect(() => { setQueryInput(searchParams.get("q") ?? ""); }, [paramsKey, searchParams]);
+  useEffect(() => {
+    try { setFiltersOpen(window.localStorage.getItem("pado-admin-products-filters-open") !== "false"); } catch {}
+  }, []);
+  useEffect(() => {
+    if (!confirmAction) return;
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setConfirmAction(null); };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [confirmAction]);
   useEffect(() => {
     if (!searchParams.has("kind") || !searchParams.has("sort")) updateParams({ kind: searchParams.get("kind") ?? "production", sort: searchParams.get("sort") ?? "updated_desc", page: "1" });
   }, [searchParams, updateParams]);
@@ -144,6 +154,8 @@ export function AdminProductsManager() {
 
   const stockBadge = (product: AdminProduct) => totalStock(product) === 0 ? "out" : totalStock(product) <= lowStockThreshold ? "low" : "normal";
   const stockLabel = { out: "품절", low: "재고 부족", normal: "정상" } as const;
+  const pageStart = pagination.total ? (pagination.page - 1) * pagination.pageSize + 1 : 0;
+  const pageEnd = Math.min(pagination.page * pagination.pageSize, pagination.total);
 
   return <>
     <form className="admin-product-search" onSubmit={submitSearch}>
@@ -153,8 +165,12 @@ export function AdminProductsManager() {
         <button type="button" onClick={resetFilters}>초기화</button>
         <a className="button teal" href="/admin/new">+ 상품 등록</a>
       </div>
-      <details className="admin-product-filter-panel" open>
-        <summary>검색 필터</summary>
+      <details className="admin-product-filter-panel" open={filtersOpen} onToggle={(event) => {
+        const open = event.currentTarget.open;
+        setFiltersOpen(open);
+        try { window.localStorage.setItem("pado-admin-products-filters-open", String(open)); } catch {}
+      }}>
+        <summary>검색 필터 <span>{filtersOpen ? "접기" : "펼치기"}</span></summary>
         <div>
           <label>판매 상태<select value={value("status", "all")} onChange={(event) => updateParams({ status: event.target.value })}><option value="all">전체</option><option value="selling">판매중</option><option value="ended">판매종료</option><option value="soldout">품절</option><option value="hidden">숨김</option></select></label>
           <label>상품 구분<select value={value("kind", "production")} onChange={(event) => updateParams({ kind: event.target.value })}><option value="all">전체</option><option value="production">운영상품</option><option value="test">검증상품</option><option value="test_hidden">검증상품 숨김</option></select></label>
@@ -168,14 +184,14 @@ export function AdminProductsManager() {
 
     <p className="admin-note" role="status">{loading ? "상품 목록을 불러오는 중입니다." : message}</p>
     <div className="admin-bulk-toolbar">
-      <strong>{selectedIds.length}개 선택됨</strong>
+      <strong>{selectedIds.length ? `☑ ${selectedIds.length}개 선택됨` : "상품을 선택하세요"}</strong>
       <div>{(["hide", "recover", "end_sale", "soldout"] as ProductAction[]).map((action) => <button key={action} type="button" disabled={!selectedIds.length || !!workingIds.length} onClick={() => setConfirmAction({ action, ids: selectedIds })}>선택 {actionLabels[action]}</button>)}</div>
     </div>
 
     <section className="admin-panel admin-products-panel">
-      <div><h2>상품 목록</h2><span className="admin-message">전체 결과 {pagination.total}개 · {pagination.page}/{pagination.pageCount} 페이지</span></div>
+      <div><h2>상품 목록</h2><span className="admin-message">총 {pagination.total}개 상품 · {pageStart}~{pageEnd} 표시 · {pagination.pageSize}개씩 보기</span></div>
       <div className="table-wrap"><table className="product-admin-table"><thead><tr>
-        <th><input type="checkbox" checked={allPageSelected} onChange={(event) => togglePage(event.target.checked)} aria-label="현재 페이지 전체 선택" /></th><th>상품</th><th>분류</th><th>가격</th><th>옵션·재고</th><th>완성도</th><th>상태</th><th>등록·수정</th><th>관리</th>
+        <th><input type="checkbox" checked={allPageSelected} onChange={(event) => togglePage(event.target.checked)} aria-label="현재 페이지 전체 선택" /></th><th>상품</th><th>가격</th><th>옵션·재고</th><th>상태</th><th>분류</th><th>완성도</th><th>등록·수정</th><th>관리</th>
       </tr></thead><tbody>
         {!loading && products.length === 0 && <tr><td colSpan={9}><div className="admin-empty-filter"><strong>조건에 맞는 상품이 없습니다.</strong><span>검색어 또는 필터를 조정해주세요.</span><button type="button" onClick={resetFilters}>필터 초기화</button></div></td></tr>}
         {products.map((product) => {
@@ -184,16 +200,17 @@ export function AdminProductsManager() {
           return <tr key={product.id}>
             <td><input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleOne(product.id)} aria-label={`${product.name} 선택`} /></td>
             <td><div className="admin-product-identity"><img src={product.image_url || "/images/product-placeholder.svg"} alt="" /><div><strong>{product.name}</strong>{isVerificationProduct(product) && <span className="test-product-badge">검증</span>}<small>{product.slug}</small><small>ID {product.id.slice(0, 8)}</small></div></div></td>
-            <td><b>{product.category}</b><small>{product.origin}</small></td><td><strong>{formatPrice(product.base_price)}</strong></td>
+            <td><strong>{formatPrice(product.base_price)}</strong></td>
             <td><b>총 {totalStock(product).toLocaleString("ko-KR")}개</b><small>옵션 {options.length} · 품절 {soldoutOptions} · 부족 {lowOptions}</small><span className={`stock-badge ${stockState}`}>{stockLabel[stockState]}</span></td>
-            <td>{completeness ? <><span className={`detail-score ${completeness.score === 100 ? "complete" : "draft"}`}>{completeness.score}%</span><small>{completeness.completed}/{completeness.total} 완료</small></> : <span className="detail-score empty">정보 확인 필요</span>}</td>
             <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
+            <td><b>{product.category}</b><small>{product.origin}</small></td>
+            <td>{completeness ? <><span className={`detail-score ${completeness.score === 100 ? "complete" : "draft"}`}>{completeness.score}%</span><small>{completeness.completed}/{completeness.total} 완료</small></> : <span className="detail-score empty">정보 확인 필요</span>}</td>
             <td><small>등록 {new Date(product.created_at).toLocaleDateString("ko-KR")}</small><small>수정 {new Date(product.updated_at ?? product.created_at).toLocaleDateString("ko-KR")}</small></td>
-            <td className="admin-actions"><button type="button" onClick={() => setEditing(product)}>수정</button><a href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세</a><details><summary>더보기</summary><div><button type="button" onClick={() => copyUrl(product)}>URL 복사</button><button type="button" disabled={workingIds.includes(product.id)} onClick={() => duplicateProduct(product)}>상품 복사</button>{(["soldout", "end_sale", status === "hidden" || status === "ended" ? "recover" : "hide"] as ProductAction[]).map((action) => <button key={action} type="button" disabled={workingIds.includes(product.id)} onClick={() => setConfirmAction({ action, ids: [product.id], productName: product.name })}>{actionLabels[action]}</button>)}</div></details></td>
+            <td className="admin-actions"><button className="admin-action-primary" type="button" onClick={() => setEditing(product)}>수정</button><a className="admin-action-secondary" href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세</a><details><summary aria-label={`${product.name} 추가 관리 메뉴`}>⋯</summary><div><button type="button" onClick={() => copyUrl(product)}>URL 복사</button><button type="button" disabled={workingIds.includes(product.id)} onClick={() => duplicateProduct(product)}>상품 복사</button>{(["soldout", "end_sale", status === "hidden" || status === "ended" ? "recover" : "hide"] as ProductAction[]).map((action) => <button className={action === "recover" ? "" : "danger-lite"} key={action} type="button" disabled={workingIds.includes(product.id)} onClick={() => setConfirmAction({ action, ids: [product.id], productName: product.name })}>{actionLabels[action]}</button>)}</div></details></td>
           </tr>;
         })}
       </tbody></table></div>
-      <nav className="admin-pagination" aria-label="상품 페이지"><button type="button" disabled={pagination.page <= 1} onClick={() => updateParams({ page: String(pagination.page - 1) })}>이전</button><span>{pagination.page} / {pagination.pageCount}</span><button type="button" disabled={pagination.page >= pagination.pageCount} onClick={() => updateParams({ page: String(pagination.page + 1) })}>다음</button></nav>
+      <nav className="admin-pagination" aria-label="상품 페이지"><small>총 {pagination.total}개 · {pageStart}~{pageEnd} 표시</small><button type="button" disabled={pagination.page <= 1} onClick={() => updateParams({ page: String(pagination.page - 1) })}>이전</button><span>{pagination.page} / {pagination.pageCount}</span><button type="button" disabled={pagination.page >= pagination.pageCount} onClick={() => updateParams({ page: String(pagination.page + 1) })}>다음</button></nav>
     </section>
 
     {confirmAction && <div className="modal-backdrop"><section className="admin-confirm-modal" role="dialog" aria-modal="true"><h2>상품 상태 변경</h2><p>{confirmAction.productName ? `‘${confirmAction.productName}’을(를)` : `선택한 ${confirmAction.ids.length}개 상품을`} {actionLabels[confirmAction.action]} 처리하시겠습니까?</p><div><button type="button" onClick={() => setConfirmAction(null)}>취소</button><button type="button" className="teal" onClick={executeAction}>확인</button></div></section></div>}

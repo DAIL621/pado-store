@@ -9,6 +9,8 @@ const itemApi = read("app/api/admin/products/[id]/route.ts");
 const bulkApi = read("app/api/admin/products/bulk/route.ts");
 const builder = read("components/admin/AdminProductBuilder.tsx");
 const editor = read("components/admin/ProductDetailEditor.tsx");
+const adminLayout = read("components/admin/AdminLayout.tsx");
+const adminUx = read("app/admin-products-ux.css");
 const audit = read("lib/security/audit.ts");
 
 assert.equal(adminFailureStatus("not-logged-in"), 401, "anonymous admin API access must be 401");
@@ -24,8 +26,15 @@ assert(listApi.includes("product.duplicated") && bulkApi.includes("operation_log
 assert(builder.includes("duplicateOption") && builder.includes('stock: "0"'), "option duplication does not reset stock");
 assert(editor.includes("draggable") && editor.includes("moveHero") && editor.includes("moveLegacy"), "image drag/mobile ordering controls are missing");
 assert(manager.includes("router.replace") && manager.includes("URLSearchParams"), "URL state persistence is missing");
+assert(manager.includes("pado-admin-products-filters-open") && manager.includes("filtersOpen"), "filter collapse persistence is missing");
 assert(manager.includes("pagination.pageCount") && listApi.includes("filtered.slice"), "server response pagination is missing");
+assert(manager.includes("pageStart") && manager.includes("pageEnd") && manager.includes("개씩 보기"), "pagination range summary is missing");
+assert(manager.includes("admin-action-primary") && manager.includes("danger-lite") && manager.includes("⋯"), "action hierarchy is missing");
+assert(adminLayout.includes("admin-ai-nav") && adminLayout.includes('open={active === "ai"}'), "AI navigation collapse is missing");
+for (const token of ["--admin-success", "--admin-danger", "--admin-warning", "--admin-hidden", "--admin-score"]) assert(adminUx.includes(token), `admin status token missing: ${token}`);
+assert(adminUx.includes("prefers-reduced-motion") && adminUx.includes(":focus-visible"), "motion or keyboard accessibility styles are missing");
+assert(adminUx.includes('content:"등록·수정"') && adminUx.includes(".product-admin-table thead{display:none}"), "mobile product card layout is missing");
 assert(!manager.includes('setBulkAction("delete")'), "dangerous bulk delete must not be exposed");
 assert(audit.includes("createAuditEntry"), "shared audit event structure is missing");
 
-console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "admin-api-auth", "integrated-search", "combined-filters", "sorting", "server-pagination", "stock-summary", "safe-product-copy", "option-copy", "quick-status", "bulk-status", "url-state", "image-ordering", "audit-ready", "no-bulk-delete"] }, null, 2));
+console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "admin-api-auth", "integrated-search", "combined-filters", "filter-collapse", "sorting", "server-pagination", "pagination-range", "stock-summary", "safe-product-copy", "option-copy", "quick-status", "bulk-status", "url-state", "action-hierarchy", "ai-nav-collapse", "responsive-cards", "accessible-motion", "image-ordering", "audit-ready", "no-bulk-delete"] }, null, 2));

@@ -52,21 +52,28 @@ export function AdminLayout({
         <strong>파도스토리</strong>
         <span>관리자 시스템</span>
         <nav>
-          {navItems.map((item) => (
-            <span className="admin-nav-group" key={item.key}>
-              <Link className={active === item.key ? "active" : ""} href={item.href}>
-                {item.label}
-              </Link>
-              {item.key === "ai" && (
+          {navItems.map((item) =>
+            item.key === "ai" ? (
+              <details className="admin-nav-group admin-ai-nav" key={item.key} open={active === "ai"}>
+                <summary className={active === "ai" ? "active" : ""}>
+                  <span>{item.label}</span>
+                  <span aria-hidden="true">⌄</span>
+                </summary>
                 <span className="admin-ai-subnav">
                   <Link href="/admin/ai/images">AI 사진분석</Link>
                   <Link href="/admin/ai/dataset">AI 데이터셋</Link>
                   <Link href="/admin/ai/dashboard">AI 대시보드</Link>
                   <Link href="/admin/ai/review">AI 검수센터</Link>
                 </span>
-              )}
-            </span>
-          ))}
+              </details>
+            ) : (
+              <span className="admin-nav-group" key={item.key}>
+                <Link className={active === item.key ? "active" : ""} href={item.href}>
+                  {item.label}
+                </Link>
+              </span>
+            ),
+          )}
         </nav>
         <form action="/auth/logout" method="post">
           <button type="submit">관리자 로그아웃</button>
