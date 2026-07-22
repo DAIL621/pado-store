@@ -6,6 +6,7 @@ import { formatPrice } from "@/data/products";
 import { buildTrackingUrl } from "@/lib/shipping/tracking-url";
 import { isValidTrackingNumber, TRACKING_NUMBER_MESSAGE } from "@/lib/shipping/tracking";
 import { canChangeOrderStatus, isOperationOrderStatus, resolveTrackingSaveStatus, type OperationOrderStatus } from "@/lib/operations/status";
+import { AdminToast } from "@/components/admin/ui";
 
 type OrderItem = { id: string; product_name: string; option_name: string; unit_price: number; quantity: number };
 type Shipment = { carrier: string | null; tracking_number: string | null };
@@ -44,6 +45,9 @@ export function AdminOrdersManager() {
   const [working, setWorking] = useState<string[]>([]);
   const [summary, setSummary] = useState<OperationsSummary>({ today: 0, waiting: 0, missingTracking: 0, shipping: 0, cancelRequested: 0 });
   const trackingRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ tone: "success" | "danger" | "warning"; text: string } | null>(null);
 
   const value = (key: string, fallback = "all") => searchParams.get(key) ?? fallback;
   const updateParams = useCallback((updates: Record<string, string | null>) => {
@@ -75,28 +79,30 @@ export function AdminOrdersManager() {
   useEffect(() => { const close = (event: KeyboardEvent) => { if (event.key === "Escape") setSelectedOrder(null); }; window.addEventListener("keydown", close); return () => window.removeEventListener("keydown", close); }, []);
 
   const submitSearch = (event: React.FormEvent) => { event.preventDefault(); updateParams({ q: query.trim() || null }); };
-  const updateDraft = (id: string, field: keyof ShippingDraft, next: string) => setDrafts((current) => ({ ...current, [id]: { ...(current[id] ?? { carrier: "CJ대한통운", trackingNumber: "" }), [field]: next } }));
+  const updateDraft = (id: string, field: keyof ShippingDraft, next: string) => { setRowErrors((current) => ({ ...current, [id]: "" })); setSavedId(null); setDrafts((current) => ({ ...current, [id]: { ...(current[id] ?? { carrier: "CJ대한통운", trackingNumber: "" }), [field]: next } })); };
   const pageIds = orders.map((order) => order.id);
   const allSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
 
   const patchOrder = async (order: AdminOrder, body: Record<string, unknown>, success: string) => {
+    if (working.includes(order.id)) return false;
     setWorking((current) => [...current, order.id]);
     try {
       const response = await fetch(`/api/admin/orders/${order.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
-      setMessage(success); await loadOrders();
-    } catch (error) { setMessage(error instanceof Error ? error.message : "저장에 실패했습니다."); }
+      setMessage(success); setRowErrors((current) => ({ ...current, [order.id]: "" })); setSavedId(order.id); setToast({ tone: "success", text: success }); await loadOrders(); return true;
+    } catch (error) { const text = error instanceof Error ? error.message : "저장에 실패했습니다."; setMessage(text); setRowErrors((current) => ({ ...current, [order.id]: text })); setToast({ tone: "danger", text }); return false; }
     finally { setWorking((current) => current.filter((id) => id !== order.id)); }
   };
 
   const saveShipment = async (order: AdminOrder) => {
     const draft = drafts[order.id];
     const trackingNumber = draft?.trackingNumber.trim() ?? "";
-    if (trackingNumber && !isValidTrackingNumber(trackingNumber)) { setMessage(TRACKING_NUMBER_MESSAGE); return; }
+    if (trackingNumber && !isValidTrackingNumber(trackingNumber)) { setMessage(TRACKING_NUMBER_MESSAGE); setRowErrors((current) => ({ ...current, [order.id]: TRACKING_NUMBER_MESSAGE })); return; }
     let status = order.status;
     if (trackingNumber && isOperationOrderStatus(order.status)) status = resolveTrackingSaveStatus(order.status, order.status, { hasTrackingNumber: true, autoAdvance: true });
-    await patchOrder(order, { carrier: draft?.carrier, trackingNumber, status }, "송장과 주문 상태를 저장했습니다.");
+    const saved = await patchOrder(order, { carrier: draft?.carrier, trackingNumber, status }, `${order.order_no} 송장번호를 저장했습니다.`);
+    if (!saved) return;
     const nextOrder = orders[orders.findIndex((item) => item.id === order.id) + 1];
     if (nextOrder) window.setTimeout(() => trackingRefs.current[nextOrder.id]?.focus(), 0);
   };
@@ -110,7 +116,7 @@ export function AdminOrdersManager() {
     if (!selectedIds.length || !window.confirm(`선택한 ${selectedIds.length}건을 ${statusLabels[status]} 상태로 변경하시겠습니까?`)) return;
     const response = await fetch("/api/admin/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: selectedIds, status }) });
     const result = await response.json();
-    setMessage(`일괄 처리: 성공 ${result.succeeded?.length ?? 0}건 · 실패 ${result.failed?.length ?? 0}건${result.failed?.some((item: { reason: string }) => item.reason === "송장번호 없음") ? " (송장 없는 주문 제외)" : ""}`);
+    const bulkMessage = `일괄 처리: 성공 ${result.succeeded?.length ?? 0}건 · 실패 ${result.failed?.length ?? 0}건${result.failed?.some((item: { reason: string }) => item.reason === "송장번호 없음") ? " (송장 없는 주문 제외)" : ""}`; setMessage(bulkMessage); setToast({ tone: result.failed?.length ? "warning" : "success", text: bulkMessage });
     setSelectedIds([]); await loadOrders();
   };
   const downloadFilteredOrders = () => {
@@ -150,24 +156,26 @@ export function AdminOrdersManager() {
         <td><button className="admin-order-number" onClick={() => setSelectedOrder(order)}>{order.order_no}</button><strong>{order.profiles?.name || order.recipient_name}</strong><a href={`tel:${order.recipient_phone}`}>{order.recipient_phone}</a><small>{new Date(order.created_at).toLocaleString("ko-KR")}</small></td>
         <td><small className="admin-status-label">주문 상태</small><span className={`admin-order-status ${order.status}`}>{statusLabels[order.status] ?? order.status}</span><div className="admin-order-quick">{order.status === "paid" && <button onClick={() => void quickStatus(order, "preparing")}>준비중으로 변경</button>}{order.status === "preparing" && <button disabled={!shipment?.tracking_number} onClick={() => void quickStatus(order, "shipped")}>출고완료로 변경</button>}{order.status === "shipped" && <button onClick={() => void quickStatus(order, "delivered")}>배송완료로 변경</button>}</div></td>
         <td><span className="admin-order-items-summary">{itemSummary(order)}</span>{order.memo && <small>고객: {order.memo}</small>}{order.internal_note && <small className="internal">내부: {order.internal_note}</small>}<div className="admin-order-flags">{new Date(order.created_at).toDateString() === new Date().toDateString() && <em>오늘 주문</em>}{new Date(order.created_at).toDateString() === new Date().toDateString() && ["paid", "preparing"].includes(order.status) && <em>오늘 출고</em>}{urgent && <em className="warning">송장 미입력</em>}{age > 172800000 && !["shipped", "delivered", "cancelled", "refunded"].includes(order.status) && <em className="danger delay">배송 지연</em>}{order.status === "return_requested" && <em className="danger">취소 요청</em>}{order.status === "refunded" && <em className="danger">환불 진행</em>}</div></td>
-        <td><form className="admin-inline-shipment" onSubmit={(event) => { event.preventDefault(); void saveShipment(order); }}><select aria-label={`${order.order_no} 택배사`} value={draft?.carrier ?? "CJ대한통운"} onChange={(event) => updateDraft(order.id, "carrier", event.target.value)}>{carriers.map((carrier) => <option key={carrier}>{carrier}</option>)}</select><input ref={(node) => { trackingRefs.current[order.id] = node; }} aria-label={`${order.order_no} 송장번호`} inputMode="numeric" placeholder="송장번호" value={draft?.trackingNumber ?? ""} onChange={(event) => updateDraft(order.id, "trackingNumber", event.target.value)} /><button type="submit" disabled={working.includes(order.id)}>{working.includes(order.id) ? "저장 중" : "저장"}</button>{buildTrackingUrl(draft?.carrier, draft?.trackingNumber) && <a target="_blank" rel="noreferrer" href={buildTrackingUrl(draft?.carrier, draft?.trackingNumber) ?? "#"}>배송조회</a>}</form></td>
+        <td><form className={`admin-inline-shipment ${savedId === order.id ? "saved" : ""}`} onSubmit={(event) => { event.preventDefault(); void saveShipment(order); }}><select aria-label={`${order.order_no} 택배사`} value={draft?.carrier ?? "CJ대한통운"} onChange={(event) => updateDraft(order.id, "carrier", event.target.value)}>{carriers.map((carrier) => <option key={carrier}>{carrier}</option>)}</select><input ref={(node) => { trackingRefs.current[order.id] = node; }} aria-label={`${order.order_no} 송장번호`} aria-invalid={Boolean(rowErrors[order.id])} inputMode="numeric" placeholder="송장번호" value={draft?.trackingNumber ?? ""} onChange={(event) => updateDraft(order.id, "trackingNumber", event.target.value)} /><button type="submit" disabled={working.includes(order.id)}>{working.includes(order.id) ? "저장 중" : "저장"}</button>{buildTrackingUrl(draft?.carrier, draft?.trackingNumber) && <a target="_blank" rel="noreferrer" href={buildTrackingUrl(draft?.carrier, draft?.trackingNumber) ?? "#"}>배송조회</a>}{rowErrors[order.id] && <small className="admin-row-error" role="alert">{rowErrors[order.id]}</small>}{savedId === order.id && <small className="admin-row-saved">저장 완료 · 다음 송장번호로 이동합니다.</small>}</form></td>
         <td><strong>{formatPrice(order.total_amount)}</strong><small>{paymentOf(order)?.method || "결제 기록 없음"}</small></td>
         <td><button className="admin-action-primary" onClick={() => setSelectedOrder(order)}>상세</button></td>
       </tr>; })}
       {!orders.length && <tr><td colSpan={7} className="admin-order-empty">조건에 맞는 주문이 없습니다.<small>검색어나 필터를 변경해주세요.</small></td></tr>}
     </tbody></table></div><nav className="admin-pagination" aria-label="주문 페이지"><small>총 {pagination.total}건 · {pageStart}~{pageEnd}</small><button disabled={pagination.page <= 1} onClick={() => updateParams({ page: String(pagination.page - 1) })}>이전</button><span>{pagination.page} / {pagination.pageCount}</span><button disabled={pagination.page >= pagination.pageCount} onClick={() => updateParams({ page: String(pagination.page + 1) })}>다음</button></nav></section>
     {selectedOrder && <OrderDetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} onSaved={async () => { setSelectedOrder(null); await loadOrders(); }} />}
+    {toast && <AdminToast tone={toast.tone} onClose={() => setToast(null)}>{toast.text}</AdminToast>}
   </>;
 }
 
 function OrderDetailModal({ order, onClose, onSaved }: { order: AdminOrder; onClose: () => void; onSaved: () => Promise<void> }) {
   const shipment = shipmentOf(order); const payment = paymentOf(order);
   const [status, setStatus] = useState(order.status); const [carrier, setCarrier] = useState(shipment?.carrier || "CJ대한통운"); const [trackingNumber, setTrackingNumber] = useState(shipment?.tracking_number || ""); const [internalNote, setInternalNote] = useState(order.internal_note || ""); const [message, setMessage] = useState("");
-  const save = async () => { if (!isOperationOrderStatus(order.status) || !isOperationOrderStatus(status) || !canChangeOrderStatus(order.status, status as OperationOrderStatus)) { setMessage("허용되지 않는 주문 상태 변경입니다."); return; } const response = await fetch(`/api/admin/orders/${order.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, carrier, trackingNumber, internalNote }) }); const result = await response.json(); if (!response.ok) { setMessage(result.message); return; } await onSaved(); };
+  const [saving, setSaving] = useState(false);
+  const save = async () => { if (saving) return; if (!isOperationOrderStatus(order.status) || !isOperationOrderStatus(status) || !canChangeOrderStatus(order.status, status as OperationOrderStatus)) { setMessage("허용되지 않는 주문 상태 변경입니다."); return; } if (trackingNumber.trim() && !isValidTrackingNumber(trackingNumber.trim())) { setMessage(TRACKING_NUMBER_MESSAGE); return; } setSaving(true); try { const response = await fetch(`/api/admin/orders/${order.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, carrier, trackingNumber, internalNote }) }); const result = await response.json(); if (!response.ok) { setMessage(result.message ?? "주문 정보를 저장하지 못했습니다."); return; } await onSaved(); } catch { setMessage("네트워크 오류로 저장하지 못했습니다. 입력값은 유지됩니다."); } finally { setSaving(false); } };
   return <div className="modal-backdrop"><section className="admin-modal admin-order-modal" role="dialog" aria-modal="true" aria-labelledby="order-detail-title"><header className="admin-order-cs-head"><div><span>ORDER</span><h2 id="order-detail-title">{order.order_no}</h2></div><strong>{order.recipient_name}</strong><a href={`tel:${order.recipient_phone}`}>{order.recipient_phone}</a><a className="admin-tracking-link" href={`/admin/cs?order=${order.order_no}`}>CS 조회·접수</a><span className={`admin-order-status ${order.status}`}>{statusLabels[order.status]}</span><b>{shipment?.tracking_number || "송장 미입력"}</b><button onClick={onClose} aria-label="주문 상세 닫기">×</button></header><div className="admin-order-modal-body">
     <section className="admin-order-card"><header><span>RECIPIENT</span><h3>배송·고객 정보</h3></header><dl className="admin-order-detail-grid"><div><dt>수령인</dt><dd>{order.recipient_name}</dd></div><div><dt>연락처</dt><dd>{order.recipient_phone}</dd></div><div className="wide"><dt>주소</dt><dd>({order.postcode || "-"}) {order.address} {order.address_detail}</dd></div><div className="wide"><dt>배송메모·요청사항</dt><dd>{order.memo || "없음"}</dd></div></dl></section>
     <section className="admin-order-card"><header><span>ITEMS & PAYMENT</span><h3>주문상품·결제</h3></header><div className="table-wrap"><table><thead><tr><th>상품</th><th>옵션</th><th>수량</th><th>금액</th></tr></thead><tbody>{(order.order_items ?? []).map((item) => <tr key={item.id}><td>{item.product_name}</td><td>{item.option_name}</td><td>{item.quantity}</td><td>{formatPrice(item.unit_price * item.quantity)}</td></tr>)}</tbody></table></div><div className="admin-order-payment-summary"><span>배송비 포함 결제금액</span><strong>{formatPrice(order.total_amount)}</strong><small>{payment?.method || "결제수단 미확인"} · {payment?.status || "상태 미확인"}</small></div></section>
     <section className="admin-order-card"><header><span>OPERATION</span><h3>배송관리·내부 메모</h3></header><div className="admin-shipping-form"><label>주문상태<select value={status} onChange={(event) => setStatus(event.target.value)}>{statuses.map((item) => <option key={item} value={item} disabled={isOperationOrderStatus(order.status) && !canChangeOrderStatus(order.status, item as OperationOrderStatus)}>{statusLabels[item]}</option>)}</select></label><label>택배사<select value={carrier} onChange={(event) => setCarrier(event.target.value)}>{carriers.map((item) => <option key={item}>{item}</option>)}</select></label><label>송장번호<input value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} /></label><label className="wide">관리자 내부 메모<textarea maxLength={1000} value={internalNote} onChange={(event) => setInternalNote(event.target.value)} placeholder="고객 교환 예정, 재발송 완료, 출고 보류 등" /><small>고객 화면에는 노출되지 않습니다.</small></label></div></section>
     {message && <p className="admin-order-toast" role="status">{message}</p>}
-  </div><footer className="admin-order-modal-actions"><button onClick={onClose}>취소</button><button className="button teal" onClick={() => void save()}>저장</button></footer></section></div>;
+  </div><footer className="admin-order-modal-actions"><button disabled={saving} onClick={onClose}>취소</button><button className="button teal" disabled={saving} onClick={() => void save()}>{saving ? "저장 중" : "저장"}</button></footer></section></div>;
 }
