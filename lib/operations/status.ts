@@ -16,7 +16,7 @@ export type OperationOrderStatus = (typeof orderStatuses)[number];
 export const orderStatusLabels: Record<OperationOrderStatus, string> = {
   pending: "결제대기",
   paid: "결제완료",
-  preparing: "상품준비",
+  preparing: "상품준비중",
   delivery_ready: "배송준비",
   shipped: "배송중",
   delivered: "배송완료",
