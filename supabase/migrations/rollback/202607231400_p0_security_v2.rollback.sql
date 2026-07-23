@@ -3,6 +3,7 @@
 begin;
 drop function if exists public.pado_expire_pending_orders_v2(integer);
 drop function if exists public.pado_fail_refund_v2(uuid,uuid,text,boolean);
+drop function if exists public.pado_mark_refund_reconciliation_v2(uuid,text);
 drop function if exists public.pado_finalize_refund_v2(uuid,uuid,integer,text);
 drop function if exists public.pado_claim_refund_v2(uuid,uuid,text,integer,text,uuid,jsonb,uuid);
 drop function if exists public.pado_fail_payment_v2(uuid,uuid,text,boolean);
@@ -26,4 +27,5 @@ alter table public.orders drop column if exists expires_at;
 alter table public.orders drop column if exists request_fingerprint;
 alter table public.orders drop column if exists idempotency_key;
 alter table public.orders drop column if exists security_version;
+alter table public.product_options drop constraint if exists product_options_stock_nonnegative;
 commit;

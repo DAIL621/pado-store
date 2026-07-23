@@ -77,6 +77,7 @@ create table if not exists public.refunds (
   created_at timestamptz not null default now(),
   approved_at timestamptz,
   reconciliation_required_at timestamptz,
+  failure_code text,
   unique (order_id, idempotency_key),
   unique (toss_cancel_transaction_key)
 );
@@ -402,8 +403,10 @@ begin
   if p_requested_amount <= 0 or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) < 1 then
     raise exception 'INVALID_REFUND_REQUEST';
   end if;
-  select coalesce(sum(approved_amount),0) into v_prior_amount from public.refunds
-   where order_id=p_order_id and status in ('partially_refunded','refunded');
+  select coalesce(sum(
+    case when status='processing' then requested_amount else coalesce(approved_amount,0) end
+  ),0) into v_prior_amount from public.refunds
+   where order_id=p_order_id and status in ('processing','partially_refunded','refunded');
   if v_prior_amount + p_requested_amount > v_payment.amount then raise exception 'REFUND_AMOUNT_EXCEEDED'; end if;
 
   insert into public.refunds(
@@ -519,8 +522,26 @@ begin
   update public.refunds set
     status=case when p_reconciliation_required then 'reconciliation_required' else 'failed' end,
     reconciliation_required_at=case when p_reconciliation_required then now() else null end,
+    failure_code=left(p_failure_code,100),
     processing_token=null
    where id=p_refund_id and status='processing' and processing_token=p_processing_token;
+end;
+$$;
+
+create or replace function public.pado_mark_refund_reconciliation_v2(
+  p_refund_id uuid,
+  p_failure_code text
+) returns void
+language plpgsql
+security definer
+set search_path=public,pg_temp
+as $$
+begin
+  update public.refunds set
+    reconciliation_required_at=now(),
+    failure_code=left(p_failure_code,100),
+    status=case when status='processing' then 'reconciliation_required' else status end
+  where id=p_refund_id;
 end;
 $$;
 
@@ -550,6 +571,7 @@ revoke all on function public.pado_mark_payment_reconciliation_v2(uuid,text) fro
 revoke all on function public.pado_claim_refund_v2(uuid,uuid,text,integer,text,uuid,jsonb,uuid) from public, anon, authenticated;
 revoke all on function public.pado_finalize_refund_v2(uuid,uuid,integer,text) from public, anon, authenticated;
 revoke all on function public.pado_fail_refund_v2(uuid,uuid,text,boolean) from public, anon, authenticated;
+revoke all on function public.pado_mark_refund_reconciliation_v2(uuid,text) from public, anon, authenticated;
 revoke all on function public.pado_expire_pending_orders_v2(integer) from public, anon, authenticated;
 grant execute on function public.pado_create_order_v2(uuid,text,uuid,text,jsonb,text,text,text,text,text,text,timestamptz) to service_role;
 grant execute on function public.pado_claim_payment_v2(uuid,uuid,text,uuid) to service_role;
@@ -559,6 +581,7 @@ grant execute on function public.pado_mark_payment_reconciliation_v2(uuid,text) 
 grant execute on function public.pado_claim_refund_v2(uuid,uuid,text,integer,text,uuid,jsonb,uuid) to service_role;
 grant execute on function public.pado_finalize_refund_v2(uuid,uuid,integer,text) to service_role;
 grant execute on function public.pado_fail_refund_v2(uuid,uuid,text,boolean) to service_role;
+grant execute on function public.pado_mark_refund_reconciliation_v2(uuid,text) to service_role;
 grant execute on function public.pado_expire_pending_orders_v2(integer) to service_role;
 
 commit;

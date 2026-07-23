@@ -285,6 +285,16 @@ begin
   );
 
   perform pg_temp.audit_check(
+    'refunds.reconciliation_required',
+    $q$select count(*) from public.refunds
+       where status = 'reconciliation_required'
+          or reconciliation_required_at is not null$q$,
+    'FAIL',
+    'Refunds requiring operator reconciliation',
+    'Compare Toss cancellation transactions and the refund ledger before any correction.'
+  );
+
+  perform pg_temp.audit_check(
     'shipments.tracking_on_invalid_order',
     $q$select count(*) from public.shipments s
        join public.orders o on o.id = s.order_id

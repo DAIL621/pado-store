@@ -227,6 +227,10 @@ export async function POST(request: Request) {
   if (finalState.error
       || !["partially_refunded", "refunded"].includes(String(finalState.data?.status))
       || Number(finalState.data?.approved_amount) !== requestedAmount) {
+    await db.rpc("pado_mark_refund_reconciliation_v2", {
+      p_refund_id: claimed.refundId,
+      p_failure_code: "FINAL_REFUND_STATE_UNVERIFIED"
+    });
     return NextResponse.json(
       { ok: false, code: "REFUND_RECONCILIATION_REQUIRED", message: "환불 최종 상태를 확인 중입니다." },
       { status: 202 }
