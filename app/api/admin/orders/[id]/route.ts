@@ -10,6 +10,8 @@ import {
 } from "@/lib/operations/automation";
 import { canChangeOrderStatus, isOperationOrderStatus, needsTrackingNumber, type OperationOrderStatus } from "@/lib/operations/status";
 import { isValidTrackingNumber, TRACKING_NUMBER_MESSAGE } from "@/lib/shipping/tracking";
+import { requireTrustedOrigin } from "@/lib/security/origin";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 function cleanText(value: unknown) {
@@ -17,10 +19,17 @@ function cleanText(value: unknown) {
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const origin = requireTrustedOrigin(request);
+  if (!origin.ok) return origin.response;
   const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
 
   const { id } = await params;
+  const limited = await enforceRateLimit(request, "adminOrderWrite", {
+    userId: admin.session.user.id,
+    resourceId: id
+  });
+  if (!limited.ok) return limited.response;
   const parsedBody = await readJsonBody(request);
   if (!parsedBody.ok) return parsedBody.response;
   const body = parsedBody.body;

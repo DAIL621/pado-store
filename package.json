@@ -52,6 +52,11 @@
     "verify:admin-customers": "node scripts/verify-admin-customers.mjs",
     "verify:admin-cs": "node scripts/verify-admin-cs.mjs",
     "verify:security": "node scripts/verify-security.mjs && node scripts/verify-admin-auth-layout.mjs && node scripts/verify-migrations.mjs",
+    "verify:security:p0": "node scripts/verify-security-p0.mjs && pnpm run verify:security",
+    "verify:order-security": "node scripts/verify-security-p0.mjs --scope=order",
+    "verify:payment-security": "node scripts/verify-security-p0.mjs --scope=payment",
+    "verify:refund-integrity": "node scripts/verify-security-p0.mjs --scope=refund",
+    "verify:rate-limit": "node scripts/verify-security-p0.mjs --scope=rate-limit",
     "verify:admin-auth-layout": "node scripts/verify-admin-auth-layout.mjs",
     "verify:admin-ui-data": "node scripts/verify-admin-ui-data.mjs",
     "verify:admin-readability": "node scripts/verify-admin-readability.mjs",
@@ -77,6 +82,8 @@
   "dependencies": {
     "@supabase/ssr": "0.12.0",
     "@supabase/supabase-js": "2.108.2",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "next": "16.2.9",
     "react": "19.2.7",
     "react-dom": "19.2.7"

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -10,7 +11,12 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { data } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      const limited = await enforceRateLimit(request, "oauthFailure");
+      if (!limited.ok) return limited.response;
+      return NextResponse.redirect(new URL("/login?error=oauth", request.url));
+    }
     const user = data.user;
 
     if (user && hasSupabaseAdminEnv()) {
@@ -38,6 +44,9 @@ export async function GET(request: Request) {
           .eq("id", user.id);
       }
     }
+  } else {
+    const limited = await enforceRateLimit(request, "oauthFailure");
+    if (!limited.ok) return limited.response;
   }
 
   return NextResponse.redirect(new URL(safeNext, request.url));

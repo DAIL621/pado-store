@@ -11,14 +11,20 @@ import {
   MAX_PRODUCT_VIDEO_SIZE,
   type AdminUploadPurpose
 } from "@/lib/admin/upload-limits";
+import { requireTrustedOrigin } from "@/lib/security/origin";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
 const MAX_MULTIPART_REQUEST_SIZE = MAX_PRODUCT_VIDEO_SIZE + 2 * 1024 * 1024;
 
 export async function POST(request: Request) {
+  const origin = requireTrustedOrigin(request);
+  if (!origin.ok) return origin.response;
   const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
+  const limited = await enforceRateLimit(request, "adminUpload", { userId: admin.session.user.id });
+  if (!limited.ok) return limited.response;
 
   const contentLength = Number(request.headers.get("content-length") || 0);
   if (contentLength > MAX_MULTIPART_REQUEST_SIZE) {

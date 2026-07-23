@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { mapAddressInput, mapAddressRow, validateAddressInput } from "@/lib/addresses/mapping";
+import { requireTrustedOrigin } from "@/lib/security/origin";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -25,9 +27,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const origin = requireTrustedOrigin(request);
+  if (!origin.ok) return origin.response;
   const { supabase, user } = await getAuthenticatedClient();
   if (!user) return NextResponse.json({ ok: false, message: "로그인이 필요합니다." }, { status: 401 });
 
+  const limited = await enforceRateLimit(request, "addressWrite", { userId: user.id });
+  if (!limited.ok) return limited.response;
   const body = await request.json().catch(() => ({}));
   const input = mapAddressInput(body);
   const validationMessage = validateAddressInput(input);

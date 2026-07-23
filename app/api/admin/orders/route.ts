@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/admin-api";
 import { readJsonBody } from "@/lib/api/request";
 import { canChangeOrderStatus, isOperationOrderStatus, needsTrackingNumber } from "@/lib/operations/status";
+import { requireTrustedOrigin } from "@/lib/security/origin";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const PAGE_SIZES = new Set([20, 50, 100]);
@@ -117,8 +119,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const origin = requireTrustedOrigin(request);
+  if (!origin.ok) return origin.response;
   const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
+  const limited = await enforceRateLimit(request, "adminOrderWrite", { userId: admin.session.user.id });
+  if (!limited.ok) return limited.response;
   const parsed = await readJsonBody(request);
   if (!parsed.ok) return parsed.response;
   const ids = Array.isArray(parsed.body.ids) ? [...new Set(parsed.body.ids.filter((id): id is string => typeof id === "string"))].slice(0, 100) : [];

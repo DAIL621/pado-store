@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { isDevAdminLoginEnabled, setDevAdminSessionCookie } from "@/lib/auth/dev-admin";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
 
 export async function POST(request: Request) {
+  const limited = await enforceRateLimit(request, "adminLogin");
+  if (!limited.ok) return limited.response;
   if (!isDevAdminLoginEnabled()) {
     return NextResponse.redirect(new URL("/", request.url), { status: 303 });
   }
