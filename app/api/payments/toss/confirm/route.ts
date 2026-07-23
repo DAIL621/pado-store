@@ -1,285 +1,193 @@
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/api/request";
-import {
-  buildInventoryAutomation,
-  writeInventoryLogsBestEffort,
-  writeNotificationEventsBestEffort,
-  writeOperationLogBestEffort
-} from "@/lib/operations/automation";
+import { writeNotificationEventsBestEffort, writeOperationLogBestEffort } from "@/lib/operations/automation";
 import type { OperationEvent } from "@/lib/operations/events";
+import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { requireTrustedOrigin } from "@/lib/security/origin";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
-type OrderItemForStock = {
-  option_id: string | null;
-  quantity: number;
-  product_name: string;
-  option_name: string;
+const ORDER_ID_RE = /^[A-Za-z0-9_-]{6,64}$/;
+const PAYMENT_KEY_RE = /^[A-Za-z0-9_-]{10,200}$/;
+const SUCCESS_METHODS = new Set([
+  "카드", "간편결제", "계좌이체", "가상계좌", "휴대폰",
+  "문화상품권", "도서문화상품권", "게임문화상품권", "해외간편결제",
+  "CARD", "EASY_PAY", "TRANSFER", "VIRTUAL_ACCOUNT", "MOBILE_PHONE", "GIFT_CERTIFICATE", "FOREIGN_EASY_PAY"
+]);
+
+type TossPayment = {
+  paymentKey?: string;
+  orderId?: string;
+  status?: string;
+  method?: string;
+  totalAmount?: number;
+  approvedAt?: string;
+  cancels?: unknown[] | null;
+  code?: string;
+  message?: string;
 };
 
-async function getOrderStockRequirements(supabase: ReturnType<typeof createAdminClient>, orderId: string) {
-  const { data: items, error: itemError } = await supabase
-    .from("order_items")
-    .select("option_id, quantity, product_name, option_name")
-    .eq("order_id", orderId);
-
-  if (itemError) return { ok: false as const, message: itemError.message };
-
-  const quantities = new Map<string, { quantity: number; label: string }>();
-  for (const item of (items ?? []) as OrderItemForStock[]) {
-    if (!item.option_id) {
-      return { ok: false as const, message: `${item.product_name} ${item.option_name} 옵션 정보가 없어 재고를 차감할 수 없습니다.` };
-    }
-    const current = quantities.get(item.option_id);
-    quantities.set(item.option_id, {
-      quantity: (current?.quantity ?? 0) + Number(item.quantity),
-      label: `${item.product_name} ${item.option_name}`
-    });
-  }
-
-  return { ok: true as const, quantities };
+function tossHeaders(secretKey: string, idempotencyKey?: string) {
+  return {
+    Authorization: `Basic ${Buffer.from(`${secretKey}:`).toString("base64")}`,
+    "Content-Type": "application/json",
+    ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {})
+  };
 }
 
-async function rollbackDecrementedStock(
-  supabase: ReturnType<typeof createAdminClient>,
-  decremented: { optionId: string; previousStock: number; nextStock: number }[]
-) {
-  for (const rollback of decremented.reverse()) {
-    await supabase
-      .from("product_options")
-      .update({ stock: rollback.previousStock })
-      .eq("id", rollback.optionId)
-      .eq("stock", rollback.nextStock);
-  }
+async function queryTossPayment(secretKey: string, paymentKey: string) {
+  const response = await fetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}`, {
+    headers: tossHeaders(secretKey), cache: "no-store"
+  });
+  const body = await response.json().catch(() => ({})) as TossPayment;
+  return { ok: response.ok, body };
 }
 
-async function decrementOrderStock(supabase: ReturnType<typeof createAdminClient>, orderId: string) {
-  const requirements = await getOrderStockRequirements(supabase, orderId);
-  if (!requirements.ok) return requirements;
-
-  const decremented: { optionId: string; previousStock: number; nextStock: number; productName: string }[] = [];
-  for (const [optionId, item] of requirements.quantities) {
-    const { data: option, error: optionError } = await supabase
-      .from("product_options")
-      .select("id, stock")
-      .eq("id", optionId)
-      .single();
-
-    if (optionError || !option) {
-      await rollbackDecrementedStock(supabase, decremented);
-      return { ok: false as const, message: optionError?.message ?? `${item.label} 옵션을 찾을 수 없습니다.` };
-    }
-
-    const previousStock = Number(option.stock);
-    if (previousStock < item.quantity) {
-      await rollbackDecrementedStock(supabase, decremented);
-      return { ok: false as const, message: `${item.label} 재고가 부족합니다. 현재 ${previousStock}개 남아 있습니다.` };
-    }
-
-    const nextStock = previousStock - item.quantity;
-    const { data: updated, error: updateError } = await supabase
-      .from("product_options")
-      .update({ stock: nextStock })
-      .eq("id", optionId)
-      .eq("stock", previousStock)
-      .select("id");
-
-    if (updateError || !updated?.length) {
-      await rollbackDecrementedStock(supabase, decremented);
-      return { ok: false as const, message: `${item.label} 재고가 동시에 변경되었습니다. 다시 확인해주세요.` };
-    }
-
-    decremented.push({ optionId, previousStock, nextStock, productName: item.label });
-  }
-
-  return { ok: true as const, adjustments: decremented };
+async function cancelApprovedPayment(secretKey: string, paymentKey: string, orderId: string) {
+  const response = await fetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}/cancel`, {
+    method: "POST",
+    headers: tossHeaders(secretKey, `stock-failure-${orderId}`),
+    body: JSON.stringify({ cancelReason: "결제 승인 직후 재고 확정 실패 자동 취소" })
+  });
+  return response.ok;
 }
 
-async function restoreOrderStock(supabase: ReturnType<typeof createAdminClient>, orderId: string) {
-  const requirements = await getOrderStockRequirements(supabase, orderId);
-  if (!requirements.ok) return;
-
-  for (const [optionId, item] of requirements.quantities) {
-    const { data: option } = await supabase
-      .from("product_options")
-      .select("id, stock")
-      .eq("id", optionId)
-      .single();
-
-    if (!option) continue;
-
-    await supabase
-      .from("product_options")
-      .update({ stock: Number(option.stock) + item.quantity })
-      .eq("id", optionId);
-  }
+function validApprovedPayment(payment: TossPayment, expected: { paymentKey: string; orderId: string; amount: number }) {
+  return payment.paymentKey === expected.paymentKey
+    && payment.orderId === expected.orderId
+    && Number.isSafeInteger(Number(payment.totalAmount))
+    && Number(payment.totalAmount) === expected.amount
+    && payment.status === "DONE"
+    && typeof payment.method === "string"
+    && SUCCESS_METHODS.has(payment.method)
+    && typeof payment.approvedAt === "string"
+    && (!Array.isArray(payment.cancels) || payment.cancels.length === 0);
 }
 
 export async function POST(request: Request) {
-  const parsedBody = await readJsonBody(request);
-  if (!parsedBody.ok) return parsedBody.response;
-  const { paymentKey, orderId, amount } = parsedBody.body;
-  const paymentAmount = Number(amount);
-  const secretKey = process.env.TOSS_PAYMENTS_SECRET_KEY;
-  const supabase = hasSupabaseAdminEnv() ? createAdminClient() : null;
+  const origin = requireTrustedOrigin(request);
+  if (!origin.ok) return origin.response;
+  const session = await createClient();
+  const { data: { user }, error: authError } = await session.auth.getUser();
+  if (authError || !user) return NextResponse.json({ ok: false, message: "로그인이 필요합니다." }, { status: 401 });
 
-  if (!String(paymentKey ?? "").trim() || !String(orderId ?? "").trim() || !Number.isFinite(paymentAmount) || paymentAmount <= 0) {
+  const parsed = await readJsonBody(request, 32 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const paymentKey = String(parsed.body.paymentKey ?? "").trim();
+  const orderId = String(parsed.body.orderId ?? "").trim();
+  const amount = Number(parsed.body.amount);
+  if (!PAYMENT_KEY_RE.test(paymentKey) || !ORDER_ID_RE.test(orderId) || !Number.isSafeInteger(amount) || amount <= 0) {
     return NextResponse.json({ ok: false, message: "결제 승인 정보가 올바르지 않습니다." }, { status: 400 });
   }
 
-  const { data: order, error: orderError } = supabase
-    ? await supabase
-        .from("orders")
-        .select("id, status, total_amount, payments(status)")
-        .eq("order_no", orderId)
-        .single()
-    : { data: null };
-  const paymentRows = Array.isArray(order?.payments) ? order.payments : order?.payments ? [order.payments] : [];
-  const alreadyPaid = order?.status === "paid" || paymentRows.some((row) => row.status === "paid");
-
-  if (!secretKey) {
-    return NextResponse.json({ ok: false, message: "Toss Payments 시크릿 키가 없습니다." }, { status: 503 });
+  const limited = await enforceRateLimit(request, "paymentConfirm", { userId: user.id, resourceId: orderId });
+  if (!limited.ok) return limited.response;
+  const secretKey = process.env.TOSS_PAYMENTS_SECRET_KEY;
+  if (!secretKey || !hasSupabaseAdminEnv()) {
+    return NextResponse.json({ ok: false, message: "결제 처리 설정을 확인 중입니다." }, { status: 503 });
   }
 
-  if (supabase && (orderError || !order)) {
-    return NextResponse.json({ ok: false, message: orderError?.message ?? "주문을 찾을 수 없습니다." }, { status: 404 });
-  }
+  const db = createAdminClient();
+  const { data: order, error: orderError } = await db
+    .from("orders")
+    .select("id,order_no,user_id,status,total_amount,security_version,expires_at,expired_at,payments(id,status,amount,toss_order_id,payment_key)")
+    .eq("order_no", orderId).maybeSingle();
+  if (orderError || !order) return NextResponse.json({ ok: false, message: "주문을 찾을 수 없습니다." }, { status: 404 });
+  if (order.user_id !== user.id) return NextResponse.json({ ok: false, message: "이 주문을 결제할 권한이 없습니다." }, { status: 403 });
+  const payment = Array.isArray(order.payments) ? order.payments[0] : order.payments;
 
-  if (supabase && order && Number(order.total_amount) !== paymentAmount) {
-    return NextResponse.json({ ok: false, message: "주문 금액과 결제 금액이 일치하지 않습니다." }, { status: 400 });
-  }
-
-  if (supabase && order && alreadyPaid) {
+  if (order.status === "paid" && payment?.status === "paid" && payment.payment_key === paymentKey) {
     return NextResponse.json({ ok: true, payment: { orderId, status: "paid", alreadyConfirmed: true } });
   }
-
-  let stockReserved = false;
-  let stockAdjustments: { optionId: string; previousStock: number; nextStock: number; productName: string }[] = [];
-  if (supabase && order) {
-    const stockResult = await decrementOrderStock(supabase, order.id);
-    if (!stockResult.ok) {
-      return NextResponse.json({ ok: false, message: stockResult.message }, { status: 409 });
-    }
-    stockReserved = true;
-    stockAdjustments = stockResult.adjustments;
+  if (Number(order.security_version) !== 2) {
+    return NextResponse.json({ ok: false, message: "기존 주문은 새 결제 경로에서 승인할 수 없습니다." }, { status: 409 });
+  }
+  if (order.status !== "pending" || order.expired_at || !order.expires_at || new Date(order.expires_at) <= new Date()) {
+    return NextResponse.json({ ok: false, message: "결제할 수 없거나 만료된 주문입니다." }, { status: 409 });
+  }
+  if (!payment || payment.status !== "ready" || payment.toss_order_id !== orderId || Number(payment.amount) !== amount || Number(order.total_amount) !== amount) {
+    return NextResponse.json({ ok: false, message: "주문과 결제 금액 또는 상태가 일치하지 않습니다." }, { status: 409 });
+  }
+  if (payment.payment_key && payment.payment_key !== paymentKey) {
+    return NextResponse.json({ ok: false, message: "다른 결제키가 이미 연결된 주문입니다." }, { status: 409 });
   }
 
-  const encryptedSecretKey = Buffer.from(`${secretKey}:`).toString("base64");
-  let response: Response;
+  const processingToken = randomUUID();
+  const claim = await db.rpc("pado_claim_payment_v2", {
+    p_order_id: order.id, p_user_id: user.id, p_payment_key: paymentKey, p_processing_token: processingToken
+  });
+  if (claim.error) {
+    return NextResponse.json({ ok: false, message: "이미 처리 중이거나 결제할 수 없는 주문입니다." }, { status: 409 });
+  }
+
+  let tossPayment: TossPayment;
+  let response: Response | null = null;
   try {
     response = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
       method: "POST",
-      headers: {
-        Authorization: `Basic ${encryptedSecretKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ paymentKey, orderId, amount: paymentAmount })
+      headers: tossHeaders(secretKey, `confirm-${order.id}`),
+      body: JSON.stringify({ paymentKey, orderId, amount })
     });
+    tossPayment = await response.json().catch(() => ({})) as TossPayment;
   } catch {
-    if (supabase) {
-      const failureEvents: OperationEvent[] = [
-        {
-          type: "payment_failed",
-          orderId: order?.id ?? null,
-          orderNo: orderId,
-          actor: { role: "system" },
-          amount: paymentAmount,
-          provider: "toss",
-          reason: "confirm_request_failed"
-        }
-      ];
-      await writeOperationLogBestEffort(supabase, order?.id ?? null, failureEvents);
-    }
-    if (stockReserved && supabase && order) await restoreOrderStock(supabase, order.id);
-    return NextResponse.json({ ok: false, message: "결제 승인 요청 중 오류가 발생했습니다." }, { status: 502 });
+    const queried = await queryTossPayment(secretKey, paymentKey);
+    tossPayment = queried.body;
+    response = queried.ok ? new Response(null, { status: 200 }) : null;
   }
 
-  const payment = await response.json();
-  if (!response.ok) {
-    if (supabase) {
-      const failureEvents: OperationEvent[] = [
-        {
-          type: "payment_failed",
-          orderId: order?.id ?? null,
-          orderNo: orderId,
-          actor: { role: "system" },
-          amount: paymentAmount,
-          provider: "toss",
-          reason: payment.message ?? "payment_confirm_failed"
-        }
-      ];
-      await writeOperationLogBestEffort(supabase, order?.id ?? null, failureEvents);
+  if (!response?.ok) {
+    const queried = await queryTossPayment(secretKey, paymentKey);
+    if (!queried.ok || queried.body.status !== "DONE") {
+      await db.rpc("pado_fail_payment_v2", {
+        p_order_id: order.id, p_processing_token: processingToken,
+        p_failure_code: tossPayment.code || "TOSS_CONFIRM_FAILED", p_reconciliation_required: false
+      });
+      return NextResponse.json({ ok: false, message: tossPayment.message || "결제 승인에 실패했습니다." }, { status: 400 });
     }
-    if (stockReserved && supabase && order) await restoreOrderStock(supabase, order.id);
-    return NextResponse.json({ ok: false, message: payment.message ?? "결제 승인에 실패했습니다.", payment }, { status: 400 });
+    tossPayment = queried.body;
   }
 
-  if (supabase) {
-    if (order) {
-      const { error: paymentUpdateError } = await supabase
-        .from("payments")
-        .update({
-          payment_key: paymentKey,
-          method: payment.method,
-          amount: paymentAmount,
-          status: "paid",
-          approved_at: payment.approvedAt
-        })
-        .eq("order_id", order.id);
-
-      const { error: orderUpdateError } = await supabase.from("orders").update({ status: "paid" }).eq("id", order.id);
-      const paymentEvents: OperationEvent[] = [
-        {
-          type: "payment_approved",
-          orderId: order.id,
-          orderNo: orderId,
-          actor: { role: "system" },
-          amount: paymentAmount,
-          provider: "toss"
-        },
-        {
-          type: "notification_queued",
-          payload: {
-            event: "order.paid",
-            orderId: order.id,
-            orderNo: orderId,
-            status: "paid",
-            title: "결제 완료 안내",
-            message: `주문 ${orderId}의 결제가 완료되었습니다. 산지에서 상품 준비를 시작합니다.`,
-            variables: { orderNo: orderId, amount: paymentAmount }
-          }
-        }
-      ];
-      await writeOperationLogBestEffort(supabase, order.id, paymentEvents);
-      await writeNotificationEventsBestEffort(supabase, paymentEvents);
-      const inventoryAutomation = await Promise.all(
-        stockAdjustments.map((adjustment) =>
-          buildInventoryAutomation({
-            optionId: adjustment.optionId,
-            productName: adjustment.productName,
-            previousStock: adjustment.previousStock,
-            nextStock: adjustment.nextStock,
-            reason: "payment_confirmed",
-            actor: { role: "system" }
-          })
-        )
-      );
-      await Promise.all(
-        inventoryAutomation.map(async (automation) => {
-          await writeOperationLogBestEffort(supabase, order.id, automation.events);
-          await writeInventoryLogsBestEffort(supabase, order.id, automation.events);
-          await writeNotificationEventsBestEffort(supabase, automation.events);
-        })
-      );
-
-      if (paymentUpdateError || orderUpdateError) {
-        return NextResponse.json({
-          ok: true,
-          payment,
-          warning: "결제는 승인되었지만 주문 상태 반영 확인이 필요합니다. 고객센터로 문의해주세요."
-        });
-      }
-    }
+  if (!validApprovedPayment(tossPayment, { paymentKey, orderId, amount })) {
+    await db.rpc("pado_fail_payment_v2", {
+      p_order_id: order.id, p_processing_token: processingToken,
+      p_failure_code: "TOSS_RESPONSE_MISMATCH", p_reconciliation_required: true
+    });
+    return NextResponse.json({ ok: false, code: "PAYMENT_RECONCILIATION_REQUIRED", message: "결제 확인이 필요합니다. 고객센터에서 확인 후 안내드리겠습니다." }, { status: 202 });
   }
 
-  return NextResponse.json({ ok: true, payment });
+  const finalized = await db.rpc("pado_finalize_payment_v2", {
+    p_order_id: order.id, p_processing_token: processingToken, p_payment_key: paymentKey,
+    p_method: tossPayment.method, p_approved_at: tossPayment.approvedAt,
+    p_provider_payload: { status: tossPayment.status, orderId: tossPayment.orderId, totalAmount: tossPayment.totalAmount }
+  });
+  if (finalized.error) {
+    const cancelled = await cancelApprovedPayment(secretKey, paymentKey, orderId);
+    await db.rpc("pado_fail_payment_v2", {
+      p_order_id: order.id, p_processing_token: processingToken,
+      p_failure_code: cancelled ? "AUTO_CANCELLED_AFTER_DB_FAILURE" : "DB_FINALIZE_FAILED",
+      p_reconciliation_required: !cancelled
+    });
+    return NextResponse.json(
+      { ok: false, code: cancelled ? "PAYMENT_CANCELLED" : "PAYMENT_RECONCILIATION_REQUIRED", message: cancelled ? "재고 확정에 실패해 결제가 자동 취소되었습니다." : "결제 확인이 필요합니다. 고객센터에서 확인 후 안내드리겠습니다." },
+      { status: cancelled ? 409 : 202 }
+    );
+  }
+
+  const finalState = await db.from("orders").select("status,payments(status,payment_key)").eq("id", order.id).single();
+  const finalPayment = Array.isArray(finalState.data?.payments) ? finalState.data?.payments[0] : finalState.data?.payments;
+  if (finalState.error || finalState.data?.status !== "paid" || finalPayment?.status !== "paid" || finalPayment.payment_key !== paymentKey) {
+    await db.rpc("pado_mark_payment_reconciliation_v2", {
+      p_order_id: order.id, p_failure_code: "FINAL_STATE_UNVERIFIED"
+    });
+    return NextResponse.json({ ok: false, code: "PAYMENT_RECONCILIATION_REQUIRED", message: "결제 최종 상태를 확인 중입니다." }, { status: 202 });
+  }
+
+  const events: OperationEvent[] = [{
+    type: "payment_approved", orderId: order.id, orderNo: orderId,
+    actor: { id: user.id, role: "customer" }, amount, provider: "toss"
+  }];
+  await writeOperationLogBestEffort(db, order.id, events);
+  await writeNotificationEventsBestEffort(db, events);
+  return NextResponse.json({ ok: true, payment: { orderId, status: "paid", method: tossPayment.method, approvedAt: tossPayment.approvedAt } });
 }
