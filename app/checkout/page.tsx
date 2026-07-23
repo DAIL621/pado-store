@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useState } from "react";
+import { FormEvent, useCallback, useRef, useState } from "react";
 import Script from "next/script";
 import Link from "next/link";
 import { useCart, type CartItem } from "@/components/cart/CartProvider";
@@ -56,6 +56,15 @@ function focusField(form: HTMLFormElement, key: string) {
   if (field instanceof HTMLElement) field.focus();
 }
 
+function paymentErrorMessage(error: unknown) {
+  if (!error || typeof error !== "object") return "결제창 연결에 실패했습니다. 잠시 후 다시 시도해주세요.";
+  const paymentError = error as { code?: unknown; message?: unknown };
+  const message = typeof paymentError.message === "string" ? paymentError.message.trim() : "";
+  if (message && message !== "알 수 없는 에러가 발생했습니다.") return message;
+  const code = typeof paymentError.code === "string" ? paymentError.code : "UNKNOWN_PAYMENT_ERROR";
+  return `결제창 연결에 실패했습니다. (${code})`;
+}
+
 export default function CheckoutPage() {
   const { selectedItems: items } = useCart();
   const [saving, setSaving] = useState(false);
@@ -65,6 +74,9 @@ export default function CheckoutPage() {
   const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(null);
   const [deliverySelection, setDeliverySelection] = useState<CheckoutDeliverySelection>({ addressId: null, isGift: false });
   const [recipient, setRecipient] = useState({ recipientName: "", recipientPhone: "", postcode: "", address: "", addressDetail: "", memo: "" });
+  const [saveNewAddress, setSaveNewAddress] = useState(false);
+  const [newAddressLabel, setNewAddressLabel] = useState("우리집");
+  const orderIdempotencyKey = useRef<string | null>(null);
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   const regularSubtotal = items.reduce((sum, item) => sum + (item.regularPrice ?? item.unitPrice) * item.quantity, 0);
   const productDiscount = Math.max(0, regularSubtotal - subtotal);
@@ -86,6 +98,13 @@ export default function CheckoutPage() {
       memo: savedAddress.memo
     });
   }, []);
+
+  const startNewAddress = () => {
+    setSelectedAddress(null);
+    setDeliverySelection((current) => ({ addressId: null, isGift: current.isGift }));
+    setRecipient({ recipientName: "", recipientPhone: "", postcode: "", address: "", addressDetail: "", memo: "" });
+    setSaveNewAddress(false);
+  };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -138,10 +157,31 @@ export default function CheckoutPage() {
     setMessage("주문을 생성하는 중입니다...");
 
     try {
+      let effectiveSelection = deliverySelection;
+      if (!deliverySelection.addressId && saveNewAddress) {
+        const addressResponse = await fetch("/api/address", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ label: newAddressLabel, recipient: recipientName, phone: recipientPhone, zipcode: getRequiredText(formData, "postcode"), address, detailAddress: getRequiredText(formData, "addressDetail"), memo: getRequiredText(formData, "memo"), isDefault: false, isGift: deliverySelection.isGift })
+        });
+        const addressResult = await addressResponse.json();
+        if (!addressResponse.ok) {
+          setMessage(addressResult.message ?? "배송지 저장에 실패했습니다.");
+          setSaving(false);
+          return;
+        }
+        effectiveSelection = { ...deliverySelection, addressId: addressResult.address.id };
+        setDeliverySelection(effectiveSelection);
+        setSelectedAddress(addressResult.address);
+      }
       const response = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": orderIdempotencyKey.current ??= globalThis.crypto.randomUUID()
+        },
         body: JSON.stringify({
+          idempotencyKey: orderIdempotencyKey.current,
           items,
           recipientName,
           recipientPhone,
@@ -149,12 +189,15 @@ export default function CheckoutPage() {
           address,
           addressDetail: getRequiredText(formData, "addressDetail"),
           memo: getRequiredText(formData, "memo"),
-          deliverySelection
+          deliverySelection: effectiveSelection
         })
       });
       const result = await response.json();
 
       if (!response.ok) {
+        if (response.status >= 400 && response.status < 500) {
+          orderIdempotencyKey.current = null;
+        }
         setMessage(result.message ?? "주문 생성에 실패했습니다.");
         setSaving(false);
         return;
@@ -165,8 +208,7 @@ export default function CheckoutPage() {
       const order = result.order;
       const tossPayments = window.TossPayments(clientKey);
       const payment = tossPayments.payment({ customerKey: makeCustomerKey() });
-
-      await payment.requestPayment({
+      const paymentRequest = {
         method: "CARD",
         amount: { currency: "KRW", value: Number(order.total_amount) },
         orderId: order.order_no,
@@ -175,9 +217,10 @@ export default function CheckoutPage() {
         customerMobilePhone: phoneDigits,
         successUrl: `${origin}/payments/toss/success`,
         failUrl: `${origin}/payments/toss/fail`
-      });
+      } as const;
+      await payment.requestPayment(paymentRequest);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "결제창 연결에 실패했습니다.");
+      setMessage(paymentErrorMessage(error));
       setSaving(false);
     }
   };
@@ -194,7 +237,7 @@ export default function CheckoutPage() {
 
       <form className="shell checkout-layout" onSubmit={submit}>
         <section className="checkout-form">
-          <div className="checkout-recipient-head"><h2>받는 분 정보</h2><button type="button" onClick={() => setAddressBookOpen(true)}>저장된 배송지</button></div>
+          <div className="checkout-recipient-head"><h2>받는 분 정보</h2><div className="checkout-address-actions"><button type="button" onClick={() => setAddressBookOpen(true)}>저장된 배송지</button><button type="button" onClick={startNewAddress}>새 배송지 입력</button></div></div>
           <p className="checkout-helper">오후 1시 이전 결제 완료 주문은 산지에서 당일 출고를 준비합니다.</p>
           {!items.length && (
             <div className="checkout-empty-note" role="status">
@@ -217,6 +260,7 @@ export default function CheckoutPage() {
           <label>주소<input name="address" required placeholder="배송지 주소" autoComplete="street-address" value={recipient.address} onChange={(event) => setRecipient({ ...recipient, address: event.target.value })} /></label>
           <label>상세주소<input name="addressDetail" placeholder="동/호수 등" autoComplete="address-line2" value={recipient.addressDetail} onChange={(event) => setRecipient({ ...recipient, addressDetail: event.target.value })} /></label>
           <label>배송 메모<textarea name="memo" rows={3} placeholder="부재 시 문 앞에 놓아주세요." value={recipient.memo} onChange={(event) => setRecipient({ ...recipient, memo: event.target.value })} /></label>
+          {!selectedAddress && <div className="checkout-save-address"><label><input type="checkbox" checked={saveNewAddress} onChange={(event) => setSaveNewAddress(event.target.checked)} /> 배송지 목록에 저장</label>{saveNewAddress && <label>배송지 이름<input value={newAddressLabel} maxLength={40} required onChange={(event) => setNewAddressLabel(event.target.value)} placeholder="우리집, 회사 등" /></label>}</div>}
           <div className="checkout-delivery-note">
             <strong>배송 전 확인</strong>
             <span>냉장 상품은 수령 가능한 주소와 연락처를 꼭 확인해주세요.</span>
@@ -240,7 +284,14 @@ export default function CheckoutPage() {
           )}
           <div className="checkout-selected-address">
             <span>받는 분</span>
-            {selectedAddress ? <><strong>{deliverySelection.isGift ? "🎁" : "🏠"} {selectedAddress.label}</strong><b>{recipient.recipientName}</b><p>{recipient.address}</p>{deliverySelection.isGift && <em>선물 배송</em>}</> : <><strong>배송지를 입력해주세요</strong><p>저장된 배송지를 선택하면 자동으로 입력됩니다.</p></>}
+            {recipient.recipientName || recipient.address ? (
+              <>
+                <strong>{selectedAddress ? `${deliverySelection.isGift ? "🎁" : "🏠"} ${selectedAddress.label}` : "새 배송지"}</strong>
+                <b>{recipient.recipientName || "받는 분 입력 중"}</b>
+                <p>{recipient.address || "주소 입력 중"}</p>
+                {deliverySelection.isGift && <em>선물 배송</em>}
+              </>
+            ) : <><strong>배송지를 입력해주세요</strong><p>저장된 배송지를 선택하거나 새 배송지를 입력해주세요.</p></>}
           </div>
           <div><span>상품 정상가 합계</span><b>{formatPrice(regularSubtotal)}</b></div>
           <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>
