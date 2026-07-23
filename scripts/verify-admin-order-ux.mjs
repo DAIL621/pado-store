@@ -8,6 +8,7 @@ const listApi = read("app/api/admin/orders/route.ts");
 const itemApi = read("app/api/admin/orders/[id]/route.ts");
 const mypage = read("app/mypage/page.tsx");
 const tracking = read("lib/shipping/tracking-url.ts");
+const statusPolicy = read("lib/operations/status.ts");
 const css = read("app/admin-orders-ux.css");
 
 assert.equal(adminFailureStatus("not-logged-in"), 401);
@@ -18,6 +19,10 @@ for (const field of ["order_no", "recipient_name", "recipient_phone", "product_n
 assert(listApi.includes('{ count: "exact" }') && listApi.includes(".range(from, from + pageSize - 1)"), "server pagination is missing");
 assert(manager.includes("router.replace") && manager.includes("URLSearchParams"), "URL state is missing");
 assert(manager.includes("saveShipment") && manager.includes("resolveTrackingSaveStatus"), "inline shipment save is missing");
+assert(manager.includes("Array.isArray(order.shipments)") && manager.includes("Array.isArray(order.payments)"), "admin one-to-one payment/shipment normalization is missing");
+assert(mypage.includes("Array.isArray(order.shipments)") && mypage.includes("MyShipment | MyShipment[] | null"), "mypage one-to-one shipment normalization is missing");
+assert(mypage.includes("visibleOrderIds") && mypage.includes('from("shipments")') && mypage.includes("shipmentByOrderId.get(order.id)"), "mypage owner-scoped shipment merge is missing");
+assert(manager.includes("orderStatusLabels") && mypage.includes("orderStatusLabels") && statusPolicy.includes('preparing: "상품준비중"') && statusPolicy.includes('shipped: "배송중"'), "shared order status labels are not applied consistently");
 assert(manager.includes("admin-inline-shipment") && manager.includes("onSubmit") && manager.includes("trackingRefs") && manager.includes(".focus()"), "fast enter-save and next-row focus are missing");
 assert(manager.includes("compactProductName") && manager.includes("외 ${items.length - 1}건"), "compact order item summary is missing");
 assert(manager.includes("admin-order-summary-cards") && listApi.includes("missingTracking") && listApi.includes("cancelRequested"), "clickable operations summary is missing");
@@ -30,4 +35,4 @@ assert(css.includes("admin-order-status.paid") && css.includes("admin-order-stat
 assert(css.includes(".admin-inline-shipment{display:grid") && css.includes(".admin-orders-table thead{display:none}") && css.includes("transition:background-color .18s"), "compact shipment row, mobile cards, or hover motion is missing");
 assert(manager.includes('event.key === "Escape"') && css.includes(":focus-visible"), "keyboard accessibility is missing");
 
-console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "integrated-search", "combined-filters", "server-pagination", "url-state", "compact-item-summary", "operations-summary", "enter-save-next-focus", "inline-tracking", "safe-bulk-status", "private-note-audit", "urgency-badges", "cs-summary", "detail-layout", "tracking-link", "status-colors", "compact-hover", "responsive-cards", "keyboard"] }, null, 2));
+console.log(JSON.stringify({ ok: true, checks: ["auth-401-403", "integrated-search", "combined-filters", "server-pagination", "url-state", "one-to-one-relations", "shared-status-labels", "compact-item-summary", "operations-summary", "enter-save-next-focus", "inline-tracking", "safe-bulk-status", "private-note-audit", "urgency-badges", "cs-summary", "detail-layout", "tracking-link", "status-colors", "compact-hover", "responsive-cards", "keyboard"] }, null, 2));

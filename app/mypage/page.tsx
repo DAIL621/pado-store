@@ -2,21 +2,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { formatPrice } from "@/data/products";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { TrackingCopyButton } from "@/components/mypage/TrackingCopyButton";
 import { buildTrackingUrl } from "@/lib/shipping/tracking-url";
+import { orderStatusLabels } from "@/lib/operations/status";
+import AddressManager from "@/components/mypage/AddressManager";
 
 export const dynamic = "force-dynamic";
 
-const statusLabels: Record<string, string> = {
-  pending: "주문대기",
-  paid: "결제완료",
-  preparing: "상품준비중",
-  shipped: "배송중",
-  delivered: "배송완료",
-  cancelled: "취소"
-};
+const statusLabels: Record<string, string> = orderStatusLabels;
 
-const statusSteps = ["pending", "paid", "preparing", "shipped", "delivered"];
+const statusSteps = ["pending", "paid", "preparing", "delivery_ready", "shipped", "delivered"];
 
 type MyOrderItem = {
   id: string;
@@ -28,6 +24,7 @@ type MyOrderItem = {
 };
 
 type MyShipment = {
+  order_id: string;
   carrier: string | null;
   tracking_number: string | null;
 };
@@ -39,7 +36,7 @@ type MyOrder = {
   total_amount: number;
   created_at: string;
   order_items?: MyOrderItem[];
-  shipments?: MyShipment[];
+  shipments?: MyShipment | MyShipment[] | null;
 };
 
 export default async function MyPage() {
@@ -52,10 +49,25 @@ export default async function MyPage() {
 
   const { data } = await supabase
     .from("orders")
-    .select("*, order_items(*), shipments(*)")
+    .select("*, order_items(*)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
-  const orders = (data ?? []) as MyOrder[];
+  const visibleOrders = (data ?? []) as MyOrder[];
+  const visibleOrderIds = visibleOrders.map((order) => order.id);
+  const shipmentClient = hasSupabaseAdminEnv() ? createAdminClient() : supabase;
+  const { data: shipmentRows } = visibleOrderIds.length
+    ? await shipmentClient
+        .from("shipments")
+        .select("order_id, carrier, tracking_number")
+        .in("order_id", visibleOrderIds)
+    : { data: [] };
+  const shipmentByOrderId = new Map(
+    ((shipmentRows ?? []) as MyShipment[]).map((shipment) => [shipment.order_id, shipment])
+  );
+  const orders = visibleOrders.map((order) => ({
+    ...order,
+    shipments: shipmentByOrderId.get(order.id) ?? null
+  }));
 
   return (
     <div className="page-wrap">
@@ -67,7 +79,9 @@ export default async function MyPage() {
         </div>
       </section>
 
-      <section className="shell mypage-orders">
+      <section className="shell mypage-orders" id="orders">
+        <nav className="mypage-menu" aria-label="마이페이지 메뉴"><a href="#orders">주문내역</a><a href="#addresses">배송지 관리</a></nav>
+        <AddressManager />
         <div className="section-heading">
           <div>
             <span className="eyebrow">ORDER HISTORY</span>
@@ -88,7 +102,7 @@ export default async function MyPage() {
 
         <div className="mypage-order-list">
           {(orders ?? []).map((order) => {
-            const shipment = order.shipments?.[0];
+            const shipment = Array.isArray(order.shipments) ? order.shipments[0] : order.shipments;
             const carrier = shipment?.carrier?.trim() || "미입력";
             const trackingNumber = shipment?.tracking_number?.trim() || "미입력";
             const currentStep = statusSteps.indexOf(order.status);
