@@ -1,0 +1,29 @@
+-- Destructive rollback. Run only after disabling security-v2 application traffic.
+-- Existing version-1 orders are not changed by either forward or rollback.
+begin;
+drop function if exists public.pado_expire_pending_orders_v2(integer);
+drop function if exists public.pado_fail_refund_v2(uuid,uuid,text,boolean);
+drop function if exists public.pado_finalize_refund_v2(uuid,uuid,integer,text);
+drop function if exists public.pado_claim_refund_v2(uuid,uuid,text,integer,text,uuid,jsonb,uuid);
+drop function if exists public.pado_fail_payment_v2(uuid,uuid,text,boolean);
+drop function if exists public.pado_mark_payment_reconciliation_v2(uuid,text);
+drop function if exists public.pado_finalize_payment_v2(uuid,uuid,text,text,timestamptz,jsonb);
+drop function if exists public.pado_claim_payment_v2(uuid,uuid,text,uuid);
+drop function if exists public.pado_create_order_v2(uuid,text,uuid,text,jsonb,text,text,text,text,text,text,timestamptz);
+drop table if exists public.refund_items;
+drop table if exists public.refunds;
+drop table if exists public.inventory_events;
+drop table if exists public.payment_events;
+drop index if exists public.orders_pending_expiry_v2_idx;
+drop index if exists public.orders_user_idempotency_v2_idx;
+alter table public.payments drop column if exists failure_code;
+alter table public.payments drop column if exists reconciliation_required_at;
+alter table public.payments drop column if exists processing_started_at;
+alter table public.payments drop column if exists processing_token;
+alter table public.orders drop constraint if exists orders_security_version_check;
+alter table public.orders drop column if exists expired_at;
+alter table public.orders drop column if exists expires_at;
+alter table public.orders drop column if exists request_fingerprint;
+alter table public.orders drop column if exists idempotency_key;
+alter table public.orders drop column if exists security_version;
+commit;
