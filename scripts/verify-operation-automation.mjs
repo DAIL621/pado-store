@@ -46,11 +46,11 @@ assert(files.orderApi.includes("writeNotificationEventsBestEffort"), "admin orde
 assert(files.orderApi.includes("writeReviewRequestsBestEffort"), "admin order API should persist review requests");
 assert(files.orderCreateApi.includes("order_created"), "order create API should write order-created operation logs");
 assert(files.paymentConfirmApi.includes("payment_approved"), "payment confirm API should write payment approved logs");
-assert(files.paymentConfirmApi.includes("payment_failed"), "payment confirm API should write payment failed logs");
-assert(files.paymentConfirmApi.includes("writeInventoryLogsBestEffort"), "payment confirm API should write inventory logs");
+assert(files.paymentConfirmApi.includes("pado_fail_payment_v2"), "payment confirm API should persist payment failure state");
+assert(files.paymentConfirmApi.includes("pado_finalize_payment_v2"), "payment confirm API should atomically write inventory events");
 assert(files.refundApi.includes("https://api.tosspayments.com/v1/payments/"), "refund API should call Toss cancel endpoint");
 assert(files.refundApi.includes("refund_completed"), "refund API should write refund completion logs");
-assert(files.tossWebhookApi.includes("toss-webhook"), "Toss webhook route should write provider logs");
+assert(files.tossWebhookApi.includes("payment_events"), "Toss webhook route should write idempotent provider events");
 assert(files.adminLayout.includes("/admin/automation"), "admin navigation should expose operation automation page");
 assert(files.automationPage.includes("PADO STORY Operation Automation Engine"), "automation admin page hero is missing");
 assert(files.automationPage.includes("운영 DB 마이그레이션 SQL"), "automation page should expose DB extension SQL");

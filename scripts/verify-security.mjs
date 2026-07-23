@@ -44,7 +44,7 @@ assert(devAdmin.includes('process.env.NODE_ENV !== "production"'), "dev admin is
 for (const header of ["X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy", "X-Frame-Options", "Content-Security-Policy"]) assert(config.includes(header), `security header missing: ${header}`);
 assert(request.includes("maxBytes") && request.includes("status: 413"), "JSON request size validation missing");
 assert(!health.includes("supabaseServiceRole") && !health.includes("tossSecretKey"), "health route leaks secret configuration state");
-assert(confirm.includes("total_amount") && confirm.includes("alreadyPaid") && confirm.includes("paymentAmount"), "payment amount/idempotency checks missing");
-assert(webhook.includes("allowedEvents") && webhook.includes("일치하는 결제를 찾을 수 없습니다"), "webhook allowlist/order binding missing");
+assert(confirm.includes("total_amount") && confirm.includes("alreadyConfirmed") && confirm.includes("pado_claim_payment_v2"), "payment amount/idempotency checks missing");
+assert(webhook.includes("ALLOWED_EVENTS") && webhook.includes("api.tosspayments.com/v1/payments/"), "webhook provider verification/order binding missing");
 
 console.log(JSON.stringify({ ok: true, checks: { adminRoutes: adminRoutes.length, adminPages: adminPages.length, authorization: { admin: 200, user: 403, anonymous: 401 }, roles: ["user", "admin"], rlsTables: 7, publicEnvAllowlist: [...allowedPublic], headers: 5, payment: ["server-amount", "duplicate-confirm", "webhook-allowlist"] } }, null, 2));
