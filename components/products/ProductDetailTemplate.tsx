@@ -38,7 +38,7 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
   const topVideos = sections.videos.filter((video) => video.placement === "top");
   const betweenVideos = sections.videos.filter((video) => video.placement === "between");
   const bottomVideos = sections.videos.filter((video) => video.placement !== "top" && video.placement !== "between");
-  const useLegacyDetail = product.detail?.detailDisplayMode !== "ai" && legacyDetailImages.length > 0;
+  const useLegacyDetail = product.detail?.detailDisplayMode !== "ai";
 
   if (useLegacyDetail) {
     return (
@@ -51,7 +51,18 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
       >
         <HeroSection product={product} heroImage={mainImage} heroImages={heroImages} purchaseSlot={purchaseSlot} />
         {topVideos.length > 0 && <VideoSection videos={topVideos} productName={product.name} />}
-        <LegacyDetailImageSection images={legacyDetailImages} videos={betweenVideos} productName={product.name} />
+        {product.description && (
+          <section className="shell legacy-detail-description" aria-label={`${product.name} 상세 설명`}>
+            <h2>{product.name} 상세 설명</h2>
+            <p>{product.description}</p>
+          </section>
+        )}
+        {legacyDetailImages.length > 0 && (
+          <LegacyDetailImageSection images={legacyDetailImages} videos={betweenVideos} productName={product.name} />
+        )}
+        {legacyDetailImages.length === 0 && betweenVideos.length > 0 && (
+          <VideoSection videos={betweenVideos} productName={product.name} />
+        )}
         {bottomVideos.length > 0 && <VideoSection videos={bottomVideos} productName={product.name} />}
         <FinalCtaSection product={product} />
       </section>

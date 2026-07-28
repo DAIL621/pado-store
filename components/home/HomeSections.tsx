@@ -1,192 +1,45 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/data/products";
-import { ProductCard } from "@/components/products/ProductCard";
-import { RecentViewedProducts } from "@/components/products/RecentViewedProducts";
-import { buildHomeShelves } from "@/lib/products/discovery";
 
-const seasons = [
-  ["1월", "굴 · 대구 · 방어"],
-  ["2월", "전복 · 꼬막 · 아귀"],
-  ["3월", "주꾸미 · 도다리 · 멍게"],
-  ["4월", "참소라 · 갑오징어 · 전어"],
-  ["5월", "병어 · 갑오징어 · 민어"],
-  ["6월", "참소라 · 장어 · 갈치"],
-  ["7월", "민어 · 전복 · 꽃게"],
-  ["8월", "전복 · 문어 · 민어"],
-  ["9월", "꽃게 · 전어 · 갈치"],
-  ["10월", "꽃게 · 대하 · 고등어"],
-  ["11월", "굴 · 방어 · 꼬막"],
-  ["12월", "굴 · 대구 · 방어"]
+const deliverySteps = [
+  { icon: "boat", title: "새벽 조업", copy: "산지의 실제 조업 현장과 입항 상품을 확인합니다." },
+  { icon: "search", title: "산지 선별", copy: "주문에 맞는 신선한 상품만 직접 골라냅니다." },
+  { icon: "box", title: "신선 포장", copy: "상품 특성에 맞는 포장으로 신선함을 지킵니다." },
+  { icon: "truck", title: "당일 출고", copy: "평일 오후 1시 이전 주문은 당일 출고합니다." }
+] as const;
+
+function LineIcon({ name }: { name: string }) {
+  if (name === "boat") return <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 20h24l-3 6H8l-4-6ZM10 20v-8h9l4 8M13 12V7h4v5M5 28c2 1 4 1 6 0 2 1 4 1 6 0 2 1 4 1 6 0" /></svg>;
+  if (name === "search") return <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9" /><path d="m21 21 7 7" /></svg>;
+  if (name === "box") return <svg viewBox="0 0 32 32" aria-hidden="true"><path d="m5 10 11-6 11 6-11 6-11-6Zm0 0v13l11 6 11-6V10M16 16v13M10.5 7 22 13" /></svg>;
+  if (name === "truck") return <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 7h17v16H3zM20 13h5l4 5v5h-9z" /><circle cx="9" cy="25" r="2.5" /><circle cx="24.5" cy="25" r="2.5" /></svg>;
+  if (name === "source") return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 7v10l8 4 8-4V7l-8-4Zm-8 4 8 4 8-4M12 11v10" /></svg>;
+  if (name === "photo") return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="10" r="2" /><path d="m5 18 5-5 3 3 2-2 4 4" /></svg>;
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM7 9h10M7 13h7" /></svg>;
+}
+
+const reviewCards = [
+  { title: "구매 인증 후기만 공개합니다.", body: "배송 완료 주문을 기준으로 검증된 후기만 보여드립니다." },
+  { title: "실제 상품 경험을 기다리고 있습니다.", body: "등록된 후기가 생기면 상품명과 함께 안내됩니다." },
+  { title: "과장된 임시 후기는 만들지 않습니다.", body: "고객의 실제 목소리를 정직하게 전달하겠습니다." }
 ];
 
-const liveStats = [
-  { label: "오늘 출고 완료", value: "34건", copy: "산지에서 신선 포장 완료" },
-  { label: "오늘 구매 고객", value: "18명", copy: "현재 판매 상품 주문 기준" },
-  { label: "출고 기준", value: "13:00", copy: "평일 오후 1시 이전 주문 당일 출고" }
-];
-
-const timelineSteps = [
-  {
-    title: "새벽 조업",
-    copy: "새벽부터 신선한 수산물을 준비합니다.",
-    image: "/images/story/timeline-dawn-fishing.png"
-  },
-  {
-    title: "산지 선별",
-    copy: "좋은 상품만 골라 상태를 확인합니다.",
-    image: "/images/story/seafood-selection-check.png"
-  },
-  {
-    title: "신선 포장",
-    copy: "아이스팩과 냉장 포장으로 신선함을 지킵니다.",
-    image: "/images/story/cold-packaging.png"
-  },
-  {
-    title: "당일 출고",
-    copy: "오후 1시 이전 주문은 빠르게 출고됩니다.",
-    image: "/images/story/timeline-cold-dispatch.png"
-  }
-];
-
-const trustItems = [
-  ["산지 직송", "산지에서 식탁까지 빠르게 배송", "/images/story/eel-catch.webp"],
-  ["생산자 확인", "누가 보낸 상품인지 기록", "/images/story/oyster-producer.webp"],
-  ["2중 선별", "작업자가 상태 확인 후 출고", "/images/story/seafood-selection-check.png"],
-  ["신선 포장", "상품에 맞춘 냉장 · 산소포장", "/images/story/cold-packaging.png"]
-];
-
-const reviewHighlights = [
-  {
-    product: "산지 직송 상품",
-    title: "살아있는 상태로 도착해서 선물하기 좋았어요",
-    copy: "포장이 꼼꼼했고 크기도 고르게 와서 가족 식사용으로 만족도가 높았습니다.",
-    meta: "사진 후기 준비중 · 재구매 의사 높음"
-  },
-  {
-    product: "손질 수산물",
-    title: "손질되어 있어 저녁 준비가 정말 빨랐어요",
-    copy: "초벌 없이 바로 구워도 비린내가 적고 양념 없이도 담백했습니다.",
-    meta: "조리 간편 · 당일 출고"
-  },
-  {
-    product: "제철 수산물",
-    title: "제철 느낌이 확실해서 술안주로 좋았습니다",
-    copy: "쫄깃한 식감이 살아 있고 배송 상태도 차갑게 잘 유지됐습니다.",
-    meta: "제철상품 · 신선 포장"
-  }
-];
-
-export function HomeSections({ products }: { products: Product[] }) {
-  const month = new Date().getMonth() + 1;
-  const shelves = buildHomeShelves(products);
-
+export function HomeSections({ products: _products }: { products: Product[] }) {
   return (
     <>
-      <section className="section live-section" aria-label="실시간 출고 정보">
+      <section className="section coast-process" id="trust">
         <div className="shell">
-          <div className="live-panel fade-up">
+          <header className="section-heading">
             <div>
-              <span className="eyebrow">LIVE TODAY</span>
-              <h2>오늘도 산지에서 바로 출고 중</h2>
-              <p>실제 연동 전까지는 운영 안내용 데이터로 표시됩니다.</p>
-            </div>
-            <div className="live-grid">
-              {liveStats.map((item) => (
-                <article className="live-card" key={item.label}>
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
-                  <p>{item.copy}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section product-section">
-        <div className="shell">
-          <div className="section-heading fade-up">
-            <div>
-              <span className="eyebrow">FROM THE COAST</span>
-              <h2>전체 상품 둘러보기</h2>
-              <p>현재 판매 중인 파도스토리 산지 상품을 한눈에 확인하세요.</p>
-            </div>
-            <Link href="/products" className="text-link">전체 상품 모두 보기</Link>
-          </div>
-          <div className="product-grid">{products.map((product) => <ProductCard key={product.slug} product={product} />)}</div>
-        </div>
-      </section>
-
-      <section className="section home-shelves-section" aria-label="쇼핑 추천 영역">
-        <div className="shell">
-          <div className="section-heading fade-up">
-            <div>
-              <span className="eyebrow">SHOPPING GUIDE</span>
-              <h2>고르기 쉽게 모아봤어요</h2>
-              <p>처음 방문한 고객도 바로 상품을 비교할 수 있도록 목적별로 다시 묶었습니다.</p>
-            </div>
-            <Link href="/products" className="text-link">상품 전체 보기</Link>
-          </div>
-          <div className="home-shelf-list">
-            {shelves.map((shelf) => (
-              <article className="home-shelf" key={shelf.key}>
-                <div className="home-shelf-head">
-                  <div>
-                    <strong>{shelf.title}</strong>
-                    <p>{shelf.description}</p>
-                  </div>
-                  <Link href={`/products?sort=${shelf.key === "best" ? "discount-high" : "recommended"}`}>더 보기</Link>
-                </div>
-                <div className="product-grid featured-grid">
-                  {shelf.products.map((product) => (
-                    <ProductCard key={`${shelf.key}-${product.slug}`} product={product} compact />
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <RecentViewedProducts products={products} />
-
-      <section className="section season-section" id="season">
-        <div className="shell">
-          <div className="section-heading fade-up">
-            <div>
-              <span className="eyebrow">SEASONAL CALENDAR</span>
-              <h2>지금 가장 맛있는 바다</h2>
-              <p>월별 제철 수산물을 확인하고 바로 상품을 둘러보세요.</p>
-            </div>
-            <Link href="/products" className="button outline">제철 상품 보기</Link>
-          </div>
-          <div className="season-grid fade-up">
-            {seasons.map(([label, names], index) => (
-              <Link href={`/products?season=${index + 1}`} key={label} className={index + 1 === month ? "season-card current" : "season-card"}>
-                <span>{label}{index + 1 === month && <em>지금 제철</em>}</span>
-                <strong>{names}</strong>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section timeline-section" id="today-sea">
-        <div className="shell">
-          <div className="section-heading fade-up">
-            <div>
-              <span className="eyebrow">TODAY AT SEA</span>
               <h2>오늘 바다에서는</h2>
-              <p>조업부터 포장까지, 상품이 식탁에 도착하기 전 과정을 짧게 보여드립니다.</p>
+              <p>새벽 조업부터 당일 출고까지, 산지의 하루가 끊기지 않도록 이어집니다.</p>
             </div>
-          </div>
-          <div className="timeline-grid fade-up">
-            {timelineSteps.map((step, index) => (
-              <article className="timeline-card" key={step.title}>
-                <div className="timeline-image">
-                  <Image src={step.image} alt={step.title} fill sizes="(max-width: 700px) 50vw, 25vw" loading="eager" />
-                </div>
+          </header>
+          <div className="coast-process-grid">
+            {deliverySteps.map((step, index) => (
+              <article key={step.title}>
+                <div className="process-icon"><LineIcon name={step.icon} /></div>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <h3>{step.title}</h3>
                 <p>{step.copy}</p>
@@ -196,72 +49,52 @@ export function HomeSections({ products }: { products: Product[] }) {
         </div>
       </section>
 
-      <section className="section trust-section" id="trust">
+      <section className="section origin-story" id="today-sea">
         <div className="shell">
-          <div className="section-heading fade-up">
-            <div>
-              <span className="eyebrow">WHY PADO STORY</span>
-              <h2>파도스토리를 선택하는 이유</h2>
-            </div>
+          <h2 className="origin-mobile-title">산지 이야기</h2>
+          <div className="origin-story-grid">
+          <div className="origin-story-image">
+            <Image src="/images/story/tongyeong-port-ships.webp" alt="대한민국 경상남도 통영항의 실제 어선과 바다 풍경" fill sizes="(max-width: 800px) 100vw, 50vw" />
           </div>
-          <div className="trust-grid fade-up">
-            {trustItems.map(([title, copy, image]) => (
-              <Link href="/products" className="trust-card" key={title}>
-                <div className="trust-card-image"><Image src={image} alt={title} fill sizes="(max-width: 700px) 50vw, 25vw" loading="eager" /></div>
-                <div><h3>{title}</h3><p>{copy}</p></div>
-              </Link>
-            ))}
+          <div className="origin-story-copy">
+            <span className="eyebrow">ORIGIN STORY</span>
+            <h2>산지에서 식탁까지<br />신선함을 지키는 과정</h2>
+            <ul>
+              <li><i><LineIcon name="source" /></i><span><b>실제 산지</b><small>생산자와 조업 현장을 확인합니다.</small></span></li>
+              <li><i><LineIcon name="photo" /></i><span><b>실제 상품 사진</b><small>판매 상품은 실제 촬영 이미지를 우선합니다.</small></span></li>
+              <li><i><LineIcon name="review" /></i><span><b>실제 구매 후기</b><small>검증되지 않은 후기는 공개하지 않습니다.</small></span></li>
+            </ul>
+            <Link href="/#today-sea" className="text-link">산지 이야기 더보기 →</Link>
+          </div>
           </div>
         </div>
       </section>
 
-      <section className="section review-section" id="reviews">
+      <section className="section storefront-reviews" aria-labelledby="home-review-title">
         <div className="shell">
-          <div className="section-heading fade-up">
-            <div>
-              <span className="eyebrow">CUSTOMER VOICE</span>
-              <h2>구매 전 확인하는 생생한 반응</h2>
-              <p>실제 리뷰 기능 연동 전까지는 운영 준비용 예시로 표시됩니다.</p>
-            </div>
-            <Link href="/products" className="text-link">후기 많은 상품 보기</Link>
-          </div>
-          <div className="review-highlight-grid fade-up">
-            {reviewHighlights.map((review) => (
-              <article className="review-highlight-card" key={review.title}>
-                <div className="review-stars" aria-label="별점 5점">★★★★★</div>
+          <header className="storefront-review-head">
+            <div><h2 id="home-review-title">고객님들의 리얼 후기</h2><p>더 많은 후기는 상품 상세페이지에서 확인하세요.</p></div>
+            <Link href="/products">전체 후기 보기 <span aria-hidden="true">›</span></Link>
+          </header>
+          <div className="storefront-review-grid">
+            {reviewCards.map((review) => (
+              <article key={review.title}>
+                <div className="review-stars" aria-label="검증된 후기 준비 중">☆☆☆☆☆</div>
                 <strong>{review.title}</strong>
-                <p>{review.copy}</p>
-                <span>{review.product}</span>
-                <small>{review.meta}</small>
+                <p>{review.body}</p>
+                <small>파도스토리 · 구매후기 준비 중</small>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section producer-section" id="producers">
+      <section className="storefront-benefit-bar" aria-label="파도스토리 구매 혜택">
         <div className="shell">
-          <div className="section-heading fade-up">
-            <div>
-              <span className="eyebrow">PRODUCER STORY</span>
-              <h2>경남 통영에서 시작된 신선함</h2>
-              <p>새벽 조업과 산지 선별의 현장을 먼저 보여드립니다.</p>
-            </div>
-          </div>
-          <div className="producer-wide-image fade-up">
-            <Image src="/images/story/eel-catch.webp" alt="통영 바다 조업 현장" fill sizes="(max-width: 700px) 100vw, 1180px" loading="eager" />
-          </div>
-          <div className="producer-grid fade-up">
-            <article className="producer-card">
-              <div className="producer-image"><Image src="/images/story/eel-catch.webp" alt="통영 앞바다 조업 현장" fill sizes="50vw" /></div>
-              <div><span>경남 통영</span><h3>통영 앞바다 조업장</h3><p>통영 앞바다 조업과 산지 선별 현장</p><blockquote>좋은 시간부터 신선도는 시작됩니다.</blockquote></div>
-            </article>
-            <article className="producer-card">
-              <div className="producer-image"><Image src="/images/products/wando-abalone.webp" alt="완도 청정해역 양식장" fill sizes="50vw" /></div>
-              <div><span>전남 완도</span><h3>완도 청정해역 양식장</h3><p>깨끗한 바다에서 이어지는 산지 양식 이야기</p><blockquote>건강한 수산물은 깨끗한 바다에서 자랍니다.</blockquote></div>
-            </article>
-          </div>
-          <div className="center producer-cta"><Link href="/products" className="button teal">더 많은 산지 보기</Link></div>
+          <span><i><LineIcon name="truck" /></i><span><b>무료배송</b><small>7만원 이상 구매 시</small></span></span>
+          <span><i><LineIcon name="box" /></i><span><b>안심 포장</b><small>신선도 유지 포장</small></span></span>
+          <span><i><LineIcon name="source" /></i><span><b>신선 보장</b><small>문제 발생 시 100% 보상</small></span></span>
+          <span><i><LineIcon name="review" /></i><span><b>고객센터</b><small>010-3128-7775</small></span></span>
         </div>
       </section>
     </>

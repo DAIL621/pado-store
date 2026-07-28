@@ -20,11 +20,19 @@ export function ProductPurchase({ product }: { product: Product }) {
   const remainingStock = Math.max(0, selectedStock - cartQuantityForOption);
   const isSoldOut = !option || selectedStock <= 0;
   const unitPrice = option ? option.price ?? product.price + option.priceDelta : product.price;
-  const regularPrice = option?.regularPrice && option.regularPrice >= unitPrice ? option.regularPrice : undefined;
+  const regularPrice =
+    option?.regularPrice && option.regularPrice >= unitPrice
+      ? option.regularPrice
+      : unitPrice === product.price && product.normalPrice > unitPrice
+        ? product.normalPrice
+        : undefined;
   const coupangPrice = option?.coupangPrice && option.coupangPrice > unitPrice ? option.coupangPrice : undefined;
   const coupangSavings = coupangPrice ? coupangPrice - unitPrice : 0;
   const discountRate = regularPrice && regularPrice > unitPrice ? Math.round(((regularPrice - unitPrice) / regularPrice) * 100) : 0;
   const total = unitPrice * quantity;
+  const regularTotal = regularPrice ? regularPrice * quantity : undefined;
+  const coupangTotal = coupangPrice ? coupangPrice * quantity : undefined;
+  const coupangSavingsTotal = coupangSavings * quantity;
   const canAddSelected = !isSoldOut && remainingStock > 0;
   const stockMessage = getCustomerStockMessage(remainingStock);
   const isLowStock = !isSoldOut && remainingStock < 10;
@@ -98,8 +106,8 @@ export function ProductPurchase({ product }: { product: Product }) {
           <strong>{formatPrice(total)}</strong>
         </div>
       </div>
-      {regularPrice && regularPrice > unitPrice && <div className="purchase-price-benefit"><del>정상가 {formatPrice(regularPrice)}</del><b>{discountRate}% 할인</b><strong>판매가 {formatPrice(unitPrice)}</strong></div>}
-      {coupangPrice && <div className="purchase-coupang-compare"><span>쿠팡 판매가 {formatPrice(coupangPrice)}</span><strong>자사몰이 {formatPrice(coupangSavings)} 더 저렴해요</strong></div>}
+      {regularTotal && <div className="purchase-price-benefit"><del>정상가 {formatPrice(regularTotal)}</del><b>{discountRate}% 할인</b><strong>판매가 {formatPrice(total)}</strong></div>}
+      {coupangTotal && <div className="purchase-coupang-compare" aria-live="polite"><span>쿠팡 총금액 {formatPrice(coupangTotal)}</span><strong>자사몰이 {formatPrice(coupangSavingsTotal)} 더 저렴합니다</strong></div>}
       <div className="purchase-benefits" aria-label="구매 혜택">
         <span>평일 13시 전 당일 출고</span>
         <span>냉장 신선 배송</span>
