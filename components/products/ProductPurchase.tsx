@@ -100,40 +100,12 @@ export function ProductPurchase({ product }: { product: Product }) {
 
   return (
     <div className="purchase-box purchase-box-v3" id="purchase-box">
-      <div className="purchase-pricing-hero">
-        {discountRate > 0 && (
-          <div className="purchase-discount-badge" aria-label={`${discountRate}% 할인`}>
-            <strong>{discountRate}%</strong>
-            <span>할인</span>
-          </div>
-        )}
-        <div className="purchase-pricing-copy">
-          {regularTotal && <del>{formatPrice(regularTotal)}</del>}
-          <strong>{formatPrice(total)}~</strong>
-          {discountRate > 0 && <span>{discountRate}% 할인</span>}
-        </div>
-      </div>
-      <div className="purchase-benefits purchase-benefits-top" aria-label="구매 혜택">
-        <span>
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path d="M3 6h11v10H3zM14 9h3l4 4v3h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
-          </svg>
-          평일 오후 1시 이전 주문 당일 출고
-        </span>
-        <span>
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path d="m12 2 1.3 4.2L17 4l-1 4.3L20.5 8 17 11l4 2-4.5.8L19 18l-4.2-1.7L14 21l-2-3.5L10 21l-.8-4.7L5 18l2.5-4.2L3 13l4-2-3.5-3 4.5.3L7 4l3.7 2.2L12 2Z" />
-          </svg>
-          냉장 신선 배송
-        </span>
-      </div>
       <div className="purchase-head">
         <div>
           <span>예상 결제금액</span>
           <strong>{formatPrice(total)}</strong>
         </div>
       </div>
-      {regularTotal && <div className="purchase-price-benefit"><del>정상가 {formatPrice(regularTotal)}</del><b>{discountRate}% 할인</b><strong>판매가 {formatPrice(total)}</strong></div>}
       {coupangTotal && (
         <div className="purchase-coupang-compare" aria-live="polite">
           <div>
@@ -150,7 +122,7 @@ export function ProductPurchase({ product }: { product: Product }) {
           </div>
         </div>
       )}
-      <div className="purchase-benefits purchase-benefits-bottom" aria-label="배송 혜택">
+      <div className="purchase-benefits purchase-benefits-bottom" aria-label="배송 안내">
         <span>
           <svg aria-hidden="true" viewBox="0 0 24 24">
             <path d="M3 6h11v10H3zM14 9h3l4 4v3h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
