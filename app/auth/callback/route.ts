@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { sanitizeNextPath } from "@/lib/auth/next-path";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const next = requestUrl.searchParams.get("next");
-  const safeNext = next?.startsWith("/") && !next.startsWith("//") ? next : "/mypage";
+  const safeNext = sanitizeNextPath(next);
 
   if (code) {
     const supabase = await createClient();
@@ -25,23 +26,36 @@ export async function GET(request: Request) {
         String(user.user_metadata?.name ?? user.user_metadata?.nickname ?? user.email ?? "").trim() ||
         null;
 
-      const { data: existingProfile } = await adminSupabase
+      const { data: existingProfile, error: profileReadError } = await adminSupabase
         .from("profiles")
         .select("id, role")
         .eq("id", user.id)
         .maybeSingle();
 
+      if (profileReadError) {
+        await supabase.auth.signOut();
+        return NextResponse.redirect(new URL("/login?error=profile", request.url));
+      }
+
       if (!existingProfile) {
-        await adminSupabase.from("profiles").insert({
+        const { error: profileInsertError } = await adminSupabase.from("profiles").insert({
           id: user.id,
           name: displayName,
           role: "user"
         });
+        if (profileInsertError) {
+          await supabase.auth.signOut();
+          return NextResponse.redirect(new URL("/login?error=profile", request.url));
+        }
       } else {
-        await adminSupabase
+        const { error: profileUpdateError } = await adminSupabase
           .from("profiles")
           .update({ name: displayName })
           .eq("id", user.id);
+        if (profileUpdateError) {
+          await supabase.auth.signOut();
+          return NextResponse.redirect(new URL("/login?error=profile", request.url));
+        }
       }
     }
   } else {

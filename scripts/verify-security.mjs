@@ -39,7 +39,8 @@ assert.equal(adminFailureStatus("missing-env"), 503, "missing server configurati
 assert(roleMigration.includes("set role = 'user' where role = 'customer'") && roleMigration.includes("default 'user'") && roleMigration.includes("revoke update (role)"), "user/admin role migration is incomplete");
 assert(addressMigration.includes("create table if not exists public.user_addresses") && addressMigration.includes("enable row level security") && addressMigration.includes("auth.uid() = user_id"), "user_addresses table or RLS migration is missing");
 assert(callback.includes('role: "user"') && !callback.includes('role: "customer"'), "OAuth callback does not create user role");
-assert(header.includes('process.env.NODE_ENV !== "production"') && header.includes("role: {role}"), "development role indicator is missing");
+assert(header.includes('href="/admin"') && header.includes("isAdmin"), "admin header entry should be gated by admin role");
+assert(!header.includes("role: {role}"), "customer header must not expose development role labels");
 assert(devAdmin.includes('process.env.NODE_ENV !== "production"'), "dev admin is not production-disabled");
 for (const header of ["X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy", "X-Frame-Options", "Content-Security-Policy"]) assert(config.includes(header), `security header missing: ${header}`);
 assert(request.includes("maxBytes") && request.includes("status: 413"), "JSON request size validation missing");

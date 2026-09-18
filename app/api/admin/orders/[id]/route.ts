@@ -8,7 +8,7 @@ import {
   writeOrderStatusHistoryBestEffort,
   writeReviewRequestsBestEffort
 } from "@/lib/operations/automation";
-import { canChangeOrderStatus, isOperationOrderStatus, needsTrackingNumber, type OperationOrderStatus } from "@/lib/operations/status";
+import { canAdminChangeOrderStatus, hasApprovedPayment, isOperationOrderStatus, needsTrackingNumber } from "@/lib/operations/status";
 import { isValidTrackingNumber, TRACKING_NUMBER_MESSAGE } from "@/lib/shipping/tracking";
 import { requireTrustedOrigin } from "@/lib/security/origin";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
@@ -37,7 +37,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const { data: currentOrder, error: orderError } = await supabase
     .from("orders")
-    .select("id, order_no, status, recipient_phone, user_id, shipments(carrier, tracking_number)")
+    .select("id, order_no, status, recipient_phone, user_id, shipments(carrier, tracking_number), payments(status, payment_key, approved_at)")
     .eq("id", id)
     .single();
 
@@ -50,6 +50,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const currentStatus = currentOrder.status;
+  const payment = Array.isArray(currentOrder.payments) ? currentOrder.payments[0] : currentOrder.payments;
   const currentShipment = Array.isArray(currentOrder.shipments) ? currentOrder.shipments[0] : currentOrder.shipments;
   const nextStatus = body.status === undefined ? currentStatus : body.status;
   const nextCarrier = body.carrier === undefined ? cleanText(currentShipment?.carrier) : cleanText(body.carrier);
@@ -60,12 +61,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!isOperationOrderStatus(nextStatus)) {
       return NextResponse.json({ ok: false, message: "올바르지 않은 주문 상태입니다." }, { status: 400 });
     }
-    if (!canChangeOrderStatus(currentStatus, nextStatus)) {
+    if (!canAdminChangeOrderStatus(currentStatus, nextStatus, payment)) {
       return NextResponse.json(
         { ok: false, message: `${currentStatus} 상태에서 ${nextStatus} 상태로 변경할 수 없습니다.` },
         { status: 400 }
       );
     }
+  }
+
+  // Validate before any write, including notes and shipment saves.
+  if ((body.trackingNumber !== undefined || body.carrier !== undefined)
+      && nextTrackingNumber && !hasApprovedPayment(payment)) {
+    return NextResponse.json({ ok: false, message: "결제 승인된 주문만 송장을 등록할 수 있습니다." }, { status: 409 });
   }
 
   if (body.internalNote !== undefined) {
@@ -103,9 +110,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
   }
 
-  if (body.status !== undefined) {
-    const { error } = await supabase.from("orders").update({ status: nextStatus }).eq("id", id);
-    if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+  if (body.status !== undefined && nextStatus !== currentStatus) {
+    const { data, error } = await supabase.from("orders").update({ status: nextStatus })
+      .eq("id", id).eq("status", currentStatus).select("id");
+    if (error || !data?.length) return NextResponse.json({ ok: false, message: "주문 상태가 변경되었습니다. 다시 확인해주세요." }, { status: 409 });
   }
 
   const automation = await buildOrderStatusAutomation({

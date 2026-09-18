@@ -21,7 +21,7 @@ const checks = [
   ["textarea enter safe", !/textarea[^>]+onKeyDown/.test(all)],
   ["zero and error separated", customers.includes('"loading" | "ready" | "error"') && cs.includes('"loading" | "ready" | "error"')],
   ["quick filter and summary", orders.includes("admin-order-summary-cards") && orders.includes('range: "today"') && orders.includes('shipping: "none"')],
-  ["transition policy", status.includes("orderStatusFlow") && orders.includes("canChangeOrderStatus") && deliveries.includes("canChangeOrderStatus")],
+  ["transition policy", status.includes("orderStatusFlow") && orders.includes("canAdminChangeOrderStatus") && deliveries.includes("canChangeOrderStatus")],
   ["bulk selection count", orders.includes("selectedIds.length") && orders.includes("result.failed")],
   ["contextual cs only", !cs.includes("+ CS 접수") && customers.includes('action: "cs"') && orders.includes("CS 조회·접수")],
   ["no browser alert", !/\b(?:window\.)?alert\s*\(/.test(all)],

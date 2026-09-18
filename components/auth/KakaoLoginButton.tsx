@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { sanitizeNextPath } from "@/lib/auth/next-path";
 
 function ProfileIcon() {
   return (
@@ -22,7 +23,7 @@ export function KakaoLoginButton({ nextPath = "/mypage", label = "카카오로 �
     setErrorMessage("");
     try {
       const supabase = createClient();
-      const safeNextPath = nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/mypage";
+      const safeNextPath = sanitizeNextPath(nextPath);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "kakao",
         options: {

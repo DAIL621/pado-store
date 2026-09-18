@@ -45,7 +45,7 @@ export default function AddressBookModal({ open, selectedId, gift, onGiftChange,
 
   const loadAddresses = useCallback(async (selectDefault: boolean) => {
     setLoading(true);
-    const response = await fetch("/api/addresses", { cache: "no-store" });
+    const response = await fetch("/api/address", { cache: "no-store" });
     if (response.status === 401) {
       setUnauthorized(true);
       setLoading(false);
@@ -100,7 +100,7 @@ export default function AddressBookModal({ open, selectedId, gift, onGiftChange,
   const save = async (event: FormEvent) => {
     event.preventDefault();
     setMessage("저장 중...");
-    const response = await fetch(editingId ? `/api/addresses/${editingId}` : "/api/addresses", {
+    const response = await fetch(editingId ? `/api/address/${editingId}` : "/api/address", {
       method: editingId ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form)
@@ -116,8 +116,9 @@ export default function AddressBookModal({ open, selectedId, gift, onGiftChange,
   };
 
   const remove = async (address: UserAddress) => {
-    if (!window.confirm(`'${address.label}' 배송지를 삭제하시겠습니까?`)) return;
-    const response = await fetch(`/api/addresses/${address.id}`, { method: "DELETE" });
+    if (address.isDefault && addresses.length === 1 && !window.confirm("마지막 배송지입니다. 삭제하시겠습니까?")) return;
+    if (!(address.isDefault && addresses.length === 1) && !window.confirm(`'${address.label}' 배송지를 삭제하시겠습니까?`)) return;
+    const response = await fetch(`/api/address/${address.id}`, { method: "DELETE" });
     const result = await response.json();
     if (!response.ok) {
       setMessage(result.message ?? "배송지를 삭제하지 못했습니다.");
@@ -130,11 +131,27 @@ export default function AddressBookModal({ open, selectedId, gift, onGiftChange,
     onGiftChange(gift || address.isGift);
     onSelect(address);
     onClose();
-    void fetch(`/api/addresses/${address.id}`, {
+    void fetch(`/api/address/${address.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ markUsed: true })
     });
+  };
+
+  const makeDefault = async (address: UserAddress) => {
+    const response = await fetch(`/api/address/${address.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        label: address.label, recipient: address.recipient, phone: address.phone,
+        zipcode: address.zipcode, address: address.address, detailAddress: address.detailAddress,
+        memo: address.memo, isDefault: true, isGift: address.isGift
+      })
+    });
+    const result = await response.json();
+    if (!response.ok) return setMessage(result.message ?? "기본배송지 변경에 실패했습니다.");
+    setMessage("기본배송지를 변경했습니다.");
+    await loadAddresses(false);
   };
 
   if (!open) return null;
@@ -164,11 +181,10 @@ export default function AddressBookModal({ open, selectedId, gift, onGiftChange,
               <label className="wide">배송메모<textarea rows={2} value={form.memo} onChange={(e) => setForm({ ...form, memo: e.target.value })} placeholder="부재 시 문 앞, 경비실, 택배함" /></label>
             </div>
             <div className="address-form-options">
-              <label><input type="checkbox" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} /> 기본 배송지로 설정</label>
               <label><input type="checkbox" checked={form.isGift} onChange={(e) => setForm({ ...form, isGift: e.target.checked })} /> 선물 배송지</label>
             </div>
             {message && <p className="address-message" role="status">{message}</p>}
-            <div className="address-form-actions"><button type="button" onClick={() => setShowForm(false)}>취소</button><button type="submit" className="button teal">저장</button></div>
+            <div className="address-form-actions address-form-actions-with-default"><label className="address-default-check"><input type="checkbox" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} /> 기본 배송지로 설정</label><button type="button" onClick={() => setShowForm(false)}>취소</button><button type="submit" className="button teal">저장</button></div>
           </form>
         ) : (
           <>
@@ -180,7 +196,7 @@ export default function AddressBookModal({ open, selectedId, gift, onGiftChange,
                   <article className={selectedId === address.id ? "selected" : ""} key={address.id}>
                     <div className="address-card-title"><span>{addressIcon(address.label, address.isGift)}</span><strong>{address.label}</strong>{address.isDefault && <em>기본</em>}</div>
                     <b>{address.recipient}</b><span>{address.phone}</span><p>{address.address} {address.detailAddress}</p>{address.memo && <small>배송메모 · {address.memo}</small>}
-                    <div className="address-card-actions"><button type="button" onClick={() => startEdit(address)}>수정</button><button type="button" onClick={() => void remove(address)}>삭제</button><button type="button" className="select" onClick={() => void select(address)}>선택</button></div>
+                    <div className="address-card-actions"><button type="button" onClick={() => startEdit(address)}>수정</button><button type="button" onClick={() => void remove(address)}>삭제</button>{!address.isDefault && <button type="button" onClick={() => void makeDefault(address)}>기본배송지로 설정</button>}<button type="button" className="select" onClick={() => void select(address)}>선택</button></div>
                   </article>
                 ))}
               </div>

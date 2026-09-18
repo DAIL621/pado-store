@@ -94,7 +94,7 @@ function toProduct(row: ProductRow): Product {
     },
     producerInfo: {
       title: `${row.origin} 생산자`,
-      body: "산지와 작업장 정보를 확인해 상세페이지에 반영합니다."
+      body: ""
     },
     options: (row.product_options ?? []).map<ProductOption>((option, index) => {
       const pricing = mapStoredOptionToPrices(option, row.base_price, row.detail_json, index);

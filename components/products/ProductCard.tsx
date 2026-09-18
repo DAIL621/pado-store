@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { formatPrice, Product } from "@/data/products";
+import { ProductImage } from "@/components/products/ProductImage";
 
 function getBadgeClass(label?: string) {
   if (!label) return "";
@@ -21,7 +21,7 @@ export function ProductCard({ product, compact = false }: { product: Product; co
   return (
     <article className={`product-card fade-up ${compact ? "compact" : ""}`}>
       <Link href={`/products/${product.slug}`} className="product-image-wrap" aria-label={`${product.name} 상품 상세 보기`}>
-        <Image src={product.image} alt={product.name} fill sizes="(max-width: 700px) 50vw, 25vw" className="product-image" />
+        <ProductImage productKey={`${product.slug} ${product.name}`} src={product.image} alt={product.name} fill sizes="(max-width: 700px) 50vw, 25vw" className="product-image" />
         {(isSoldOut || product.badge) && <span className={`badge ${isSoldOut ? "soldout-badge" : getBadgeClass(badgeLabel)}`}>{isSoldOut ? "품절" : badgeLabel}</span>}
       </Link>
       <div className="product-copy">

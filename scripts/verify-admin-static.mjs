@@ -13,6 +13,7 @@ const productByIdApi = read("app/api/admin/products/[id]/route.ts");
 const slugHelper = read("lib/products/slug.ts");
 const adminDashboard = read("app/admin/page.tsx");
 const adminLayout = read("components/admin/AdminLayout.tsx");
+const adminNavigation = read("components/admin/AdminNavigation.tsx");
 const opsPlaceholder = read("components/admin/AdminOperationsPlaceholder.tsx");
 const statsPage = read("app/admin/stats/page.tsx");
 const membersPage = read("app/admin/members/page.tsx");
@@ -94,10 +95,10 @@ assert(adminDashboard.includes("operation_logs"), "admin dashboard should read o
 assert(adminDashboard.includes("notification_events"), "admin dashboard should read notification events");
 
 ["/admin/members", "/admin/reviews", "/admin/marketing", "/admin/content", "/admin/stats", "/admin/automation", "/admin/ai/images", "/admin/ai/dataset", "/admin/ai/dashboard", "/admin/ai/review"].forEach((href) => {
-  assert(adminLayout.includes(href), `admin sidebar route is missing: ${href}`);
+  assert(adminNavigation.includes(href), `admin sidebar route is missing: ${href}`);
 });
-assert(adminLayout.includes("AI 운영센터"), "admin sidebar AI operation center label is missing");
-assert(adminLayout.includes("admin-mobile-nav"), "admin mobile navigation is missing");
+assert(adminNavigation.includes("AI 운영센터"), "admin sidebar AI operation center label is missing");
+assert(adminNavigation.includes("admin-mobile-nav"), "admin mobile navigation is missing");
 assert(opsPlaceholder.includes("admin-ops-grid"), "admin operation placeholder grid is missing");
 assert(opsPages.includes("고객 운영센터") || opsPages.includes("회원 관리"), "admin members page is missing");
 assert(opsPages.includes("리뷰 관리"), "admin reviews page is missing");

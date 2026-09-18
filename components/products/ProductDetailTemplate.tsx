@@ -49,12 +49,22 @@ export function ProductDetailTemplate({ product, purchaseSlot }: Props) {
         data-template-schema={template.schemaVersion}
         data-template-kind="legacy"
       >
-        <HeroSection product={product} heroImage={mainImage} heroImages={heroImages} purchaseSlot={purchaseSlot} />
-        {topVideos.length > 0 && <VideoSection videos={topVideos} productName={product.name} />}
+        <HeroSection
+          product={product}
+          heroImage={mainImage}
+          heroImages={heroImages}
+          purchaseSlot={purchaseSlot}
+          galleryAfterSlot={topVideos.length > 0 ? <VideoSection videos={topVideos} productName={product.name} /> : undefined}
+        />
         {product.description && (
-          <section className="shell legacy-detail-description" aria-label={`${product.name} 상세 설명`}>
-            <h2>{product.name} 상세 설명</h2>
-            <p>{product.description}</p>
+          <section className="shell legacy-product-story" aria-label={`${product.name} 상품 이야기`}>
+            <span>PRODUCT STORY</span>
+            <h2>{product.slug === "hairtail" ? "목포에서 갓 올라온 신선함" : `${product.origin}에서 갓 올라온 신선함`}</h2>
+            <p>
+              {product.slug === "hairtail"
+                ? "목포 앞바다에서 정성껏 선별한 국내산 먹갈치를 소개합니다."
+                : product.description}
+            </p>
           </section>
         )}
         {legacyDetailImages.length > 0 && (
@@ -211,12 +221,14 @@ function HeroSection({
   product,
   heroImage,
   heroImages,
-  purchaseSlot
+  purchaseSlot,
+  galleryAfterSlot
 }: {
   product: Product;
   heroImage: string;
   heroImages: Array<{ label: string; url: string; description?: string }>;
   purchaseSlot: ReactNode;
+  galleryAfterSlot?: ReactNode;
 }) {
   const totalStock = getTotalStock(product);
   const isSoldOut = totalStock <= 0;
@@ -225,7 +237,14 @@ function HeroSection({
 
   return (
     <section className="shell detail-master-hero detail-master-hero-premium">
-      <ProductHeroGallery productName={product.name} fallbackImage={heroImage} images={heroImages} badge={product.badge} />
+      <ProductHeroGallery
+        productName={product.name}
+        productOrigin={product.origin}
+        fallbackImage={heroImage}
+        images={heroImages}
+        badge={product.badge}
+        afterContent={galleryAfterSlot}
+      />
       {/*
       <div className="detail-master-hero-gallery">
         <div className="detail-master-hero-media">
@@ -247,7 +266,6 @@ function HeroSection({
       <div className="detail-master-hero-copy">
         <div className="detail-master-hero-kicker">
           <strong>PADO STORY</strong>
-          <span>★ 4.9 · 리뷰 준비중</span>
         </div>
         <h1>{product.name}</h1>
         <p>{product.subtitle || "좋은 산지, 빠른 출고, 신선한 포장 기준으로 준비한 파도스토리 수산물입니다."}</p>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { isDevAdminLoginEnabled } from "@/lib/auth/dev-admin";
+import { sanitizeNextPath } from "@/lib/auth/next-path";
 
 export default async function DevAdminLoginPage({
   searchParams
@@ -8,7 +9,7 @@ export default async function DevAdminLoginPage({
 }) {
   if (!isDevAdminLoginEnabled()) redirect("/");
   const params = await searchParams;
-  const nextPath = params.next?.startsWith("/") && !params.next.startsWith("//") ? params.next : "/admin/products";
+  const nextPath = sanitizeNextPath(params.next, "/admin/products");
 
   return (
     <div className="page-wrap">

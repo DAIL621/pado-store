@@ -150,7 +150,7 @@ export function ProductCatalog({ products, categories }: Props) {
       </div>
 
       {visibleProducts.length ? (
-        <div className="product-grid" id="product-list">
+        <div className={`product-grid${visibleProducts.length === 1 ? " single-product-grid" : ""}`} id="product-list">
           {visibleProducts.map((product) => (
             <ProductCard key={product.slug} product={product} />
           ))}

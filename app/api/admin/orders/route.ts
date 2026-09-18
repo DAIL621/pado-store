@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/admin-api";
 import { readJsonBody } from "@/lib/api/request";
-import { canChangeOrderStatus, isOperationOrderStatus, needsTrackingNumber } from "@/lib/operations/status";
+import { canAdminChangeOrderStatus, isOperationOrderStatus, needsTrackingNumber } from "@/lib/operations/status";
 import { requireTrustedOrigin } from "@/lib/security/origin";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
     matchedIds = (matchedIds ?? ids).filter((id) => ids.includes(id));
   }
 
-  let query = supabase.from("orders").select("*, order_items(*), shipments(*), payments(*), profiles(name)", { count: "exact" });
+  let query = supabase.from("orders").select("*, order_items(*), shipments(*), payments(*), refunds(status), profiles(name)", { count: "exact" });
   if (status !== "all" && allowedStatuses.has(status)) query = query.eq("status", status);
   if (!includeTest && testIds.length) query = query.not("id", "in", `(${testIds.join(",")})`);
   if (matchedIds) query = matchedIds.length ? query.in("id", matchedIds) : query.eq("id", "00000000-0000-0000-0000-000000000000");
@@ -131,15 +131,17 @@ export async function POST(request: Request) {
   const status = parsed.body.status;
   if (!ids.length || !isOperationOrderStatus(status)) return NextResponse.json({ ok: false, message: "주문과 변경 상태를 확인해주세요." }, { status: 400 });
   const supabase = createAdminClient();
-  const { data: orders, error } = await supabase.from("orders").select("id, order_no, status, shipments(tracking_number)").in("id", ids);
+  const { data: orders, error } = await supabase.from("orders").select("id, order_no, status, shipments(tracking_number), payments(status, payment_key, approved_at)").in("id", ids);
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
   const succeeded: string[] = []; const failed: Array<{ id: string; reason: string }> = [];
   for (const order of orders ?? []) {
     const shipment = Array.isArray(order.shipments) ? order.shipments[0] : order.shipments;
-    if (!isOperationOrderStatus(order.status) || !canChangeOrderStatus(order.status, status)) { failed.push({ id: order.id, reason: "허용되지 않는 상태 전이" }); continue; }
+    const payment = Array.isArray(order.payments) ? order.payments[0] : order.payments;
+    if (!isOperationOrderStatus(order.status) || !canAdminChangeOrderStatus(order.status, status, payment)) { failed.push({ id: order.id, reason: "허용되지 않는 상태 전이 또는 결제 승인 미확인" }); continue; }
     if (needsTrackingNumber(status) && !shipment?.tracking_number) { failed.push({ id: order.id, reason: "송장번호 없음" }); continue; }
-    const update = await supabase.from("orders").update({ status }).eq("id", order.id);
-    if (update.error) { failed.push({ id: order.id, reason: update.error.message }); continue; }
+    if (status === order.status) { succeeded.push(order.id); continue; }
+    const update = await supabase.from("orders").update({ status }).eq("id", order.id).eq("status", order.status).select("id");
+    if (update.error || !update.data?.length) { failed.push({ id: order.id, reason: "주문 상태가 변경되었습니다. 다시 확인해주세요." }); continue; }
     succeeded.push(order.id);
     await supabase.from("operation_logs").insert({ order_id: order.id, event_type: "order.bulk_status_changed", summary: `${order.status} → ${status}`, payload: { fromStatus: order.status, toStatus: status, bulk: true }, actor: { id: admin.session.user.id, email: admin.session.user.email, role: "admin" } });
   }

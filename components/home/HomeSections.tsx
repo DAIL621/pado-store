@@ -91,7 +91,7 @@ export function HomeSections({ products: _products }: { products: Product[] }) {
 
       <section className="storefront-benefit-bar" aria-label="파도스토리 구매 혜택">
         <div className="shell">
-          <span><i><LineIcon name="truck" /></i><span><b>무료배송</b><small>7만원 이상 구매 시</small></span></span>
+          <span><i><LineIcon name="truck" /></i><span><b>전 상품 무료배송</b><small>구매 금액과 관계없이</small></span></span>
           <span><i><LineIcon name="box" /></i><span><b>안심 포장</b><small>신선도 유지 포장</small></span></span>
           <span><i><LineIcon name="source" /></i><span><b>신선 보장</b><small>문제 발생 시 100% 보상</small></span></span>
           <span><i><LineIcon name="review" /></i><span><b>고객센터</b><small>010-3128-7775</small></span></span>

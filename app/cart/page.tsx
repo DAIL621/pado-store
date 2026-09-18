@@ -73,7 +73,7 @@ export default function CartPage() {
         </div>
       </section>
 
-      <div className="shell cart-layout">
+      <div className={`shell cart-layout${items.length === 0 ? " cart-layout-empty" : ""}`}>
         <section className="cart-list">
           {!!items.length && <div className="cart-selection-toolbar"><label><input type="checkbox" checked={allSelected} onChange={(event) => selectAllItems(event.target.checked)} /> 전체선택 <b>{selectedItems.length}/{items.length}</b></label><button type="button" disabled={!selectedItems.length} onClick={removeSelectedItems}>선택삭제</button></div>}
           {!!items.length && authChecked && !isLoggedIn && (
@@ -95,18 +95,12 @@ export default function CartPage() {
             </div>
           )}
           {items.length === 0 ? (
-            <>
               <div className="empty-cart">
                 <span aria-hidden="true">CART</span>
                 <h2>장바구니가 비어 있습니다</h2>
-                <p>오늘 산지에서 도착한 신선한 상품을 만나보세요.</p>
+                <p>마음에 드는 상품을 담아보세요.</p>
                 <Link href="/products" className="button teal">상품 보러 가기</Link>
               </div>
-              <div className="cart-empty-recommend">
-                <div><span className="section-label">현재 판매 상품</span><h2>산지 상품 둘러보기</h2><p>최신 판매 상태가 반영된 상품목록에서 골라보세요.</p></div>
-                <Link href="/products" className="button outline">전체 상품 보기</Link>
-              </div>
-            </>
           ) : (
             items.map((item) => {
               const stock = Number(item.stock ?? Infinity);
@@ -150,7 +144,7 @@ export default function CartPage() {
           )}
         </section>
 
-        <aside className="order-summary">
+        {items.length > 0 && <aside className="order-summary">
           <h2>결제 예정 금액</h2>
           <div><span>상품 정상가 합계</span><b>{formatPrice(regularSubtotal)}</b></div>
           <div className="summary-discount"><span>상품 할인</span><b>-{formatPrice(productDiscount)}</b></div>
@@ -196,7 +190,7 @@ export default function CartPage() {
             {!items.length ? "상품을 먼저 담아주세요" : unavailableItems.length ? "품절 상품을 삭제해주세요" : "주문서 작성하기"}
           </button>
           <p>평일 오후 1시 이전 주문은 당일 출고됩니다.</p>
-        </aside>
+        </aside>}
       </div>
     </div>
   );

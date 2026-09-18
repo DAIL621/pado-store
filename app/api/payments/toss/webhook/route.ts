@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { readJsonBody } from "@/lib/api/request";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
+import { TossApiTimeoutError, tossFetch } from "@/lib/payments/toss-fetch";
 
 const PAYMENT_KEY_RE = /^[A-Za-z0-9_-]{10,200}$/;
 const TRANSMISSION_ID_RE = /^[A-Za-z0-9_-]{6,200}$/;
@@ -45,13 +46,26 @@ export async function POST(request: Request) {
   }
 
   const secret = process.env.TOSS_PAYMENTS_SECRET_KEY;
-  const verification = await fetch(
-    `https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}`,
-    {
-      headers: { Authorization: `Basic ${Buffer.from(`${secret}:`).toString("base64")}` },
-      cache: "no-store"
-    }
-  );
+  let verification: Response;
+  try {
+    verification = await tossFetch(
+      `https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}`,
+      {
+        headers: { Authorization: `Basic ${Buffer.from(`${secret}:`).toString("base64")}` },
+        cache: "no-store"
+      }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: error instanceof TossApiTimeoutError
+          ? "TOSS_WEBHOOK_VERIFY_TIMEOUT"
+          : "TOSS_WEBHOOK_VERIFY_NETWORK_ERROR"
+      },
+      { status: 503 }
+    );
+  }
   const provider = await verification.json().catch(() => ({})) as TossPayment;
   if (!verification.ok || provider.paymentKey !== paymentKey
       || provider.orderId !== body.data?.orderId
@@ -73,7 +87,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "Webhook does not match a v2 payment." }, { status: 404 });
   }
 
-  const eventKey = `webhook:${transmissionId}`;
+  const payloadHash = digest({
+    eventType,
+    paymentKey,
+    orderId: provider.orderId,
+    status: provider.status,
+    totalAmount: provider.totalAmount
+  });
+  const eventKey = `webhook:${paymentKey}:${eventType}:${provider.status}:${payloadHash}`;
   const { error } = await db.from("payment_events").insert({
     order_id: payment.order_id,
     payment_id: payment.id,
@@ -84,7 +105,8 @@ export async function POST(request: Request) {
       eventType,
       providerStatus: provider.status,
       transmissionTime,
-      payloadHash: digest(body)
+      payloadHash,
+      transmissionId
     }
   });
   if (error && !/duplicate|unique/i.test(error.message)) {

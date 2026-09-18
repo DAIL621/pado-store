@@ -7,6 +7,7 @@ import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { requireTrustedOrigin } from "@/lib/security/origin";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { TossApiTimeoutError, tossFetch } from "@/lib/payments/toss-fetch";
 
 const ORDER_ID_RE = /^[A-Za-z0-9_-]{6,64}$/;
 const PAYMENT_KEY_RE = /^[A-Za-z0-9_-]{10,200}$/;
@@ -37,20 +38,31 @@ function tossHeaders(secretKey: string, idempotencyKey?: string) {
 }
 
 async function queryTossPayment(secretKey: string, paymentKey: string) {
-  const response = await fetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}`, {
-    headers: tossHeaders(secretKey), cache: "no-store"
-  });
-  const body = await response.json().catch(() => ({})) as TossPayment;
-  return { ok: response.ok, body };
+  try {
+    const response = await tossFetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}`, {
+      headers: tossHeaders(secretKey), cache: "no-store"
+    });
+    const body = await response.json().catch(() => ({})) as TossPayment;
+    return { ok: response.ok, body };
+  } catch (error) {
+    return {
+      ok: false,
+      body: { code: error instanceof TossApiTimeoutError ? "TOSS_QUERY_TIMEOUT" : "TOSS_QUERY_NETWORK_ERROR" }
+    };
+  }
 }
 
 async function cancelApprovedPayment(secretKey: string, paymentKey: string, orderId: string) {
-  const response = await fetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}/cancel`, {
+  try {
+    const response = await tossFetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}/cancel`, {
     method: "POST",
     headers: tossHeaders(secretKey, `stock-failure-${orderId}`),
     body: JSON.stringify({ cancelReason: "결제 승인 직후 재고 확정 실패 자동 취소" })
   });
-  return response.ok;
+    return response.ok;
+  } catch {
+    return false;
+  }
 }
 
 function validApprovedPayment(payment: TossPayment, expected: { paymentKey: string; orderId: string; amount: number }) {
@@ -124,13 +136,16 @@ export async function POST(request: Request) {
   let tossPayment: TossPayment;
   let response: Response | null = null;
   try {
-    response = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
+    response = await tossFetch("https://api.tosspayments.com/v1/payments/confirm", {
       method: "POST",
       headers: tossHeaders(secretKey, `confirm-${order.id}`),
       body: JSON.stringify({ paymentKey, orderId, amount })
     });
     tossPayment = await response.json().catch(() => ({})) as TossPayment;
-  } catch {
+  } catch (error) {
+    tossPayment = {
+      code: error instanceof TossApiTimeoutError ? "TOSS_CONFIRM_TIMEOUT" : "TOSS_CONFIRM_NETWORK_ERROR"
+    };
     const queried = await queryTossPayment(secretKey, paymentKey);
     tossPayment = queried.body;
     response = queried.ok ? new Response(null, { status: 200 }) : null;

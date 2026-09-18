@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 import { getProducts } from "@/lib/products";
 import { CATEGORY_PAGES } from "@/lib/products/categories";
+import { getSiteUrl } from "@/lib/site-url";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pado-story.vercel.app";
+const siteUrl = getSiteUrl();
 
 function productUrl(slug: string) {
   return `${siteUrl}/products/${encodeURIComponent(slug)}`;

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="footer">
@@ -12,7 +14,7 @@ export function Footer() {
         </div>
         <div>
           <strong>고객센터</strong>
-          <a className="phone" href="tel:01031287775">010-3128-7775</a>
+          <Link className="phone" href="/support#contact">010-3128-7775</Link>
           <p>평일 10:00~18:00<br />주말 및 공휴일 휴무 (문자가능)</p>
         </div>
         <div className="company-info">

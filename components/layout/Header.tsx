@@ -54,7 +54,7 @@ function ShoppingCartIcon() {
 
 const shoppingMenu: MobileMenuItem[] = [
   { icon: "bag", label: "전체상품", description: "모든 수산물 보기", href: "/products" },
-  { icon: "season", label: "제철상품", description: "이번 달 가장 맛있는 상품", href: "/#season" },
+  { icon: "season", label: "제철상품", description: "현재 판매 중인 산지 상품", href: "/products" },
   { icon: "hot", label: "인기상품", description: "오늘의 추천 상품", href: "/#recommend" },
   { icon: "gift", label: "선물세트", description: "감사 선물 추천", href: "/categories/gift-set" },
   { icon: "meal", label: "밀키트", description: "간편하게 즐기는 상품", href: "/categories/meal-kit" },
@@ -66,14 +66,12 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [role, setRole] = useState<"user" | "admin" | null>(null);
   const memberPath = user ? "/mypage" : "/login?next=/mypage";
   const hasCartItems = ready && count > 0;
 
   const serviceMenu: MobileMenuItem[] = [
     { icon: "box", label: "주문조회", description: "주문내역 확인", href: memberPath },
-    { icon: "truck", label: "배송조회", description: "배송상태 확인", href: memberPath },
-    { icon: "headset", label: "고객센터", description: "전화 상담 및 문자 문의", href: "tel:01031287775" }
+    { icon: "headset", label: "고객센터", description: "FAQ 및 상담 안내", href: "/support" }
   ];
 
   useEffect(() => {
@@ -82,12 +80,10 @@ export function Header() {
     const setSessionUser = async (nextUser: User | null) => {
       setUser(nextUser);
       setIsAdmin(false);
-      setRole(null);
 
       if (nextUser) {
         const { data: profile } = await supabase.from("profiles").select("role").eq("id", nextUser.id).maybeSingle();
         setIsAdmin(profile?.role === "admin");
-        setRole(profile?.role === "admin" ? "admin" : "user");
       }
     };
 
@@ -120,7 +116,7 @@ export function Header() {
                 <span className="mobile-nav-chevron" aria-hidden="true">&gt;</span>
               </Link>
             ))}
-            <span className="mobile-menu-section-title">주문 · 고객지원</span>
+            <span className="mobile-menu-section-title">이용 안내</span>
             {serviceMenu.map((item) => {
               const content = (
                 <>
@@ -146,14 +142,14 @@ export function Header() {
                 </Link>
               </>
             )}
-            <Link href="/products" className="desktop-nav-link">전체 상품</Link>
-            <Link href="/#season" className="desktop-nav-link">제철 수산물</Link>
-            <Link href="/#today-sea" className="desktop-nav-link">오늘의 산지</Link>
-            <Link href="/#trust" className="desktop-nav-link">파도스토리 소개</Link>
+            <Link href="/products" className="desktop-nav-link">상품 보기</Link>
+            <Link href={memberPath} className="desktop-nav-link">주문조회</Link>
+            <Link href="/support" className="desktop-nav-link">고객센터</Link>
+            <Link href="/#trust" className="desktop-nav-link">신선함의 기준</Link>
+            <Link href="/#today-sea" className="desktop-nav-link">산지 이야기</Link>
             {isAdmin && <Link href="/admin" className="desktop-nav-link">관리자</Link>}
           </nav>
           <div className="header-actions">
-            {process.env.NODE_ENV !== "production" && role && <span className="dev-role-badge" title="개발 모드 권한 확인">role: {role}</span>}
             <AuthHeaderMenu />
             <Link href="/cart" className="cart-link cart-link-clean" aria-label={hasCartItems ? `장바구니 ${count}개` : "장바구니"}>
               <ShoppingCartIcon />

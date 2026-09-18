@@ -19,7 +19,7 @@ export default async function ProductsPage() {
 
   return (
     <div className="page-wrap">
-      <section className="page-hero">
+      <section className="page-hero product-catalog-hero">
         <div className="shell">
           <span className="eyebrow">PADO MARKET</span>
           <h1>산지 직송 상품</h1>
@@ -27,7 +27,7 @@ export default async function ProductsPage() {
         </div>
       </section>
 
-      <section className="section">
+      <section className="section product-catalog-section">
         <div className="shell">
           <ProductCatalog products={products} categories={categories} />
         </div>

@@ -11,6 +11,7 @@ const files = {
   refundApi: fs.readFileSync("app/api/admin/payments/refund/route.ts", "utf8"),
   tossWebhookApi: fs.readFileSync("app/api/payments/toss/webhook/route.ts", "utf8"),
   adminLayout: fs.readFileSync("components/admin/AdminLayout.tsx", "utf8"),
+  adminNavigation: fs.readFileSync("components/admin/AdminNavigation.tsx", "utf8"),
   automationPage: fs.readFileSync("app/admin/automation/page.tsx", "utf8"),
   migration: fs.readFileSync("supabase/migrations/202607060400_operation_automation.sql", "utf8")
 };
@@ -51,7 +52,10 @@ assert(files.paymentConfirmApi.includes("pado_finalize_payment_v2"), "payment co
 assert(files.refundApi.includes("https://api.tosspayments.com/v1/payments/"), "refund API should call Toss cancel endpoint");
 assert(files.refundApi.includes("refund_completed"), "refund API should write refund completion logs");
 assert(files.tossWebhookApi.includes("payment_events"), "Toss webhook route should write idempotent provider events");
-assert(files.adminLayout.includes("/admin/automation"), "admin navigation should expose operation automation page");
+assert(
+  files.adminLayout.includes("/admin/automation") || files.adminNavigation.includes("/admin/automation"),
+  "admin navigation should expose operation automation page"
+);
 assert(files.automationPage.includes("PADO STORY Operation Automation Engine"), "automation admin page hero is missing");
 assert(files.automationPage.includes("운영 DB 마이그레이션 SQL"), "automation page should expose DB extension SQL");
 ["operation_logs", "order_status_history", "notification_events", "review_requests", "inventory_logs"].forEach((table) => {

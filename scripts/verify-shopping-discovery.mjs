@@ -27,8 +27,8 @@ for (const slug of requiredCategorySlugs) {
   assert(files.categoryPage.includes("getProductsForCategoryPage"), "category page should use category product resolver");
 }
 
-assert(files.hero.includes("/categories/gift-set"), "home campaign gift-set should link to category page");
-assert(files.hero.includes("/categories/meal-kit"), "home campaign meal-kit should link to category page");
+assert(!files.hero.includes("campaign-menu"), "home should not render the oversized campaign shortcut menu");
+assert(files.hero.includes("지금 판매 중인 상품"), "home hero should lead directly to available products");
 assert(files.header.includes("/categories/gift-set"), "mobile menu gift-set should link to category page");
 assert(files.header.includes("/categories/meal-kit"), "mobile menu meal-kit should link to category page");
 assert(files.homeSections.includes("reviewHighlights"), "home review highlight section is missing");
@@ -56,7 +56,7 @@ console.log(
       checks: [
         "category-pages",
         "category-sitemap",
-        "home-campaign-category-links",
+        "home-product-first-hero",
         "mobile-menu-category-links",
         "home-shopping-shelves",
         "home-review-highlights",

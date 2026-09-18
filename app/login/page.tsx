@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { KakaoLoginButton } from "@/components/auth/KakaoLoginButton";
+import { sanitizeNextPath } from "@/lib/auth/next-path";
 
 export default async function LoginPage({
   searchParams
@@ -7,7 +8,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const params = await searchParams;
-  const nextPath = params.next?.startsWith("/") && !params.next.startsWith("//") ? params.next : "/mypage";
+  const nextPath = sanitizeNextPath(params.next);
 
   return (
     <div className="page-wrap">

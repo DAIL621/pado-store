@@ -7,6 +7,8 @@ import type { OperationEvent } from "@/lib/operations/events";
 import { requireTrustedOrigin } from "@/lib/security/origin";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { TossApiTimeoutError, tossFetch } from "@/lib/payments/toss-fetch";
+import { refundBlockCode } from "@/lib/payments/refund-state";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -87,7 +89,7 @@ export async function POST(request: Request) {
   const db = createAdminClient();
   const { data: order, error } = await db
     .from("orders")
-    .select("id,order_no,status,total_amount,security_version,payments(id,payment_key,amount,status),order_items(id,quantity,unit_price)")
+    .select("id,order_no,status,total_amount,security_version,payments(id,payment_key,approved_at,amount,status),order_items(id,quantity,unit_price)")
     .eq("id", orderId)
     .maybeSingle();
   if (error || !order) return NextResponse.json({ ok: false, message: "주문을 찾을 수 없습니다." }, { status: 404 });
@@ -98,8 +100,18 @@ export async function POST(request: Request) {
     );
   }
   const payment = Array.isArray(order.payments) ? order.payments[0] : order.payments;
-  if (!payment?.payment_key || !["paid", "partial_refunded"].includes(String(payment.status))) {
+  if (order.status === "pending" || order.status === "refunded" || !payment?.payment_key
+      || !payment.approved_at || !["paid", "partial_refunded"].includes(String(payment.status))) {
     return NextResponse.json({ ok: false, message: "환불 가능한 결제 상태가 아닙니다." }, { status: 409 });
+  }
+
+  const existing = await db.from("refunds").select("status").eq("order_id", orderId);
+  if (existing.error) {
+    return NextResponse.json({ ok: false, message: "기존 환불 상태를 확인할 수 없습니다." }, { status: 503 });
+  }
+  const blocked = refundBlockCode(existing.data ?? []);
+  if (blocked) {
+    return NextResponse.json({ ok: false, code: blocked, message: "기존 환불 처리 결과를 먼저 확인해주세요." }, { status: 409 });
   }
 
   let items = parseItems(parsed.body.items);
@@ -127,7 +139,9 @@ export async function POST(request: Request) {
   const processingToken = randomUUID();
   const requestFingerprint = fingerprint({ orderId, requestedAmount, reason, items });
   const adminId = UUID_RE.test(admin.session.user.id) ? admin.session.user.id : null;
-  const claim = await db.rpc("pado_claim_refund_v2", {
+  // v3 checks all outstanding refunds under the order lock. No v2 fallback:
+  // an unapplied migration must block refunds rather than permit a race.
+  const claim = await db.rpc("pado_claim_refund_v3", {
     p_order_id: orderId,
     p_idempotency_key: idempotencyKey,
     p_request_fingerprint: requestFingerprint,
@@ -138,6 +152,14 @@ export async function POST(request: Request) {
     p_processing_token: processingToken
   });
   if (claim.error) {
+    const blockedCode = ["REFUND_RECONCILIATION_REQUIRED", "REFUND_ALREADY_PROCESSING", "REFUND_ALREADY_REFUNDED"]
+      .find((code) => claim.error.message.includes(code));
+    if (blockedCode) {
+      return NextResponse.json({ ok: false, code: blockedCode, message: "기존 환불 처리 결과를 먼저 확인해주세요." }, { status: 409 });
+    }
+    if (claim.error.code === "PGRST202" || claim.error.code === "42883") {
+      return NextResponse.json({ ok: false, message: "환불 보호 설정 확인이 필요합니다. 환불은 실행되지 않았습니다." }, { status: 503 });
+    }
     const conflict = /IDEMPOTENCY|EXCEEDED|NOT_REFUNDABLE/.test(claim.error.message);
     return NextResponse.json(
       { ok: false, message: conflict ? "환불 요청이 기존 처리 또는 허용 범위와 충돌합니다." : "환불을 시작하지 못했습니다." },
@@ -158,7 +180,7 @@ export async function POST(request: Request) {
   let response: Response;
   let toss: TossCancelResponse;
   try {
-    response = await fetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(claimed.paymentKey)}/cancel`, {
+    response = await tossFetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(claimed.paymentKey)}/cancel`, {
       method: "POST",
       headers: {
         Authorization: `Basic ${Buffer.from(`${secretKey}:`).toString("base64")}`,
@@ -168,11 +190,13 @@ export async function POST(request: Request) {
       body: JSON.stringify({ cancelReason: reason, cancelAmount: requestedAmount })
     });
     toss = await response.json().catch(() => ({})) as TossCancelResponse;
-  } catch {
+  } catch (error) {
     await db.rpc("pado_fail_refund_v2", {
       p_refund_id: claimed.refundId,
       p_processing_token: processingToken,
-      p_failure_code: "TOSS_CANCEL_NETWORK_ERROR",
+      p_failure_code: error instanceof TossApiTimeoutError
+        ? "TOSS_CANCEL_TIMEOUT"
+        : "TOSS_CANCEL_NETWORK_ERROR",
       p_reconciliation_required: true
     });
     return NextResponse.json(
@@ -181,12 +205,16 @@ export async function POST(request: Request) {
     );
   }
   if (!response.ok) {
+    const uncertain = response.status >= 500;
     await db.rpc("pado_fail_refund_v2", {
       p_refund_id: claimed.refundId,
       p_processing_token: processingToken,
       p_failure_code: toss.code ?? "TOSS_CANCEL_FAILED",
-      p_reconciliation_required: false
+      p_reconciliation_required: uncertain
     });
+    if (uncertain) {
+      return NextResponse.json({ ok: false, code: "REFUND_RECONCILIATION_REQUIRED", message: "환불 결과를 확인 중입니다." }, { status: 202 });
+    }
     return NextResponse.json({ ok: false, message: toss.message ?? "환불 요청에 실패했습니다." }, { status: 400 });
   }
   const cancel = [...(toss.cancels ?? [])].reverse().find((row) =>
@@ -224,7 +252,7 @@ export async function POST(request: Request) {
     );
   }
   const finalState = await db.from("refunds").select("status,approved_amount").eq("id", claimed.refundId).maybeSingle();
-  if (finalState.error
+  if (finalState.error || !finalState.data
       || !["partially_refunded", "refunded"].includes(String(finalState.data?.status))
       || Number(finalState.data?.approved_amount) !== requestedAmount) {
     await db.rpc("pado_mark_refund_reconciliation_v2", {
@@ -246,5 +274,5 @@ export async function POST(request: Request) {
     reason
   }];
   await writeOperationLogBestEffort(db, orderId, events);
-  return NextResponse.json({ ok: true, refund: { id: claimed.refundId, status: finalized.data?.status } });
+  return NextResponse.json({ ok: true, refund: { id: claimed.refundId, status: finalState.data.status } });
 }

@@ -8,8 +8,9 @@ import "./admin-common-ux.css";
 import "./admin-design-system.css";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { AppChrome } from "@/components/layout/AppChrome";
+import { getSiteUrl } from "@/lib/site-url";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pado-story.vercel.app";
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

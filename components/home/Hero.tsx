@@ -14,7 +14,9 @@ function ProofIcon({ name }: { name: "pin" | "fresh" | "truck" }) {
 }
 
 export function Hero({ products }: { products: Product[] }) {
-  const popularKeywords = ["완도 전복", "통영 굴", "자연산 돌문어", "목포 먹갈치", "선물세트"];
+  const popularKeywords = [...new Set(products
+    .filter((product) => product.options.some((option) => Number(option.stock ?? 0) > 0))
+    .map((product) => product.name))].slice(0, 5);
 
   return (
     <section className="storefront-intro" id="recommend" aria-label="파도스토리 산지 직송">
@@ -48,7 +50,7 @@ export function Hero({ products }: { products: Product[] }) {
               <small>상품명, 산지, 카테고리를 입력하면<br />원하는 상품을 빠르게 찾을 수 있습니다.</small>
             </label>
             <div>
-              <input id="home-product-search" name="q" placeholder="예: 전복, 통영, 선물세트" />
+              <input id="home-product-search" name="q" placeholder={popularKeywords[0] ? `예: ${popularKeywords[0]}` : "상품명 또는 산지 검색"} />
               <button type="submit" aria-label="상품 검색"><span aria-hidden="true">⌕</span> 검색</button>
             </div>
           </form>
@@ -57,10 +59,7 @@ export function Hero({ products }: { products: Product[] }) {
             {popularKeywords.map((keyword) => (
               <Link href={`/products?q=${encodeURIComponent(keyword)}`} key={keyword}>{keyword}</Link>
             ))}
-            <details>
-              <summary>더보기⌄</summary>
-              <div><Link href="/products?q=참소라">참소라</Link><Link href="/products?q=바다장어">바다장어</Link></div>
-            </details>
+            <Link href="/products">전체 상품 보기</Link>
           </div>
         </section>
 
@@ -72,7 +71,7 @@ export function Hero({ products }: { products: Product[] }) {
             </div>
             <Link href="/products">전체 상품 보기 <span aria-hidden="true">›</span></Link>
           </header>
-          <div className="product-grid featured-grid">
+          <div className={`product-grid featured-grid${products.length === 1 ? " single-product-grid" : ""}`}>
             {products.map((product) => <ProductCard key={product.slug} product={product} compact />)}
           </div>
         </section>

@@ -240,10 +240,9 @@ export default async function AdminDashboardPage() {
           { label: "품절 임박", value: lowStockProducts.length, unit: "5개 이하", href: "/admin/products" }
         ].map((metric) => (
           <article key={metric.label}>
+            <strong>{metric.value}<small>{metric.unit}</small></strong>
             <span>{metric.label}</span>
-            <strong>{metric.value}</strong>
-            <em>{metric.unit}</em>
-            <Link href={metric.href}>확인하기</Link>
+            <Link href={metric.href} aria-label={`${metric.label} 확인하기`}>자세히 <span aria-hidden="true">→</span></Link>
           </article>
         ))}
       </section>

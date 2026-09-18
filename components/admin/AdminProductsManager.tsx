@@ -230,19 +230,17 @@ export function AdminProductsManager() {
     <section className="admin-panel admin-products-panel">
       <div><h2>상품 목록</h2><span className="admin-message">총 {pagination.total}개 상품 · {pageStart}~{pageEnd} 표시 · {pagination.pageSize}개씩 보기</span></div>
       <div className="table-wrap"><table className="product-admin-table"><thead><tr>
-        <th><input type="checkbox" checked={allPageSelected} onChange={(event) => togglePage(event.target.checked)} aria-label="현재 페이지 전체 선택" /></th><th>상품</th><th>가격</th><th>옵션·재고</th><th>상태</th><th>분류</th><th>완성도</th><th>등록·수정</th><th>관리</th>
+        <th><input type="checkbox" checked={allPageSelected} onChange={(event) => togglePage(event.target.checked)} aria-label="현재 페이지 전체 선택" /></th><th>상품</th><th>가격</th><th>옵션·재고</th><th>완성도</th><th>등록·수정</th><th>관리</th>
       </tr></thead><tbody>
-        {!loading && products.length === 0 && <tr><td colSpan={9}><div className="admin-empty-filter"><strong>조건에 맞는 상품이 없습니다.</strong><span>검색어 또는 필터를 조정해주세요.</span><button type="button" onClick={resetFilters}>필터 초기화</button></div></td></tr>}
+        {!loading && products.length === 0 && <tr><td colSpan={7}><div className="admin-empty-filter"><strong>조건에 맞는 상품이 없습니다.</strong><span>검색어 또는 필터를 조정해주세요.</span><button type="button" onClick={resetFilters}>필터 초기화</button></div></td></tr>}
         {products.map((product) => {
           const status = statusOf(product); const stockState = stockBadge(product); const options = product.product_options ?? []; const completeness = completenessOf(product);
           const soldoutOptions = options.filter((option) => Number(option.stock) <= 0).length; const lowOptions = options.filter((option) => Number(option.stock) > 0 && Number(option.stock) <= lowStockThreshold).length;
           return <tr key={product.id}>
             <td><input type="checkbox" checked={selectedIds.includes(product.id)} onChange={() => toggleOne(product.id)} aria-label={`${product.name} 선택`} /></td>
-            <td><div className="admin-product-identity"><AdminProductThumbnail src={resolveProductImage({ imageUrl: product.image_url, detail: product.detail_json })} name={product.name} /><div><strong>{product.name}</strong>{isVerificationProduct(product) && <span className="test-product-badge">검증</span>}<small>{product.slug}</small><small>ID {product.id.slice(0, 8)}</small></div></div></td>
+            <td><div className="admin-product-identity"><AdminProductThumbnail src={resolveProductImage({ imageUrl: product.image_url, detail: product.detail_json })} name={product.name} /><div><strong>{product.name}</strong><span className="admin-product-badges"><span className={`status ${status}`}>{statusLabel[status]}</span>{product.origin && <span>{product.origin}</span>}{product.category && <span>{product.category}</span>}{isVerificationProduct(product) && <span className="test-product-badge">검증</span>}</span></div></div></td>
             <td><strong>{formatPrice(product.base_price)}</strong></td>
             <td><b>총 {totalStock(product).toLocaleString("ko-KR")}개</b><small>옵션 {options.length} · 품절 {soldoutOptions} · 부족 {lowOptions}</small><span className={`stock-badge ${stockState}`}>{stockLabel[stockState]}</span></td>
-            <td><span className={`status ${status}`}>{statusLabel[status]}</span></td>
-            <td><b>{product.category}</b><small>{product.origin}</small></td>
             <td>{completeness ? <><span className={`detail-score ${completeness.score === 100 ? "complete" : "draft"}`}>{completeness.score}%</span><small>{completeness.completed}/{completeness.total} 완료</small></> : <span className="detail-score empty">정보 확인 필요</span>}</td>
             <td><small>등록 {new Date(product.created_at).toLocaleDateString("ko-KR")}</small><small>수정 {new Date(product.updated_at ?? product.created_at).toLocaleDateString("ko-KR")}</small></td>
             <td className="admin-actions"><button className="admin-action-primary" type="button" onClick={() => setEditing(product)}>수정</button><a className="admin-action-secondary" href={`/products/${product.slug}`} target="_blank" rel="noreferrer">상세</a><button className="admin-more-trigger" type="button" aria-haspopup="menu" aria-expanded={activeMenu?.product.id === product.id} aria-label={`${product.name} 추가 관리 메뉴`} onClick={(event) => { const anchor = event.currentTarget; setMenuPosition({ top: 0, left: 0, visibility: "hidden" }); setActiveMenu((current) => current?.product.id === product.id ? null : { product, anchor }); }}>⋯</button></td>

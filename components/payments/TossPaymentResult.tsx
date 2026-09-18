@@ -13,12 +13,13 @@ type Props = {
 
 export function TossPaymentResult({ paymentKey, orderId, amount }: Props) {
   const { clearCart } = useCart();
-  const [status, setStatus] = useState<"checking" | "success" | "failed">("checking");
+  const [status, setStatus] = useState<"checking" | "review" | "success" | "failed">("checking");
   const [message, setMessage] = useState("결제 승인 중입니다...");
   const requested = useRef(false);
   const numericAmount = Number(amount ?? 0);
   const isSuccess = status === "success";
   const isChecking = status === "checking";
+  const needsReview = status === "review";
 
   useEffect(() => {
     if (requested.current) return;
@@ -39,9 +40,15 @@ export function TossPaymentResult({ paymentKey, orderId, amount }: Props) {
         });
         const result = await response.json();
 
-        if (!response.ok) {
+        if (response.status === 202) {
+          setStatus("review");
+          setMessage("결제 상태를 확인 중입니다. 다시 결제하지 마시고 주문내역을 확인해주세요. 확인이 지연되면 고객센터로 문의해주세요.");
+          return;
+        }
+
+        if (response.status !== 200 || result?.ok !== true || result?.payment?.status !== "paid") {
           setStatus("failed");
-          setMessage(result.message ?? "결제 승인에 실패했습니다.");
+          setMessage(result?.message ?? "결제 승인에 실패했습니다.");
           return;
         }
 
@@ -64,17 +71,16 @@ export function TossPaymentResult({ paymentKey, orderId, amount }: Props) {
       <p>{message}</p>
       <p>결제 금액: {formatPrice(numericAmount)}</p>
       <div className="result-checklist" aria-label="주문 처리 안내">
-        <span>{isSuccess ? "결제 완료" : "결제 확인 중"}</span>
-        <span>마이페이지 반영</span>
-        <span>상품 준비 후 출고</span>
+        <span>{isSuccess ? "결제 완료" : needsReview ? "결제 상태 확인 필요" : status === "failed" ? "결제 승인 오류" : "결제 확인 중"}</span>
+        {isSuccess && <><span>마이페이지 반영</span><span>상품 준비 후 출고</span></>}
       </div>
       <div className="complete-actions">
         <Link href="/products" className="button outline">계속 쇼핑하기</Link>
         {isChecking ? (
           <button type="button" className="button teal" disabled>결제 확인 중</button>
         ) : (
-          <Link href={isSuccess ? "/mypage" : "/checkout"} className="button teal">
-            {isSuccess ? "주문내역 확인" : "주문서로 돌아가기"}
+          <Link href={isSuccess || needsReview ? "/mypage" : "/checkout"} className="button teal">
+            {isSuccess || needsReview ? "주문내역 확인" : "주문서로 돌아가기"}
           </Link>
         )}
       </div>

@@ -27,15 +27,15 @@ export const orderStatusLabels: Record<OperationOrderStatus, string> = {
 };
 
 export const orderStatusFlow: Record<OperationOrderStatus, OperationOrderStatus[]> = {
-  pending: ["pending", "paid", "preparing", "cancelled"],
-  paid: ["paid", "preparing", "delivery_ready", "cancelled", "refunded"],
+  pending: ["pending", "cancelled"],
+  paid: ["paid", "preparing", "delivery_ready", "cancelled"],
   preparing: ["preparing", "delivery_ready", "shipped", "cancelled"],
   delivery_ready: ["delivery_ready", "shipped", "cancelled"],
   shipped: ["shipped", "delivered", "return_requested"],
   delivered: ["delivered", "return_requested"],
-  cancelled: ["cancelled", "refunded"],
-  return_requested: ["return_requested", "returned", "refunded"],
-  returned: ["returned", "refunded"],
+  cancelled: ["cancelled"],
+  return_requested: ["return_requested", "returned"],
+  returned: ["returned"],
   refunded: ["refunded"]
 };
 
@@ -45,6 +45,29 @@ export function isOperationOrderStatus(value: unknown): value is OperationOrderS
 
 export function canChangeOrderStatus(from: OperationOrderStatus, to: OperationOrderStatus) {
   return orderStatusFlow[from]?.includes(to) ?? false;
+}
+
+export type PaymentApproval = {
+  status: string;
+  payment_key?: string | null;
+  approved_at?: string | null;
+};
+
+export function hasApprovedPayment(payment: PaymentApproval | null | undefined) {
+  return payment?.status === "paid"
+    && Boolean(payment.payment_key?.trim()) && Boolean(payment.approved_at);
+}
+
+export function isFulfillmentStatus(status: string) {
+  return ["preparing", "delivery_ready", "shipped", "delivered"].includes(status);
+}
+
+export function canAdminChangeOrderStatus(
+  from: OperationOrderStatus, to: OperationOrderStatus,
+  payment: PaymentApproval | null | undefined
+) {
+  return canChangeOrderStatus(from, to)
+    && (!isFulfillmentStatus(to) || hasApprovedPayment(payment));
 }
 
 export function resolveTrackingSaveStatus(

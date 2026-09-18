@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isDevAdminLoginEnabled, setDevAdminSessionCookie } from "@/lib/auth/dev-admin";
 import { enforceRateLimit } from "@/lib/security/rate-limit";
+import { sanitizeNextPath } from "@/lib/auth/next-path";
 
 export async function POST(request: Request) {
   const limited = await enforceRateLimit(request, "adminLogin");
@@ -18,9 +19,7 @@ export async function POST(request: Request) {
   }
 
   const nextPath = String(formData.get("next") ?? "/admin/products");
-  const safeNextPath = nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/admin/products";
-  const referer = request.headers.get("referer");
-  const redirectOrigin = referer ? new URL(referer).origin : new URL(request.url).origin;
-  const response = NextResponse.redirect(new URL(safeNextPath, redirectOrigin), { status: 303 });
+  const safeNextPath = sanitizeNextPath(nextPath, "/admin/products");
+  const response = NextResponse.redirect(new URL(safeNextPath, request.url), { status: 303 });
   return setDevAdminSessionCookie(response);
 }

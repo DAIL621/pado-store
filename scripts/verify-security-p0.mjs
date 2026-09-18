@@ -60,7 +60,11 @@ if (scope === "all" || scope === "payment") checkPayment();
 if (scope === "all" || scope === "refund") checkRefund();
 if (scope === "all" || scope === "rate-limit") checkRateLimit();
 
-assert(audit.includes("begin read only") && audit.includes("rollback;"), "integrity audit must be read-only");
+assert(audit.includes("begin;") && audit.includes("create temporary table") && audit.includes("rollback;"),
+  "integrity audit must use rollback-only temporary state");
+for (const forbidden of ["insert into public.", "update public.", "delete from public."]) {
+  assert(!audit.includes(forbidden), `integrity audit must not mutate application data: ${forbidden}`);
+}
 assert(audit.includes("PASS") && audit.includes("WARNING") && audit.includes("FAIL"), "audit severities missing");
 assert(audit.includes("orders") && audit.includes("payments") && audit.includes("refunds")
   && audit.includes("inventory") && audit.includes("shipments"), "audit domains missing");

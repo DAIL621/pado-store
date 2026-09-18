@@ -11,10 +11,11 @@ import { getAdminSession } from "@/lib/auth/admin";
 import { getProductBySlug, getProducts } from "@/lib/products";
 import { getRelatedProducts } from "@/lib/products/discovery";
 import { isPublicProductSlug } from "@/lib/products/public-slug";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pado-story.vercel.app";
+const siteUrl = getSiteUrl();
 
 function absoluteUrl(path: string) {
   if (/^https?:\/\//.test(path)) return path;
@@ -179,16 +180,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <h3>{product.exchangeInfo.title}</h3>
               <p>{product.exchangeInfo.body}</p>
             </article>
-            <article>
+            {product.producerInfo.body.trim() && <article>
               <span>생산자 소개</span>
               <h3>{product.producerInfo.title}</h3>
               <p>{product.producerInfo.body}</p>
-            </article>
+            </article>}
           </div>
         </div>
       </section>
 
-      <section className="section recommended-section">
+      {recommended.length > 0 && <section className="section recommended-section">
         <div className="shell">
           <div className="section-heading">
             <div>
@@ -203,7 +204,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
       <RecentViewedProducts products={allProducts} currentSlug={product.slug} />
 
