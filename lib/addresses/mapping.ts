@@ -1,4 +1,5 @@
 import type { AddressFormInput, UserAddress } from "@/lib/addresses/types";
+import { normalizeDeliveryPhone } from "@/lib/phone/normalize";
 
 type AddressRow = Record<string, unknown>;
 
@@ -24,7 +25,7 @@ export function mapAddressInput(input: Partial<AddressFormInput>) {
   return {
     label: String(input.label ?? "").trim(),
     recipient_name: String(input.recipient ?? "").trim(),
-    phone: String(input.phone ?? "").trim(),
+    phone: normalizeDeliveryPhone(String(input.phone ?? "")) ?? String(input.phone ?? "").trim(),
     zipcode: String(input.zipcode ?? "").trim(),
     address: String(input.address ?? "").trim(),
     address_detail: String(input.detailAddress ?? "").trim(),
@@ -37,7 +38,7 @@ export function mapAddressInput(input: Partial<AddressFormInput>) {
 export function validateAddressInput(input: ReturnType<typeof mapAddressInput>) {
   if (!input.label) return "배송지 이름을 입력해주세요.";
   if (!input.recipient_name) return "받는 분을 입력해주세요.";
-  if (input.phone.replace(/\D/g, "").length < 10) return "전화번호를 10자리 이상 입력해주세요.";
+  if (!normalizeDeliveryPhone(input.phone)) return "전화번호 형식을 확인해주세요. 예: 010-1234-5678";
   if (!input.address) return "주소를 입력해주세요.";
   return null;
 }
