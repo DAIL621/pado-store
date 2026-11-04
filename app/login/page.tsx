@@ -9,23 +9,29 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string; review?: string }>;
 }) {
   const params = await searchParams;
-  const isReview = params.review === "1";
-  const nextPath = sanitizeNextPath(params.next, isReview ? "/products/hairtail" : "/mypage");
+  // Existing review links remain supported, but both login methods
+  // are now available at the regular /login URL.
+  const nextPath = sanitizeNextPath(params.next, params.review === "1" ? "/products/hairtail" : "/mypage");
 
   return (
     <div className="page-wrap">
       <section className="login-section">
         <div className="login-card">
           <span className="eyebrow">PADO STORY LOGIN</span>
-          <h1>{isReview ? "파도스토리 심사용 로그인" : "카카오로 3초 로그인"}</h1>
-          <p>{isReview ? "결제경로 심사 전용 일반회원 계정으로 로그인할 수 있습니다." : "주문조회, 배송조회, 재구매를 더 편하게 이용할 수 있어요."}</p>
+          <h1>파도스토리 로그인</h1>
+          <p>카카오 또는 이메일로 로그인하고, 주문과 배송 정보를 편리하게 확인하세요.</p>
           <div className="login-benefits" aria-label="로그인 후 이용 가능한 기능">
             <span>주문내역 확인</span>
             <span>배송상태 조회</span>
             <span>빠른 재구매</span>
           </div>
           <KakaoLoginButton nextPath={nextPath} label="카카오로 계속하기" />
-          {isReview && <ReviewEmailLoginForm nextPath={nextPath} />}
+          <div role="separator" aria-label="또는 이메일로 로그인" style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0 20px" }}>
+            <span aria-hidden="true" style={{ height: 1, flex: 1, background: "#d7e9e6" }} />
+            <span style={{ color: "#5f7679", fontSize: 12 }}>또는 이메일 로그인</span>
+            <span aria-hidden="true" style={{ height: 1, flex: 1, background: "#d7e9e6" }} />
+          </div>
+          <ReviewEmailLoginForm nextPath={nextPath} />
           <Link href="/" className="text-link">홈으로 돌아가기</Link>
         </div>
       </section>
