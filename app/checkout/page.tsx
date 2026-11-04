@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCart, type CartItem } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/data/products";
 import { calculateShipping } from "@/lib/order/pricing";
+import { normalizeDeliveryPhone } from "@/lib/phone/normalize";
 import AddressBookModal from "@/components/checkout/AddressBookModal";
 import type { CheckoutDeliverySelection, UserAddress } from "@/lib/addresses/types";
 
@@ -125,15 +126,15 @@ export default function CheckoutPage() {
     const recipientName = getRequiredText(formData, "recipientName");
     const recipientPhone = getRequiredText(formData, "recipientPhone");
     const address = getRequiredText(formData, "address");
-    const phoneDigits = recipientPhone.replace(/\D/g, "");
+    const phoneDigits = normalizeDeliveryPhone(recipientPhone);
 
     if (!recipientName) {
       setMessage("받는 분 이름을 입력해주세요.");
       focusField(event.currentTarget, "recipientName");
       return;
     }
-    if (phoneDigits.length < 10) {
-      setMessage("연락처를 10자리 이상 입력해주세요.");
+    if (!phoneDigits) {
+      setMessage("연락처 형식을 확인해주세요. 예: 010-1234-5678");
       focusField(event.currentTarget, "recipientPhone");
       return;
     }
@@ -162,7 +163,7 @@ export default function CheckoutPage() {
         const addressResponse = await fetch("/api/address", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ label: newAddressLabel, recipient: recipientName, phone: recipientPhone, zipcode: getRequiredText(formData, "postcode"), address, detailAddress: getRequiredText(formData, "addressDetail"), memo: getRequiredText(formData, "memo"), isDefault: false, isGift: deliverySelection.isGift })
+          body: JSON.stringify({ label: newAddressLabel, recipient: recipientName, phone: phoneDigits, zipcode: getRequiredText(formData, "postcode"), address, detailAddress: getRequiredText(formData, "addressDetail"), memo: getRequiredText(formData, "memo"), isDefault: false, isGift: deliverySelection.isGift })
         });
         const addressResult = await addressResponse.json();
         if (!addressResponse.ok) {
@@ -184,7 +185,7 @@ export default function CheckoutPage() {
           idempotencyKey: orderIdempotencyKey.current,
           items,
           recipientName,
-          recipientPhone,
+          recipientPhone: phoneDigits,
           postcode: getRequiredText(formData, "postcode"),
           address,
           addressDetail: getRequiredText(formData, "addressDetail"),
@@ -255,7 +256,7 @@ export default function CheckoutPage() {
           )}
           {message && <p className="form-message" role="status" aria-live="polite">{message}</p>}
           <label>이름<input name="recipientName" required placeholder="홍길동" autoComplete="name" value={recipient.recipientName} onChange={(event) => setRecipient({ ...recipient, recipientName: event.target.value })} /></label>
-          <label>연락처<input name="recipientPhone" required placeholder="010-0000-0000" autoComplete="tel" inputMode="tel" pattern="[0-9\\-\\s]{10,}" value={recipient.recipientPhone} onChange={(event) => setRecipient({ ...recipient, recipientPhone: event.target.value })} /></label>
+          <label>연락처<input type="tel" name="recipientPhone" required placeholder="010-0000-0000" autoComplete="tel" inputMode="tel" value={recipient.recipientPhone} onChange={(event) => setRecipient({ ...recipient, recipientPhone: event.target.value })} /></label>
           <label>우편번호<input name="postcode" placeholder="00000" autoComplete="postal-code" inputMode="numeric" value={recipient.postcode} onChange={(event) => setRecipient({ ...recipient, postcode: event.target.value })} /></label>
           <label>주소<input name="address" required placeholder="배송지 주소" autoComplete="street-address" value={recipient.address} onChange={(event) => setRecipient({ ...recipient, address: event.target.value })} /></label>
           <label>상세주소<input name="addressDetail" placeholder="동/호수 등" autoComplete="address-line2" value={recipient.addressDetail} onChange={(event) => setRecipient({ ...recipient, addressDetail: event.target.value })} /></label>
