@@ -9,6 +9,12 @@ export function getSiteUrl() {
     }
     return url.origin;
   }
+  // Next.js builds use NODE_ENV=production even for Vercel Preview deployments.
+  // Keep production strict, but allow Preview metadata to use the canonical shop URL.
+  const isPreview = process.env.VERCEL_ENV === "preview" || process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
+  if (isPreview) {
+    return "https://www.padostory.com";
+  }
   if (process.env.NODE_ENV === "production") {
     throw new Error("NEXT_PUBLIC_SITE_URL is required in production.");
   }
