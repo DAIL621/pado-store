@@ -42,7 +42,14 @@ export function AuthHeaderMenu() {
   }
 
   if (!user) {
-    return <KakaoLoginButton />;
+    return (
+      <div className="auth-menu">
+        <Link href="/login?next=/mypage" className="mini-link" aria-label="로그인 화면 열기">
+          로그인
+        </Link>
+        <KakaoLoginButton />
+      </div>
+    );
   }
 
   return (
