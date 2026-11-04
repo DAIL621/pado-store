@@ -6,8 +6,8 @@ import { sanitizeNextPath } from "@/lib/auth/next-path";
 
 /**
  * Email/password sign-in only. Does not create accounts or elevate permissions.
- * Review accounts must be created separately in Supabase Authentication,
- * with profiles.role='user' and no admin privileges.
+ * Existing customers and Toss review accounts can sign in with credentials
+ * already created in Supabase Auth. No signup or privilege escalation here.
  */
 export function ReviewEmailLoginForm({ nextPath }: { nextPath: string }) {
   const [email, setEmail] = useState("");
@@ -42,11 +42,11 @@ export function ReviewEmailLoginForm({ nextPath }: { nextPath: string }) {
   return (
     <form
       onSubmit={onSubmit}
-      aria-label="토스페이먼츠 심사용 이메일 로그인"
+      aria-label="이메일 로그인"
       style={{ marginTop: 8, marginBottom: 12, textAlign: "left" }}
     >
       <label htmlFor="review-login-email" style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 5 }}>
-        심사용 ID (이메일)
+        이메일 (ID)
       </label>
       <input
         id="review-login-email"
@@ -56,10 +56,10 @@ export function ReviewEmailLoginForm({ nextPath }: { nextPath: string }) {
         maxLength={254}
         value={email}
         onChange={(event) => setEmail(event.target.value)}
-        placeholder="심사용 이메일 계정"
+        placeholder="이메일 주소"
       />
       <label htmlFor="review-login-password" style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 5 }}>
-        심사용 비밀번호
+        비밀번호
       </label>
       <input
         id="review-login-password"
