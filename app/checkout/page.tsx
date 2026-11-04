@@ -305,7 +305,8 @@ export default function CheckoutPage() {
           </div>
           <div className="fresh-food-policy checkout-policy">
             <strong>신선식품 주문 전 확인해주세요</strong>
-            <p>상품 준비 또는 배송 시작 이후에는 단순 변심에 의한 취소·교환·반품이 제한될 수 있습니다. 상품 하자·오배송·표시 내용과 다른 경우에는 고객센터 확인 후 교환 또는 환불을 도와드립니다.</p>
+            <p>일반적인 청약철회는 상품 수령 후 7일 이내가 원칙입니다. 신선식품은 시간 경과에 따른 가치 감소 등 법령상 사유가 있는 경우 청약철회가 제한될 수 있습니다. 상품 하자·오배송 등은 별도 기준으로 처리합니다.</p>
+            <p><Link href="/support#delivery" className="text-link">배송기간 및 교환·환불 정책 자세히 보기 →</Link></p>
             <label><input type="checkbox" checked={freshFoodPolicyAccepted} onChange={(event) => setFreshFoodPolicyAccepted(event.target.checked)} /> 신선식품의 취소·교환·반품 제한 안내를 확인했습니다.</label>
           </div>
           <button type="submit" className="button teal full" disabled={saving || !canPay}>{!items.length ? "상품을 먼저 담아주세요" : unavailableItems.length ? "품절 상품을 삭제해주세요" : saving ? "처리 중..." : "안전하게 결제하기"}</button>
