@@ -174,11 +174,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <span>배송안내</span>
               <h3>{product.shippingInfo.title}</h3>
               <p>{product.shippingInfo.body}</p>
+              <p>기본 배송: 평일 오후 1시 이전 결제 시 당일 출고, 통상 다음 날 도착, 최대 배송기간은 결제 후 5영업일입니다. 기상·조업 상황에 따라 변동될 수 있습니다.</p>
+              <Link href="/support#delivery" className="text-link">배송 정책 자세히 보기 →</Link>
             </article>
             <article>
               <span>교환/반품</span>
               <h3>{product.exchangeInfo.title}</h3>
               <p>{product.exchangeInfo.body}</p>
+              <p>일반적인 청약철회는 상품 수령 후 7일 이내가 원칙입니다. 신선식품은 법령상 제한 사유가 적용될 수 있으며, 하자·오배송은 별도로 처리합니다.</p>
+              <Link href="/support#delivery" className="text-link">교환·환불 정책 자세히 보기 →</Link>
             </article>
             {product.producerInfo.body.trim() && <article>
               <span>생산자 소개</span>

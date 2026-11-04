@@ -19,7 +19,7 @@ export function Footer() {
         </div>
         <div className="company-info">
           <strong>사업자정보</strong>
-          <p>대표 강다일 · 사업자등록번호 197-81-03727<br />통신판매업 제2025-부산중구-0163호<br />부산광역시 중구 중앙대로 16번길 13, 902호</p>
+          <p>상호명: 주식회사 네보라 (브랜드: 파도스토리)<br />대표자: 강다일 · 사업자등록번호: 197-81-03727<br />통신판매업신고번호: 제2025-부산중구-0163호<br />사업장 주소: 부산광역시 중구 중앙대로 16번길 13, 902호<br />고객센터: 010-3128-7775</p>
         </div>
       </div>
       <div className="shell copyright">© 2026 PADO STORY. ALL RIGHTS RESERVED.</div>
