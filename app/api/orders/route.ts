@@ -7,6 +7,7 @@ import { enforceRateLimit } from "@/lib/security/rate-limit";
 import { requireTrustedOrigin } from "@/lib/security/origin";
 import { createAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeDeliveryPhone } from "@/lib/phone/normalize";
 
 const MAX_LINE_ITEMS = 20;
 const MAX_QUANTITY_PER_OPTION = 20;
@@ -125,9 +126,10 @@ export async function POST(request: Request) {
     memo = cleanText(savedAddress.delivery_memo, 500);
   }
 
-  const phoneDigits = recipientPhone?.replace(/\D/g, "") ?? "";
+  const phoneDigits = normalizeDeliveryPhone(recipientPhone);
   if (!recipientName) return NextResponse.json({ ok: false, message: "받는 분 이름을 확인해주세요." }, { status: 400 });
-  if (!/^0\d{9,10}$/.test(phoneDigits)) return NextResponse.json({ ok: false, message: "연락처 형식을 확인해주세요." }, { status: 400 });
+  if (!phoneDigits) return NextResponse.json({ ok: false, message: "연락처 형식을 확인해주세요." }, { status: 400 });
+  recipientPhone = phoneDigits;
   if (postcode && !/^\d{5,6}$/.test(postcode)) return NextResponse.json({ ok: false, message: "우편번호 형식을 확인해주세요." }, { status: 400 });
   if (!address) return NextResponse.json({ ok: false, message: "배송지 주소를 확인해주세요." }, { status: 400 });
   if (addressDetail === null || memo === null) return NextResponse.json({ ok: false, message: "배송지 입력 길이 또는 문자를 확인해주세요." }, { status: 400 });
