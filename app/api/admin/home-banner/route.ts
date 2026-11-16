@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/admin-api";
 import { sanitizeNextPath } from "@/lib/auth/next-path";
@@ -11,39 +10,58 @@ export const runtime = "nodejs";
 
 const BUCKET = "product-images";
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
-const MAX_REQUEST_BYTES = 2 * MAX_IMAGE_BYTES + 1024 * 1024;
+const MAX_METADATA_BYTES = 16 * 1024;
+// Files go directly from the browser to Supabase Storage. This endpoint
+// receives only small JSON metadata, keeping uploads below the Vercel
+// Function request-body limit.
+const IMAGE_PATH = /^home-hero\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$/;
 const MIME_EXT: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp"
 };
 
-function requiredText(form: FormData, key: string, label: string, maxLength: number, allowEmpty = false) {
-  const value = String(form.get(key) ?? "").trim();
+type BannerRequest = {
+  desktop_image_path?: unknown;
+  mobile_image_path?: unknown;
+  clear_mobile?: unknown;
+  show_text?: unknown;
+  image_alt?: unknown;
+  eyebrow?: unknown;
+  headline?: unknown;
+  description?: unknown;
+  cta_label?: unknown;
+  cta_href?: unknown;
+};
+
+function readText(data: BannerRequest, key: keyof BannerRequest, label: string, maxLength: number, allowEmpty = false) {
+  const raw = data[key];
+  if (typeof raw !== "string") throw new Error(label + " 값을 확인해주세요.");
+  const value = raw.trim();
   if ((!allowEmpty && !value) || value.length > maxLength) {
     throw new Error(label + "을(를) 확인해주세요. 최대 " + maxLength + "자입니다.");
   }
   return value;
 }
 
-function asImage(value: FormDataEntryValue | null, label: string): File | null {
+async function verifyUploadedImage(supabase: ReturnType<typeof createAdminClient>, value: unknown, label: string) {
   if (value == null) return null;
-  if (!(value instanceof File) || !value.size) throw new Error(label + " 파일을 선택해주세요.");
-  if (!MIME_EXT[value.type]) throw new Error(label + ": JPG, PNG, WebP만 업로드할 수 있습니다.");
-  if (value.size > MAX_IMAGE_BYTES) throw new Error(label + ": 이미지 크기는 6MB 이하로 제한됩니다.");
-  return value;
-}
+  if (typeof value !== "string" || !IMAGE_PATH.test(value)) {
+    throw new Error(label + " 경로가 유효하지 않습니다.");
+  }
 
-async function storeImage(supabase: ReturnType<typeof createAdminClient>, file: File, uploadedPaths: string[]) {
-  const path = "home-hero/" + Date.now() + "-" + randomUUID() + "." + MIME_EXT[file.type];
-  const { error } = await supabase.storage.from(BUCKET).upload(
-    path,
-    Buffer.from(await file.arrayBuffer()),
-    { contentType: file.type, cacheControl: "31536000", upsert: false }
-  );
-  if (error) throw new Error("이미지 저장 실패: " + error.message);
-  uploadedPaths.push(path);
-  return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  const { data, error } = await supabase.storage.from(BUCKET).info(value);
+  if (error || !data) throw new Error(label + " 업로드 파일을 확인할 수 없습니다. 이미지를 다시 선택해주세요.");
+  const fileSize = Number(data.size);
+  if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > MAX_IMAGE_BYTES) {
+    throw new Error(label + " 파일은 6MB 이하로 등록해주세요.");
+  }
+
+  const ext = value.split(".").pop();
+  if (data.contentType && MIME_EXT[data.contentType] !== ext) {
+    throw new Error(label + " 파일 형식이 올바르지 않습니다.");
+  }
+  return supabase.storage.from(BUCKET).getPublicUrl(value).data.publicUrl;
 }
 
 export async function POST(request: Request) {
@@ -51,49 +69,43 @@ export async function POST(request: Request) {
   if (!origin.ok) return origin.response;
   const admin = await requireAdminApi();
   if (!admin.ok) return admin.response;
-
   const limited = await enforceRateLimit(request, "adminUpload", { userId: admin.session.user.id });
   if (!limited.ok) return limited.response;
 
   const contentLength = Number(request.headers.get("content-length") || 0);
-  if (contentLength > MAX_REQUEST_BYTES) {
-    return NextResponse.json({ ok: false, message: "이미지 합계 용량이 너무 큽니다." }, { status: 413 });
+  if (contentLength > MAX_METADATA_BYTES) {
+    return NextResponse.json({ ok: false, message: "배너 설정 내용이 너무 큽니다." }, { status: 413 });
   }
 
-  let uploadedPaths: string[] = [];
-  const supabase = createAdminClient();
-
   try {
-    const form = await request.formData();
-    const desktopFile = asImage(form.get("desktop_image"), "PC 메인사진");
-    const mobileFile = asImage(form.get("mobile_image"), "모바일 메인사진");
-    const current = await getHomeBanner();
-    const imageAlt = requiredText(form, "image_alt", "이미지 설명", 120);
-    const eyebrow = requiredText(form, "eyebrow", "상단 문구", 80, true);
-    const headline = requiredText(form, "headline", "제목", 70, true);
-    const description = requiredText(form, "description", "소개 문구", 240, true);
-    const ctaLabel = requiredText(form, "cta_label", "버튼 문구", 36, true);
-    const ctaHref = requiredText(form, "cta_href", "연결 주소", 300, true);
-    const showText = form.get("show_text") !== "false";
+    const data: BannerRequest = await request.json();
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new Error("배너 요청 형식이 잘못되었습니다.");
+    }
+    const imageAlt = readText(data, "image_alt", "이미지 설명", 120);
+    const eyebrow = readText(data, "eyebrow", "상단 문구", 80, true);
+    const headline = readText(data, "headline", "제목", 70, true);
+    const description = readText(data, "description", "소개 문구", 240, true);
+    const ctaLabel = readText(data, "cta_label", "버튼 문구", 36, true);
+    const ctaHref = readText(data, "cta_href", "연결 주소", 300, true);
+    const showText = data.show_text !== false;
 
     if (showText && !headline) throw new Error("문구를 표시할 때는 메인 제목이 필요합니다.");
     if (ctaHref && sanitizeNextPath(ctaHref, "/") !== ctaHref) {
       throw new Error("연결 주소는 /products/상품주소처럼 사이트 내부 경로만 입력해주세요.");
     }
-    if (ctaLabel && !ctaHref) throw new Error("버튼을 표시하려면 연결 주소도 입력해주세요.");
+    if (ctaLabel && !ctaHref) throw new Error("버튼을 표시하려면 연결 주소를 입력해주세요.");
     if (!ctaLabel && ctaHref) throw new Error("연결 주소를 사용하려면 버튼 문구를 입력해주세요.");
 
-    const desktopImageUrl = desktopFile
-      ? await storeImage(supabase, desktopFile, uploadedPaths)
-      : current.desktopImageUrl;
-    const mobileImageUrl = mobileFile
-      ? await storeImage(supabase, mobileFile, uploadedPaths)
-      : form.get("clear_mobile") === "true" ? null : current.mobileImageUrl;
+    const supabase = createAdminClient();
+    const current = await getHomeBanner();
+    const desktopUploadedUrl = await verifyUploadedImage(supabase, data.desktop_image_path, "PC 메인사진");
+    const mobileUploadedUrl = await verifyUploadedImage(supabase, data.mobile_image_path, "모바일 메인사진");
 
     const { error } = await supabase.from("site_banners").upsert({
       id: "home",
-      desktop_image_url: desktopImageUrl,
-      mobile_image_url: mobileImageUrl,
+      desktop_image_url: desktopUploadedUrl ?? current.desktopImageUrl,
+      mobile_image_url: mobileUploadedUrl ?? (data.clear_mobile === true ? null : current.mobileImageUrl),
       image_alt: imageAlt,
       eyebrow,
       headline,
@@ -105,14 +117,8 @@ export async function POST(request: Request) {
     }, { onConflict: "id" });
 
     if (error) throw new Error("배너 적용 실패: " + error.message);
-
-    uploadedPaths = [];
-    const banner = await getHomeBanner();
-    return NextResponse.json({ ok: true, banner });
+    return NextResponse.json({ ok: true, banner: await getHomeBanner() });
   } catch (error) {
-    if (uploadedPaths.length) {
-      await supabase.storage.from(BUCKET).remove(uploadedPaths).catch(() => undefined);
-    }
     return NextResponse.json(
       { ok: false, message: error instanceof Error ? error.message : "배너 변경에 실패했습니다." },
       { status: 400 }

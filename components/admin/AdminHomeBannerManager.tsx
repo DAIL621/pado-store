@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { HomeBanner } from "@/lib/site/home-banner";
+import { createClient } from "@/lib/supabase/client";
 
 const MAX_SIZE = 6 * 1024 * 1024;
 const MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MIME_EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
 function usePreviewUrl(file: File | null) {
   const [url, setUrl] = useState<string | null>(null);
@@ -77,19 +79,50 @@ export function AdminHomeBannerManager({ initial }: { initial: HomeBanner }) {
     setErrorMessage("");
 
     try {
-      const form = new FormData();
-      if (desktopFile) form.append("desktop_image", desktopFile);
-      if (mobileFile) form.append("mobile_image", mobileFile);
-      form.append("clear_mobile", String(clearMobile));
-      form.append("show_text", String(showText));
-      form.append("image_alt", imageAlt);
-      form.append("eyebrow", eyebrow);
-      form.append("headline", headline);
-      form.append("description", description);
-      form.append("cta_label", ctaLabel);
-      form.append("cta_href", ctaHref);
+      // Upload images directly to Supabase Storage; sending the bytes through a
+      // Vercel Function fails with 413 Request Entity Too Large for large files.
+      // Existing Storage RLS grants INSERT only to the administrator role.
+      const supabase = createClient();
+      const uploadImage = async (file: File, label: string) => {
+        const path = "home-hero/" + crypto.randomUUID() + "." + MIME_EXT[file.type];
+        setStatus(label + " 업로드 중...");
+        const { error } = await supabase.storage.from("product-images").upload(path, file, {
+          cacheControl: "31536000",
+          contentType: file.type,
+          upsert: false
+        });
+        if (error) throw new Error(label + " 업로드 실패: " + error.message);
+        return path;
+      };
 
-      const response = await fetch("/api/admin/home-banner", { method: "POST", body: form });
+      const desktopPath = desktopFile ? await uploadImage(desktopFile, "PC 메인사진") : null;
+      const mobilePath = mobileFile ? await uploadImage(mobileFile, "모바일 메인사진") : null;
+      setStatus("홈페이지에 배너를 적용하는 중...");
+
+      const response = await fetch("/api/admin/home-banner", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          desktop_image_path: desktopPath,
+          mobile_image_path: mobilePath,
+          clear_mobile: clearMobile,
+          show_text: showText,
+          image_alt: imageAlt,
+          eyebrow,
+          headline,
+          description,
+          cta_label: ctaLabel,
+          cta_href: ctaHref
+        })
+      });
+      // Platform errors (413, 502, etc.) may be HTML or plain text, not JSON.
+      // Never leak a raw JSON parser exception into the admin UI.
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error(response.status === 413
+          ? "업로드 요청이 서버 용량을 초과했습니다. 페이지를 새로고침한 후 다시 시도해주세요."
+          : "서버 응답에 문제가 발생했습니다 (HTTP " + response.status + "). 다시 시도해주세요.");
+      }
       const result = await response.json();
       if (!response.ok || !result.ok) {
         throw new Error(result.message || "배너 변경에 실패했습니다.");
@@ -104,6 +137,7 @@ export function AdminHomeBannerManager({ initial }: { initial: HomeBanner }) {
       setStatus("메인 배너가 적용되었습니다. 홈페이지를 열어 확인해 보세요.");
       router.refresh();
     } catch (error) {
+      setStatus("");
       setErrorMessage(error instanceof Error ? error.message : "배너 변경에 실패했습니다.");
     } finally {
       setSaving(false);
@@ -183,7 +217,7 @@ export function AdminHomeBannerManager({ initial }: { initial: HomeBanner }) {
         {status && <p className="admin-banner-feedback success" role="status">{status}</p>}
         <div className="admin-banner-actions">
           <button className="admin-ui-button md" type="submit" disabled={saving}>
-            {saving ? "저장 및 적용 중..." : "메인 배너 적용하기"}
+            {saving ? "이미지 업로드 · 적용 중..." : "메인 배너 적용하기"}
           </button>
           <a className="admin-ui-button outline md" href="/" target="_blank" rel="noreferrer">홈페이지 확인</a>
         </div>
