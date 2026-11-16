@@ -1,6 +1,7 @@
 import { Hero } from "@/components/home/Hero";
 import { HomeSections } from "@/components/home/HomeSections";
 import { getProducts } from "@/lib/products";
+import { getHomeBanner } from "@/lib/site/home-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,6 @@ function logDevelopmentDataSource() {
 
 export default async function HomePage() {
   logDevelopmentDataSource();
-  const products = await getProducts();
-  return <><Hero products={products} /><HomeSections products={products} /></>;
+  const [products, banner] = await Promise.all([getProducts(), getHomeBanner()]);
+  return <><Hero products={products} banner={banner} /><HomeSections products={products} /></>;
 }

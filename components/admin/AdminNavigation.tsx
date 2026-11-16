@@ -34,7 +34,7 @@ const navGroups: AdminNavGroup[] = [
     { key: "reviews", label: "리뷰관리", href: "/admin/reviews" }
   ] },
   { label: "마케팅", icon: "📣", items: [
-    { key: "marketing", label: "쿠폰·배너", href: "/admin/marketing" },
+    { key: "marketing", label: "메인 배너 관리", href: "/admin/marketing" },
     { key: "content", label: "공지·FAQ", href: "/admin/content" }
   ] },
   { label: "AI 운영센터", icon: "🤖", items: [

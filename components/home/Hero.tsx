@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/data/products";
 import { ProductCard } from "@/components/products/ProductCard";
+import type { HomeBanner } from "@/lib/site/home-banner";
 
 function ProofIcon({ name }: { name: "pin" | "fresh" | "truck" }) {
   if (name === "pin") {
@@ -13,33 +14,33 @@ function ProofIcon({ name }: { name: "pin" | "fresh" | "truck" }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7z" /><circle cx="7" cy="18" r="2" /><circle cx="18" cy="18" r="2" /></svg>;
 }
 
-export function Hero({ products }: { products: Product[] }) {
+export function Hero({ products, banner }: { products: Product[]; banner: HomeBanner }) {
   const popularKeywords = [...new Set(products
     .filter((product) => product.options.some((option) => Number(option.stock ?? 0) > 0))
     .map((product) => product.name))].slice(0, 5);
 
   return (
     <section className="storefront-intro" id="recommend" aria-label="파도스토리 산지 직송">
-      <article className="storefront-hero">
-        <Image
-          src="/images/story/reference-fishing-boat-hero-v2.png"
-          alt="거제도 푸른 바다를 달리는 실제 어선"
-          fill
-          sizes="100vw"
-          priority
-        />
-        <div className="storefront-hero-content shell">
-          <div className="storefront-hero-copy">
-            <span className="eyebrow">PADO STORY · FROM THE COAST</span>
-            <h1>산지 직송 상품</h1>
-            <p>파도스토리는 산지에서 직접 확인하고<br />선별한 신선한 수산물만을 전해드립니다.</p>
+      <article className={banner.showText ? "storefront-hero" : "storefront-hero image-only"}>
+        <picture className="storefront-hero-media">
+          {banner.mobileImageUrl && <source media="(max-width: 600px)" srcSet={banner.mobileImageUrl} />}
+          <Image src={banner.desktopImageUrl} alt={banner.imageAlt} fill sizes="100vw" priority />
+        </picture>
+        {banner.showText && (
+          <div className="storefront-hero-content shell">
+            <div className="storefront-hero-copy">
+              {banner.eyebrow && <span className="eyebrow">{banner.eyebrow}</span>}
+              <h1>{banner.headline}</h1>
+              {banner.description && <p>{banner.description}</p>}
+              {banner.ctaLabel && banner.ctaHref && <Link className="button teal" href={banner.ctaHref}>{banner.ctaLabel}</Link>}
+            </div>
+            <div className="storefront-hero-proof" aria-label="배송 및 선별 안내">
+              <span><i><ProofIcon name="pin" /></i><span><b>산지 직송</b><small>산지에서 바로</small></span></span>
+              <span><i><ProofIcon name="fresh" /></i><span><b>신선 보장</b><small>선별 · 포장</small></span></span>
+              <span><i><ProofIcon name="truck" /></i><span><b>당일 출고</b><small>평일 13시 이전 주문</small></span></span>
+            </div>
           </div>
-          <div className="storefront-hero-proof" aria-label="배송 및 선별 안내">
-            <span><i><ProofIcon name="pin" /></i><span><b>산지 직송</b><small>산지에서 바로</small></span></span>
-            <span><i><ProofIcon name="fresh" /></i><span><b>신선 보장</b><small>선별 · 포장</small></span></span>
-            <span><i><ProofIcon name="truck" /></i><span><b>당일 출고</b><small>평일 13시 이전 주문</small></span></span>
-          </div>
-        </div>
+        )}
       </article>
 
       <div className="shell storefront-home-body">
