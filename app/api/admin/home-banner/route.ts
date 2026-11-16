@@ -52,7 +52,8 @@ async function verifyUploadedImage(supabase: ReturnType<typeof createAdminClient
 
   const { data, error } = await supabase.storage.from(BUCKET).info(value);
   if (error || !data) throw new Error(label + " 업로드 파일을 확인할 수 없습니다. 이미지를 다시 선택해주세요.");
-  if (!Number.isFinite(data.size) || data.size <= 0 || data.size > MAX_IMAGE_BYTES) {
+  const fileSize = Number(data.size);
+  if (!Number.isFinite(fileSize) || fileSize <= 0 || fileSize > MAX_IMAGE_BYTES) {
     throw new Error(label + " 파일은 6MB 이하로 등록해주세요.");
   }
 
