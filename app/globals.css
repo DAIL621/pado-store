@@ -1136,3 +1136,10 @@
   .footer .footer-sns{margin-top:10px}
   .footer .copyright{margin-top:22px}
 }
+
+/* Admin-managed storefront hero images (desktop/mobile). */
+.storefront-hero>.storefront-hero-media{position:absolute;inset:0;display:block}
+.storefront-hero>.storefront-hero-media>img{object-fit:cover;object-position:center 61%;filter:saturate(.9) contrast(.96) brightness(1.04)}
+.storefront-hero.image-only:after{display:none}
+.storefront-hero-copy p{white-space:pre-line}
+@media(max-width:600px){.storefront-hero>.storefront-hero-media>img{object-position:48% center}}

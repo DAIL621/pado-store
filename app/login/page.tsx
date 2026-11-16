@@ -12,14 +12,15 @@ export default async function LoginPage({
   // Existing review links remain supported, but both login methods
   // are now available at the regular /login URL.
   const nextPath = sanitizeNextPath(params.next, params.review === "1" ? "/products/hairtail" : "/mypage");
+  const adminLogin = nextPath === "/admin" || nextPath.startsWith("/admin/");
 
   return (
     <div className="page-wrap">
       <section className="login-section">
         <div className="login-card">
           <span className="eyebrow">PADO STORY LOGIN</span>
-          <h1>파도스토리 로그인</h1>
-          <p>카카오 또는 이메일로 로그인하고, 주문과 배송 정보를 편리하게 확인하세요.</p>
+          <h1>{adminLogin ? "파도스토리 관리자 로그인" : "파도스토리 로그인"}</h1>
+          <p>{adminLogin ? "관리자 권한이 부여된 계정으로 로그인하세요." : "카카오 또는 이메일로 로그인하고, 주문과 배송 정보를 편리하게 확인하세요."}</p>
           <div className="login-benefits" aria-label="로그인 후 이용 가능한 기능">
             <span>주문내역 확인</span>
             <span>배송상태 조회</span>
